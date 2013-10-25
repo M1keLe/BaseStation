@@ -1,0 +1,29 @@
+## frequenza aggiornamento Fusion Tables (default 10 minuti)
+FreqFTUpdater:   10
+
+## porta USB default = /dev/ttyUSB0
+USBPort:/dev/ttyUSB0
+
+## Speed USB port default = Baud Rate 57600
+USBSpeedPort: 57600
+
+## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate)
+## ResetTime: 23_59_59
+
+## Capabilities da sommare (es people, cows, flies)
+SumCap:people#cows#
+
+## Capabilities globali (es temperature, luminosity, pressure,)
+GlobalCap:temperature#luminosity#noise#
+
+## Nodi (id,xValue,yValue,capabilities)
+Node:1;120;11;counter#pressure#co2#temperature
+## Node:2;10;111;counter#pressure#co2#temperature
+## Node:3;40;12;counter#pressure#co2#temperature
+Node:4;210;141;counter#pressure#co2#temperature
+Node:5;130;151;counter#pressure#co2#temperature
+Node:6;51;168;counter#pressure#co2#temperature
+Node:7;10;11;counter#pressure#co2#temperature
+Node:8;10;11;counter#pressure#co2#temperature
+Node:9;10;11;counter#pressure#temperature
+Node:10;10;11;counter#pressure#co2#temperature
