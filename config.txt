@@ -2,7 +2,7 @@
 FreqFTUpdater:   10
 
 ## porta USB default = /dev/ttyUSB0
-USBPort:/dev/ttyUSB0
+USBPort:/dev/ttyUSB0 
 
 ## Speed USB port default = Baud Rate 57600
 USBSpeedPort: 57600
