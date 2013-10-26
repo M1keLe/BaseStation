@@ -8,13 +8,17 @@ USBPort:/dev/ttyUSB0
 USBSpeedPort: 57600
 
 ## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate)
-## ResetTime: 23_59_59
+ResetTime: 23_59_59
 
 ## Capabilities da sommare (es people, cows, flies)
-SumCap:people#cows#
+SumCap:people#cows#temperature
 
 ## Capabilities globali (es temperature, luminosity, pressure,)
 GlobalCap:temperature#luminosity#noise#
+
+## Range Capabilities (capability's name[min value - max value])
+CapRange:temperature[10-50]
+CapRange:pressure[800-1200]
 
 ## Nodi (id,xValue,yValue,capabilities)
 Node:1;120;11;counter#pressure#co2#temperature

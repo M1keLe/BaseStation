@@ -32,7 +32,7 @@ public class Capability {
 		this.value = value;
 	}
 	
-	public void setRangeValue(double minValue, double maxValue){
+	public void setRangeValues(double minValue, double maxValue){
 		this.minValue = minValue;
 		this.maxValue = maxValue;
 	}
@@ -61,6 +61,18 @@ public class Capability {
 	
 	public double getValue(){
 		return this.value;
+	}
+	
+	public String toString(){
+		String toRet = "*********** Capability ***********\n";
+		toRet += "Name: " + this.name + "\n";
+		toRet += "Is Global: " + this.isGlobal + "\n";
+		toRet += "Is Summable: " + this.isSummable + "\n";
+		toRet += "Min Value: " + this.minValue + "\n";
+		toRet += "Max Value: " + this.maxValue + "\n";
+		toRet += "********* End Capability *********\n";
+		
+		return toRet;
 	}
 	
 }

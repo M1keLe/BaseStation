@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -20,6 +22,7 @@ public class Configurator {
 	private static Calendar resetTime = null;
 	private static HashSet<String> sumCap = new HashSet<String>();
 	private static HashSet<String> globalCap = new HashSet<String>();
+	private static LinkedList<Capability> capabilities = new LinkedList<Capability>();
 	private static Hashtable<Short,Node> nodes = new Hashtable<Short,Node>();
 	
 	public static boolean loadConfigFile(){
@@ -58,27 +61,19 @@ public class Configurator {
 						break;
 					case "resettime":
 						StringTokenizer tokTimer = new StringTokenizer(valueToSet, "_");
-						try {
-							String hour = tokTimer.nextToken().trim();
-							String minute = tokTimer.nextToken().trim();
-							String second = tokTimer.nextToken().trim();
-							if (tryParseInt(hour) && tryParseInt(minute) && tryParseInt(second)) {
-								resetTime = Calendar.getInstance();
-								resetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
-								resetTime.set(Calendar.MINUTE, Integer.parseInt(minute));
-								resetTime.set(Calendar.SECOND, Integer.parseInt(second));
-								System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());							
-							} else {
-								System.out.println("Reset Time ERROR: Controllare il file di configurazione");
-								toRet = false;
-							}
-							
-						} catch (NoSuchElementException e) {
-							e.printStackTrace();
+						String hour = tokTimer.nextToken().trim();
+						String minute = tokTimer.nextToken().trim();
+						String second = tokTimer.nextToken().trim();
+						if (tryParseInt(hour) && tryParseInt(minute) && tryParseInt(second)) {
+							resetTime = Calendar.getInstance();
+							resetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
+							resetTime.set(Calendar.MINUTE, Integer.parseInt(minute));
+							resetTime.set(Calendar.SECOND, Integer.parseInt(second));
+							System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());							
+						} else {
+							System.out.println("Reset Time ERROR: Controllare il file di configurazione");
 							toRet = false;
 						}
-						
-						
 						break;
 					case "sumcap":
 						StringTokenizer tokSumCap = new StringTokenizer(valueToSet, "#");
@@ -94,6 +89,29 @@ public class Configurator {
 							String s = tokGlobalCap.nextToken();
 							globalCap.add(s);
 							System.out.println("Aggiunta globalCap: " + s);
+						}
+						break;
+// gestire capRange
+					case "caprange":
+						String capName = valueToSet.substring(0, valueToSet.indexOf('['));
+						//System.out.println(capName);
+						String range = valueToSet.substring(1+valueToSet.indexOf('['), valueToSet.indexOf(']'));
+						//System.out.println(range);
+						StringTokenizer tokRange = new StringTokenizer(range, "-");
+						String sMin = tokRange.nextToken();
+						String sMax = tokRange.nextToken();
+						if(tryParseInt(sMin) && tryParseInt(sMax)){
+							double min = Integer.parseInt(sMin);
+							double max = Integer.parseInt(sMax);
+							Capability c = new Capability(capName, isGlobalCapability(capName), isSummableCapability(capName));
+							c.setRangeValues(min, max);
+							capabilities.add(c);
+							System.out.println(c);
+							
+						}
+						else{
+							System.out.println("Cababilities Range ERROR: controllare il file di configurazione");
+							toRet = false;
 						}
 						break;
 					case "node":
@@ -112,8 +130,8 @@ public class Configurator {
 								capability.add(tokCap.nextToken());
 							}
 							nodes.put(nodeID, new Node(nodeID, xValue, yValue, capability));
-							System.out.println("Creato Nuovo nodo con id " + nodeID);
-							System.out.println(nodes.get(nodeID));
+							//System.out.println("Creato Nuovo nodo con id " + nodeID);
+							System.out.println("\n" + nodes.get(nodeID) + "\n");
 						}else{
 							System.out.println("Node ERROR controllare file di configurazione");
 							toRet = false;
@@ -139,6 +157,10 @@ public class Configurator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			toRet = false;
+		}catch (NoSuchElementException e) {
+			e.printStackTrace();
+			toRet = false;
+		
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -149,8 +171,6 @@ public class Configurator {
 			toRet = false;
 			System.out.println("Errore: nessun nodo configurato");
 		}
-			
-		
 		return toRet;
 		
 	}
@@ -161,6 +181,19 @@ public class Configurator {
 	
 	public static boolean isSummableCapability(String capability){
 		return sumCap.contains(capability);
+	}
+	
+	public Capability getRangedCapability(String name){
+		Capability toRet = null;
+		Iterator<Capability> i = capabilities.iterator();
+		while (i.hasNext()) {
+			Capability c = (Capability) i.next();
+			if(c.getName() == name){
+				toRet = c;
+				break;
+			}
+		}		
+		return toRet;
 	}
 	
 	public static String getUSBPort(){
@@ -194,23 +227,8 @@ public class Configurator {
 			Short.parseShort(value);
 			toRet = true;
 		} catch (NumberFormatException e) {
-			// TODO: handle exception
+			toRet = false;
 		}
 		return toRet;
 	}
-	
-	/*
-	 * debug
-	 
-	public static void printConfiguration(){
-		System.out.println("sumCap.size() = " + sumCap.size());
-		System.out.println("globalCap.size() = " + globalCap.size());
-		System.out.println("nodes.size() = " + nodes.size());
-		System.out.println();
-		System.out.println();
-		System.out.println();
-	}
-	*/
-	
-
 }
