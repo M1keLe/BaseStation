@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -16,7 +17,7 @@ import java.util.StringTokenizer;
 public class Configurator {
 	private static final String FILE_NAME = "config.txt"; 
 	
-	private static int freqFTUpdater = 1000*60*10;
+	private static int freqDataProcessor = 1000*60*10;
 	private static String usbPort = "/dev/ttyUSB0";
 	private static String speedUsbPort = "57600";
 	private static Calendar resetTime = null;
@@ -45,10 +46,10 @@ public class Configurator {
 						usbPort = valueToSet;
 						System.out.println("USBPort impostata su: " + usbPort);
 						break;
-					case "freqftupdater":
+					case "freqdataprocessor":
 						if(tryParseInt(valueToSet)){
-							freqFTUpdater = Integer.parseInt(valueToSet) * 1000 * 60;
-							System.out.println("frequenza ftupdater impostata a: " + freqFTUpdater/(1000*60) + " Minuti");							
+							freqDataProcessor = Integer.parseInt(valueToSet) * 1000 * 60;
+							System.out.println("frequenza ftupdater impostata a: " + freqDataProcessor/(1000*60) + " Minuti");							
 						}else{
 							System.out.println("FreqFTUpdater ERROR controllare file di configurazione");
 							toRet = false;
@@ -200,12 +201,20 @@ public class Configurator {
 		return usbPort;
 	}
 	
-	public static int getFreqFTUpdater(){
-		return freqFTUpdater;
+	public static int getFreqDataProcessor(){
+		return freqDataProcessor;
 	}
 	
 	public static Hashtable<Short,Node> getNodeList(){
 		return nodes;
+	}
+	
+	public static Date getResetTime(){
+		Date toRet = null;
+		if(resetTime != null)
+			toRet = resetTime.getTime();
+		
+		return toRet;
 	}
 	
 	// controllo sul parsing di dati
