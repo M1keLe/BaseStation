@@ -13,6 +13,8 @@ public class Main
     		System.out.println("Sono presenti errori nel file di configurazione");
     	}else{
     		System.out.println("Il file di configurazione è stato caricato correttamente");
+    		// passare la lista di nodi al local stats container
+    		LocalStatsContainer.setNodeList();
     		
     		/*
     		 * - controllare e creare tabelle
@@ -20,9 +22,12 @@ public class Main
     		 * - lanciare data processor
     		 * 
     		 */
+    		
+    		// avvio data Processor
     		DataProcessor dp = new DataProcessor();
     		dp.start();
     		
+    		// se configurato nel file di configurazione avvio il thread resetter
     		if(Configurator.getResetTime() != null){
     			Timer resetter = new Timer("resetter");
     			resetter.schedule(new Resetter(), Configurator.getResetTime(), DAY);

@@ -1,5 +1,5 @@
 ## frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor:   10
+FreqDataProcessor:   1
 
 ## porta USB default = /dev/ttyUSB0
 USBPort:/dev/ttyUSB0 
@@ -7,8 +7,9 @@ USBPort:/dev/ttyUSB0
 ## Speed USB port default = Baud Rate 57600
 USBSpeedPort: 57600
 
-## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate)
-ResetTime: 23_59_59
+## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
+ResetTime: 22_02_20 
+## 23_59_59
 
 ## Capabilities da sommare (es people, cows, flies)
 SumCap:people#cows#temperature
