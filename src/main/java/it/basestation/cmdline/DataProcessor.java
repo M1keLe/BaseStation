@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 public class DataProcessor extends Thread {
-	private LinkedList <Packet> lastPeriodPacketsList = new LinkedList <Packet>();
-	private Hashtable<Short,Hashtable<String,LinkedList<Capability>>> nodeCapabilities = new Hashtable<Short,Hashtable<String,LinkedList<Capability>>>();
+	// private LinkedList <Packet> lastPeriodPacketsList = new LinkedList <Packet>();
+	// private Hashtable<Short,Hashtable<String,LinkedList<Capability>>> nodeCapabilities = new Hashtable<Short,Hashtable<String,LinkedList<Capability>>>();
 
 	public void run(){
 		while (true) {
@@ -31,6 +31,8 @@ public class DataProcessor extends Thread {
 						}
 						packetsOfNode.get(sender).add(p);
 					}
+					
+					// passare packetsOfNode al last period lode stats e last period global stats
 					
 					
 				}else{

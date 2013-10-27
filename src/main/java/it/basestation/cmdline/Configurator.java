@@ -184,7 +184,7 @@ public class Configurator {
 		return sumCap.contains(capability);
 	}
 	
-	public Capability getRangedCapability(String name){
+	public static Capability getRangedCapability(String name){
 		Capability toRet = null;
 		Iterator<Capability> i = capabilities.iterator();
 		while (i.hasNext()) {
