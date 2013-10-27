@@ -42,10 +42,12 @@ public class Configurator {
 					String valueToSet = tok.nextToken().trim();
 					
 					switch (varToSet) {
+					
 					case "usbport":
 						usbPort = valueToSet;
 						System.out.println("USBPort impostata su: " + usbPort);
 						break;
+						
 					case "freqdataprocessor":
 						if(tryParseInt(valueToSet)){
 							freqDataProcessor = Integer.parseInt(valueToSet) * 1000 * 60;
@@ -54,12 +56,13 @@ public class Configurator {
 							System.out.println("FreqFTUpdater ERROR controllare file di configurazione");
 							toRet = false;
 						}
-						
 						break;
+						
 					case "usbspeedport":
 						speedUsbPort = valueToSet;
 						System.out.println("Baud Rate Usb Port: " + speedUsbPort);
 						break;
+						
 					case "resettime":
 						StringTokenizer tokTimer = new StringTokenizer(valueToSet, "_");
 						String hour = tokTimer.nextToken().trim();
@@ -76,6 +79,7 @@ public class Configurator {
 							toRet = false;
 						}
 						break;
+						
 					case "sumcap":
 						StringTokenizer tokSumCap = new StringTokenizer(valueToSet, "#");
 						while(tokSumCap.hasMoreTokens()){
@@ -84,6 +88,7 @@ public class Configurator {
 							System.out.println("Aggiunta sumCap: " + s);
 						}
 						break;
+						
 					case "globalcap":
 						StringTokenizer tokGlobalCap = new StringTokenizer(valueToSet, "#");
 						while(tokGlobalCap.hasMoreTokens()){
@@ -92,7 +97,7 @@ public class Configurator {
 							System.out.println("Aggiunta globalCap: " + s);
 						}
 						break;
-// gestire capRange
+
 					case "caprange":
 						String capName = valueToSet.substring(0, valueToSet.indexOf('['));
 						//System.out.println(capName);
@@ -115,6 +120,7 @@ public class Configurator {
 							toRet = false;
 						}
 						break;
+						
 					case "node":
 						StringTokenizer tokNode = new StringTokenizer(valueToSet, ";");
 						String sNodeID = tokNode.nextToken();
@@ -137,8 +143,8 @@ public class Configurator {
 							System.out.println("Node ERROR controllare file di configurazione");
 							toRet = false;
 						}
-						
 						break;
+						
 					default:
 						System.out.println("Default .....");
 						break;
@@ -149,13 +155,10 @@ public class Configurator {
 			
 			bReader.close();
 			
-			// inserire metodi per controllo su fusion tables e passare la lista nodi alla classe che contiene i dati
 			
-			// FusionTables.setUpTables(nodes);
-			// DataCenter.setNodeList(nodes);
 			
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			toRet = false;
 		}catch (NoSuchElementException e) {
@@ -163,7 +166,7 @@ public class Configurator {
 			toRet = false;
 		
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			toRet = false;
 		}

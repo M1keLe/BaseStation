@@ -16,10 +16,11 @@ public class Main
     		// passare la lista di nodi al local stats container
     		LocalStatsContainer.setNodeList();
     		
+    		
+    		// controllare e creare tabelle
+    		// FusionTables.setupTables()
     		/*
-    		 * - controllare e creare tabelle
     		 * - lanciare serial reader
-    		 * - lanciare data processor
     		 * 
     		 */
     		
@@ -27,7 +28,7 @@ public class Main
     		DataProcessor dp = new DataProcessor();
     		dp.start();
     		
-    		// se configurato nel file di configurazione avvio il thread resetter
+    		// se specificato nel file di configurazione avvio il thread resetter
     		if(Configurator.getResetTime() != null){
     			Timer resetter = new Timer("resetter");
     			resetter.schedule(new Resetter(), Configurator.getResetTime(), DAY);
@@ -36,6 +37,5 @@ public class Main
     			System.out.println("Le statistiche non verranno mai resettate");
     		}
     	}
-        //Configurator.loadConfigFile();
     }
 }

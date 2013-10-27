@@ -1,23 +1,64 @@
 package it.basestation.cmdline;
 
 import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 public class DataProcessor extends Thread {
-	// private LinkedList <Packet> lastPeriodPacketsList = new LinkedList <Packet>();
-	// private Hashtable<Short,Hashtable<String,LinkedList<Capability>>> nodeCapabilities = new Hashtable<Short,Hashtable<String,LinkedList<Capability>>>();
+	
+	// Factory Method
+	private LinkedList<IStats> lastPeriodStatsElaborator = new LinkedList<IStats>();
+	
 
 	public void run(){
+		
+		// Factory Method
+		inizializeElaborator();
+		
 		while (true) {
 			try {
-				System.out.println("Data Processor in esecuzione" + new Date());
+				System.out.println("Data Processor in esecuzione " + new Date());
 				Thread.sleep(Configurator.getFreqDataProcessor());
 				
 				// Switch puntatori liste
 				LinkedList <Packet> newPacketsList = LocalStatsContainer.getLastPeriodPacketsList();
 				
+				// se la lista non è vuota
+				if(!newPacketsList.isEmpty()){
+					// passare newPacketsList al last period node stats e last period global stats
+					for (IStats elaborator : lastPeriodStatsElaborator) {
+						elaborator.elabLastPeriodPacketList(newPacketsList);
+					}
+					
+					
+				}else{
+					System.out.println("Nessun pacchetto da gestire");
+				}
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
+	}
+	
+	// Factory Method
+	private void inizializeElaborator(){
+		IStatsCreator[] lastPeriodStatsElaboratorCreator = new  IStatsCreator[2];
+		lastPeriodStatsElaboratorCreator[0] = new LastPeriodNodeStatsCreator();
+		lastPeriodStatsElaboratorCreator[1] = new LastPeriodGlobalStatsCreator();
+		
+		for (int i = 0; i < lastPeriodStatsElaboratorCreator.length; i++) {
+			this.lastPeriodStatsElaborator.add(lastPeriodStatsElaboratorCreator[i].factoryMethod());			
+		}
+	}
+
+}
+
+				// ***************************************************************************************************
+				// alternativa suddividere la lista pacchetti in hashtable con chiave id sender
+				// sbagliato xchè x le stats globali non è necessario tenere i pacchetti suddivisi per senderid
+				
+/*				
 				Hashtable<Short, LinkedList<Packet>> packetsOfNode = new Hashtable<Short, LinkedList<Packet>>();
 				
 				// se lista non vuota inserisco i pacchetti suddivisi per nodo nella hashtable
@@ -38,22 +79,12 @@ public class DataProcessor extends Thread {
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
 				}
+*/				// ***************************************************************************************************
 				
-				
-				/*
+				/* 	 COMPITI DEL THREAD:
 				 * - scrivere log su file
 				 * - fare medie su ultimo periodo locali
 				 * - calcolare grandezze globali
 				 * - aggiornare le fusion talbles
 				 */
 				
-				
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-	}
-
-}

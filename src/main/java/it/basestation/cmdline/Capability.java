@@ -5,6 +5,7 @@ public class Capability {
 	private double value;
 	private boolean isGlobal;
 	private boolean isSummable;
+	private boolean hasARange;
 	private double minValue;
 	private double maxValue;
 	
@@ -12,6 +13,7 @@ public class Capability {
 		this.name = name;
 		this.isGlobal = false;
 		this.isSummable = false;
+		this.hasARange = false;
 		this.value = 0.00;
 		this.minValue = 0.00;
 		this.maxValue = 0.00;
@@ -21,6 +23,7 @@ public class Capability {
 		this.name = name;
 		this.isGlobal = isGlobal;
 		this.isSummable = isSummable;
+		this.hasARange = false;
 		this.value = 0.00;
 		this.minValue = 0.00;
 		this.maxValue = 0.00;
@@ -35,6 +38,7 @@ public class Capability {
 	public void setRangeValues(double minValue, double maxValue){
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+		this.hasARange = true;
 	}
 
 	// get
@@ -59,6 +63,10 @@ public class Capability {
 		return this.isSummable;
 	}
 	
+	public boolean hasARange(){
+		return this.hasARange;
+	}
+	
 	public double getValue(){
 		return this.value;
 	}
@@ -68,6 +76,7 @@ public class Capability {
 		toRet += "Name: " + this.name + "\n";
 		toRet += "Is Global: " + this.isGlobal + "\n";
 		toRet += "Is Summable: " + this.isSummable + "\n";
+		toRet += "Has a Range: " + this.hasARange + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";
 		toRet += "Max Value: " + this.maxValue + "\n";
 		toRet += "********* End Capability *********\n";
