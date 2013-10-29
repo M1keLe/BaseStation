@@ -2,6 +2,7 @@ package it.basestation.cmdline;
 
 import java.awt.Point;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -11,6 +12,7 @@ public class Node {
 	private int yValue;
 	private HashSet<String> capabilities;
 	private LinkedList<Packet> myPackets = new LinkedList<Packet>();
+	private Hashtable<String,Double> lastSummableValues = new Hashtable<String,Double>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
 
@@ -57,6 +59,15 @@ public class Node {
 	public long getLastPacketTimeStamp(){
 		return this.lastPacketTimeStamp;
 	}
+	
+	public void setLastSummableValue(String name, Double value){
+		this.lastSummableValues.put(name, value);
+	}
+	
+	public Double getLastSummableValue(String name){
+		return this.lastSummableValues.get(name);
+	}
+	
 	
 	public String toString(){
 		Iterator<String> i = this.capabilities.iterator();

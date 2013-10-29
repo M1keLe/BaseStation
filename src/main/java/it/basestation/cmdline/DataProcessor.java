@@ -19,7 +19,7 @@ public class DataProcessor extends Thread {
 				System.out.println("Data Processor in esecuzione " + new Date());
 				Thread.sleep(Configurator.getFreqDataProcessor());
 				
-				// Switch puntatori liste
+				// Switch puntatori liste e prendo la lista di nodi da elaborare
 				LinkedList <Packet> newPacketsList = LocalStatsContainer.getLastPeriodPacketsList();
 				
 				// se la lista non è vuota
@@ -48,7 +48,8 @@ public class DataProcessor extends Thread {
 		lastPeriodStatsElaboratorCreator[1] = new LastPeriodGlobalStatsCreator();
 		
 		for (int i = 0; i < lastPeriodStatsElaboratorCreator.length; i++) {
-			this.lastPeriodStatsElaborator.add(lastPeriodStatsElaboratorCreator[i].factoryMethod());			
+			this.lastPeriodStatsElaborator.add(lastPeriodStatsElaboratorCreator[i].factoryMethod());
+			System.out.println("Creato gestore medie numero " + i);
 		}
 	}
 

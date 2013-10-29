@@ -11,7 +11,7 @@ public class LastPeriodGlobalStats implements IStats {
 	public void elabLastPeriodPacketList(LinkedList<Packet> lastPeriodPacketList){
 		Hashtable<String, LinkedList<Double>> capToElab = new Hashtable<String, LinkedList<Double>>();
 		
-		// sto analizzando solo le cap non sommabili (da implementare)
+		// analizzo le cap non sommabili 
 		for (Packet p : lastPeriodPacketList) {
 			LinkedList <Capability> c = p.getData();
 			for (Capability cap : c) {
@@ -25,34 +25,46 @@ public class LastPeriodGlobalStats implements IStats {
 			
 		} // end for lista pacchetti
 		
-		LinkedList<Capability> capList = new LinkedList<Capability>();
-		if(!capToElab.isEmpty()){
-			capList = elabCapabilities(capToElab);
+		// aggiungo alla lista di capabilities da elaborare quelle sommabili e globali dell'ultimo periodo
+		LinkedList<Capability> summableAndGlobalCapList = LocalStatsContainer.getLastSummableAndGlobalCapabilities();
+		if(!summableAndGlobalCapList.isEmpty()){
+			for (Capability c : summableAndGlobalCapList) {
+				if(!capToElab.containsKey(c.getName())){
+					capToElab.put(c.getName(), new LinkedList<Double>());
+				}
+				capToElab.get(c.getName()).add(c.getValue());
+			}
 		}
-		// capList.add(summableValues) .... aggiungere alla capList i valori sommabili
-		// FusionTables.insertDataToGlobalTable(capList)
 		
+		if(!capToElab.isEmpty()){
+			LinkedList<Capability> capToStore = elabCapabilities(capToElab);
 			
-		
+			// FusionTables.insertDataToGlobalTable(capToStore)
+		}
 	}
 	
-	private LinkedList<Capability> elabCapabilities(Hashtable<String, LinkedList<Double>> capToElab){
+	private LinkedList<Capability> elabCapabilities(Hashtable<String, LinkedList<Double>> capabilityTable){
 		LinkedList<Capability> toRet = new LinkedList<Capability>();
-		Enumeration<String> iKey = capToElab.keys();
+		Enumeration<String> iKey = capabilityTable.keys();
 		while(iKey.hasMoreElements()){
 			String capName = iKey.nextElement();
-			LinkedList<Double> values = capToElab.get(capName);
-			int factor = 0;
-			double tot = 0.00;
-			while(!values.isEmpty()){ // controllare se corretto
-				tot += values.poll();
-				factor++;
-			}
-			tot = tot/factor;
-			Capability c = new Capability(capName);
-			c.setValue(tot);
-			toRet.add(c);
-			
+			LinkedList<Double> values = capabilityTable.get(capName);
+			// la lista non deve essere vuota
+			if(!values.isEmpty()){
+				int numOfSamples = 0;
+				double tot = 0.00;
+				for (Double value : values) {
+					tot+= value;
+					numOfSamples++;
+				}
+				// calcolo media
+				tot = tot/numOfSamples;
+				// creo capability
+				Capability c = new Capability(capName);
+				c.setValue(tot);
+				// aggiungo la capability alla lista toRet
+				toRet.add(c);
+			} // end if
 		} // end while che cicla su liste double
 		return toRet;
 	}

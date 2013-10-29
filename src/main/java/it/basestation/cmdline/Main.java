@@ -18,7 +18,8 @@ public class Main
     		
     		
     		// controllare e creare tabelle
-    		// FusionTables.setupTables()
+    		FusionTablesManager.connect();
+    		//FusionTablesManager.setupTables(Configurator.getNodeList());
     		/*
     		 * - lanciare serial reader
     		 * 
