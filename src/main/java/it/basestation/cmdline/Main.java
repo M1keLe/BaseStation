@@ -14,11 +14,11 @@ public class Main
     	}else{
     		System.out.println("Il file di configurazione è stato caricato correttamente");
     		// passare la lista di nodi al local stats container
-    		LocalStatsContainer.setNodeList();
+    		LocalStatsManager.setNodeList();
     		
     		
     		// controllare e creare tabelle
-    		FusionTablesManager.connect();
+    		//FusionTablesManager.connect();
     		//FusionTablesManager.setupTables(Configurator.getNodeList());
     		/*
     		 * - lanciare serial reader
@@ -26,6 +26,7 @@ public class Main
     		 */
     		
     		// avvio data Processor
+    		//new DataProcessor().start();
     		DataProcessor dp = new DataProcessor();
     		dp.start();
     		

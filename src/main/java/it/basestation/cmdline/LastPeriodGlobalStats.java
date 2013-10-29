@@ -5,13 +5,16 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 public class LastPeriodGlobalStats implements IStats {
-
+	
 	@Override
 	// public void elabNodeLists(Hashtable<Short, LinkedList<Packet>> packetsOfNodes) {
 	public void elabLastPeriodPacketList(LinkedList<Packet> lastPeriodPacketList){
-		Hashtable<String, LinkedList<Double>> capToElab = new Hashtable<String, LinkedList<Double>>();
+		// tabella di capability da elaborare (commentare se le stat devono essere effettuate su tutti i pacchetti e non solo sull'ultimo periodo)
+		// Hashtable<String, LinkedList<Double>> capToElab = new Hashtable<String, LinkedList<Double>>();
+		Hashtable<String, LinkedList<Double>> capToElab = LocalStatsManager.getGlobalCapToElab();
+		// analizzo le cap non sommabili
 		
-		// analizzo le cap non sommabili 
+		// per ogni pacchetto controllo se le capabilities sono globali e se lo sono le inserisco nella hastable da elaborare
 		for (Packet p : lastPeriodPacketList) {
 			LinkedList <Capability> c = p.getData();
 			for (Capability cap : c) {
@@ -25,8 +28,9 @@ public class LastPeriodGlobalStats implements IStats {
 			
 		} // end for lista pacchetti
 		
+		// All'hastable da elaborare mancano le capability sommabili.
 		// aggiungo alla lista di capabilities da elaborare quelle sommabili e globali dell'ultimo periodo
-		LinkedList<Capability> summableAndGlobalCapList = LocalStatsContainer.getLastSummableAndGlobalCapabilities();
+		LinkedList<Capability> summableAndGlobalCapList = LocalStatsManager.getLastSummableAndGlobalCapabilities();
 		if(!summableAndGlobalCapList.isEmpty()){
 			for (Capability c : summableAndGlobalCapList) {
 				if(!capToElab.containsKey(c.getName())){
@@ -39,8 +43,9 @@ public class LastPeriodGlobalStats implements IStats {
 		if(!capToElab.isEmpty()){
 			LinkedList<Capability> capToStore = elabCapabilities(capToElab);
 			
-			// FusionTables.insertDataToGlobalTable(capToStore)
+			// FusionTablesManager.insertDataToGlobalTable(capToStore)
 		}
+		// LocalStatsManager.setGlobalCapToElab(capToElab);
 	}
 	
 	private LinkedList<Capability> elabCapabilities(Hashtable<String, LinkedList<Double>> capabilityTable){

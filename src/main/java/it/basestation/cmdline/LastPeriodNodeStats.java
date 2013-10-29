@@ -28,6 +28,7 @@ public class LastPeriodNodeStats implements IStats {
 		Enumeration<Short> e = packetsOfNodes.keys();
 		while (e.hasMoreElements()) {
 			Short nodeID =  e.nextElement();
+			// estraggo la lista di pacchetti da elaborare
 			LinkedList<Packet> packetList = packetsOfNodes.get(nodeID);
 			
 			// tabella per calcolare le medie dei dati
@@ -56,67 +57,50 @@ public class LastPeriodNodeStats implements IStats {
 					capToElab.get(c.getName()).add(c.getValue());
 				} // end while capability not summable
 				
-				// lista di capability da passare al fusion table
+				// lista di capability da passare al FusionTableManager
 				LinkedList<Capability> capListToStore = new LinkedList<Capability>();
+				// il metodo elabCapabilities calcola le medie
 				if(!capToElab.isEmpty()){
 					capListToStore = elabCapabilities(capToElab);
 				}
 				
 				// elaboro le capability "summable" se non vuota
 				if(!summableCapList.isEmpty()){
-					// ho bisogno del nodo
-					Node n = LocalStatsContainer.getNode(nodeID);
 					
 					while(iteratorSumCap.hasNext()){
 						// codice nel caso in cui i controlli sui param di config siano effettuati dall'entità che genera i pacchetti 
 						// e scarta le capability non "idonee"
-						
+						// seleziono la capability
 						Capability c = iteratorSumCap.next();
-						Double value = n.getLastSummableValue(c.getName());
-						// se null il valore non è ancora stato impostato
-						if(value == null){
-							// inserisco nel nodo l'ultimo valore registrato
-							n.setLastSummableValue(c.getName(), c.getValue());
-							// aggiungo la capability alla lista
-							capListToStore.add(c);
-							// se globale la aggiungo alla lista di cap globali
-							if(c.isGlobal()){
-								sumAndGlobCapabilitiesList.add(c);
-							}
-							
-						}else{ // calcolo il delta
-							Double delta = c.getValue() - n.getLastSummableValue(c.getName());
-							// setto il valore da aggiornare nelle fusion tables
-							c.setValue(delta);
-							// aggiorno il valore nel nodo
-							n.setLastSummableValue(c.getName(), c.getValue());
-							// aggiungo la capability alla lista da passare alle fusion tables
-							capListToStore.add(c);
-							// se globale la aggiungo alla lista di cap globali
-							if(c.isGlobal()){
-								sumAndGlobCapabilitiesList.add(c);
-							}
-						}
+						// prendo il delta
+						Double delta = LocalStatsManager.getCapabilityDelta(nodeID, c.getName(), c.getValue());
+						// faccio la differenza e setto il nuovo valore
+						c.setValue(c.getValue() - delta);
 						
+						// aggiungo la capability alla lista
+						capListToStore.add(c);
+						// se globale la aggiungo alla lista di cap globali
+						if(c.isGlobal()){
+							sumAndGlobCapabilitiesList.add(c);
+						}
+
 					} // end While capability summable
-					// inserisco il nodo con i valori aggiornati nella lista nodi
-					LocalStatsContainer.storeNode(n);
+					
 				} // end if
 			} // end while iterazione sui pacchetti
 			
-			// devo salvare gli ultimi dati inseriti anche localmente
-			
-			
-			// FusionTables.insertData(nodeID, capListToStore)
-			
+			// passo la caplListToStore al FusionTablesManager che effettua l'aggiornamento sulle fusionTables
+			// FusionTablesManager.insertData(nodeID, capListToStore)
 			
 		} // end while iterazione sui nodi
 		// aggiorno le ultime cap globali e sommabili
-		LocalStatsContainer.setLastSummableAndGlobalCapabilities(sumAndGlobCapabilitiesList);
+		LocalStatsManager.setLastSummableAndGlobalCapabilities(sumAndGlobCapabilitiesList);
 	} // end metodo elabLastPeriodPacketList
 	
 	private LinkedList<Capability> elabCapabilities(Hashtable<String, LinkedList<Double>> capabilityTable){
+		// lista di capability da ritornare
 		LinkedList<Capability> toRet = new LinkedList<Capability>();
+		// seleziono le liste di double da mediare per ogni capability
 		Enumeration<String> iKey = capabilityTable.keys();
 		while(iKey.hasMoreElements()){
 			String capName = iKey.nextElement();
@@ -139,8 +123,7 @@ public class LastPeriodNodeStats implements IStats {
 			} // end if
 		} // end while che cicla su liste double
 		return toRet;
-	}
-	
+	}	
 }
 					
 					

@@ -20,7 +20,7 @@ public class DataProcessor extends Thread {
 				Thread.sleep(Configurator.getFreqDataProcessor());
 				
 				// Switch puntatori liste e prendo la lista di nodi da elaborare
-				LinkedList <Packet> newPacketsList = LocalStatsContainer.getLastPeriodPacketsList();
+				LinkedList <Packet> newPacketsList = LocalStatsManager.getLastPeriodPacketsList();
 				
 				// se la lista non è vuota
 				if(!newPacketsList.isEmpty()){

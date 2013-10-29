@@ -23,6 +23,8 @@ public class Node {
 		this.capabilities = capabilities;
 	}
 	
+	// alcuni metodi sono da eliminare ------------------------ NOTA -----------------------
+	
 	public boolean hasCapability(String c){
 		return this.capabilities.contains(c);
 	}
@@ -70,11 +72,12 @@ public class Node {
 	
 	
 	public String toString(){
-		Iterator<String> i = this.capabilities.iterator();
+		
 		String s = "";
-		while(i.hasNext()){
-			s += i.next() + " ";
+		for (String capName : this.capabilities) {
+			s += " " + capName;
 		}
+		
 		s= s.trim() + ".";
 		return 	"********************* Node *********************" +
 				"\nID: " +

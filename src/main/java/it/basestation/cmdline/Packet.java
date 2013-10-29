@@ -12,7 +12,14 @@ public class Packet {
 	private LinkedList<Capability> data = new LinkedList<Capability>();
 	private LinkedList<Capability> summableData = new LinkedList<Capability>();
 	
-	public Packet(long time, short lastRouter, short sender, short counter, short route, LinkedList<Capability> data, LinkedList<Capability> summableData){
+	public Packet(long time,
+			short lastRouter, 
+			short sender, 
+			short counter, 
+			short route, 
+			LinkedList<Capability> data, 
+			LinkedList<Capability> summableData){
+		
 		this.time = time;
 		this.lastRouter = lastRouter;
 		this.sender = sender;
@@ -60,5 +67,4 @@ public class Packet {
 		 }
 		 return list;
 	}
-
 }
