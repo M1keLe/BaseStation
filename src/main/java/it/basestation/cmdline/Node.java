@@ -13,11 +13,11 @@ public class Node {
 	private int yValue;
 	private HashSet<String> capabilities;
 	private LinkedList<Packet> myPackets = new LinkedList<Packet>();
-	private Hashtable<String,Double> lastSummableValues = new Hashtable<String,Double>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
 	private boolean hasDerivedMeasures = false;
-	private Hashtable<String,String> derivedMeasures = new Hashtable<String,String>();
+	private HashSet<String> derivedMeasures = new HashSet<String>();
+	
 
 	public Node(short nodeID, int xValue, int yValue, HashSet<String> capabilities) {
 		this.nodeID = nodeID;
@@ -61,24 +61,16 @@ public class Node {
 		return this.lastPacketTimeStamp;
 	}
 	
-	public void setLastSummableValue(String name, Double value){
-		this.lastSummableValues.put(name, value);
-	}
-	
-	public Double getLastSummableValue(String name){
-		return this.lastSummableValues.get(name);
-	}
-	
 	public boolean hasDerivedMeasures(){
 		return this.hasDerivedMeasures;
 	}
 	
-	public void addDerivedMeasure(String measure, String syntax){
+	public void addDerivedMeasure(String measure){
 		this.hasDerivedMeasures = true;
-		this.derivedMeasures.put(measure, syntax);
+		this.derivedMeasures.add(measure);
 	}
 	
-	public Hashtable<String,String> getDerivedMeasures(){
+	public HashSet<String> getDerivedMeasures(){
 		return this.derivedMeasures;
 	}
 	
@@ -91,10 +83,9 @@ public class Node {
 			s += " " + capName;
 		}
 		
-		Enumeration<String> e = this.derivedMeasures.keys();
 		String sD = "";
-		while(e.hasMoreElements()){
-			sD += " " +e.nextElement();
+		for (String derivedMeasure : this.derivedMeasures) {
+			sD += " " + derivedMeasure;
 		}
 		
 		s= s.trim() + ".";

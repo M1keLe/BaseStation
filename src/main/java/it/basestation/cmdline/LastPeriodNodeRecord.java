@@ -1,17 +1,13 @@
 package it.basestation.cmdline;
 
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 
 public class LastPeriodNodeRecord {
-	private short nodeID;
 	private Node n;
 	private LinkedList<Capability> capabilities = new LinkedList<Capability>();
 	
 	public LastPeriodNodeRecord(short nodeID){
-		this.nodeID = nodeID;
 		this.n = Configurator.getNode(nodeID);
 		HashSet<String> capabilities = n.getCapabilities();
 		for (String c : capabilities) {
@@ -46,10 +42,11 @@ public class LastPeriodNodeRecord {
 	
 	public void setDerivedMeasures(){
 		if(this.n.hasDerivedMeasures()){
-			Hashtable <String,String> derivedMeasures = this.n.getDerivedMeasures();
-			Enumeration<String> derivedMeasureNames = derivedMeasures.keys();
-			while(derivedMeasureNames.hasMoreElements()){
-				DerivedMeasure dM = new DerivedMeasure(derivedMeasureNames.nextElement());
+			
+			HashSet <String> derivedMeasures = this.n.getDerivedMeasures();
+			
+			for (String dMeasureName : derivedMeasures) {
+				DerivedMeasure dM = new DerivedMeasure(dMeasureName);
 				dM.setDerivedMeasure(this.capabilities);
 				this.setValue(dM.getName(), dM.getValue());
 			}

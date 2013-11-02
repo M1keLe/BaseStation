@@ -25,7 +25,7 @@ public class Configurator {
 	private static HashSet<String> indirectMeasures = new HashSet<String>();
 	
 	// capabilities globali
-	private static HashSet<String> globalCap = new HashSet<String>();
+	private static HashSet<String> globalCapabilitiesSet = new HashSet<String>();
 	
 	// capabilities con un range da rispettare
 	private static LinkedList<Capability> rangedCapabilities = new LinkedList<Capability>();
@@ -103,7 +103,7 @@ public class Configurator {
 						StringTokenizer tokGlobalCap = new StringTokenizer(valueToSet, "#");
 						while(tokGlobalCap.hasMoreTokens()){
 							String s = tokGlobalCap.nextToken();
-							globalCap.add(s);
+							globalCapabilitiesSet.add(s);
 							System.out.println("Aggiunta globalCap: " + s);
 						}
 						break;
@@ -156,10 +156,11 @@ public class Configurator {
 							}
 							
 							Node n = new Node(nodeID, xValue, yValue, capability);
-							// ----- controllo se le capability in elenco sono derivate o meno (es: controllare il numero di persone all'interno di una stanza)
+							// ----- controllo se le capability in elenco sono derivate o meno 
+							// (es: controllare il numero di persone all'interno di una stanza)
 							for (String capab : capability) {
 								if(derivedMeasures.containsKey(capab)){
-									n.addDerivedMeasure(capab, derivedMeasures.get(capab));
+									n.addDerivedMeasure(capab);
 								}
 							}
 							
@@ -207,7 +208,7 @@ public class Configurator {
 	}
 	
 	public static boolean isGlobalCapability(String capability){
-		return globalCap.contains(capability);
+		return globalCapabilitiesSet.contains(capability);
 	}
 	
 	public static boolean isIndirectMeasure(String capability){
@@ -223,6 +224,10 @@ public class Configurator {
 			}
 		}				
 		return toRet;
+	}
+	
+	public static HashSet<String> getGlobalCapabilitiesSet(){
+		return globalCapabilitiesSet;
 	}
 	
 	public static String getUSBPort(){
@@ -250,6 +255,10 @@ public class Configurator {
 	
 	public static String getDerivedMeasureSyntax(String name){
 		return derivedMeasures.get(name);
+	}
+	
+	public static boolean isADerivedMeasure(String name){
+		return derivedMeasures.containsKey(name);
 	}
 	
 	// controllo sul parsing di dati
