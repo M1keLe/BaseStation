@@ -16,10 +16,9 @@ public class Main
     		// passare la lista di nodi al local stats container
     		LocalStatsManager.setNodeList();
     		
-    		
     		// controllare e creare tabelle
-    		//FusionTablesManager.connect();
-    		//FusionTablesManager.setupTables(Configurator.getNodeList());
+    		FusionTablesManager.connect();
+    		FusionTablesManager.setupTables(Configurator.getNodeList());
     		/*
     		 * - lanciare serial reader
     		 * 

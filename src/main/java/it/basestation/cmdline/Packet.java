@@ -10,7 +10,7 @@ public class Packet {
 	private short route;
 	// distinzione tra due tipi di capability
 	private LinkedList<Capability> data = new LinkedList<Capability>();
-	private LinkedList<Capability> summableData = new LinkedList<Capability>();
+	private LinkedList<Capability> indirectMeasures = new LinkedList<Capability>();
 	
 	public Packet(long time,
 			short lastRouter, 
@@ -18,7 +18,7 @@ public class Packet {
 			short counter, 
 			short route, 
 			LinkedList<Capability> data, 
-			LinkedList<Capability> summableData){
+			LinkedList<Capability> indirectMeasures){
 		
 		this.time = time;
 		this.lastRouter = lastRouter;
@@ -26,7 +26,7 @@ public class Packet {
 		this.counter = counter;
 		this.route = route;
 		this.data = data;
-		this.summableData = summableData;
+		this.indirectMeasures = indirectMeasures;
 	}
 	
 	public long getTime(){
@@ -49,8 +49,8 @@ public class Packet {
 		return this.data;
 	}
 	
-	public LinkedList<Capability> getSummableData(){
-		return this.summableData;
+	public LinkedList<Capability> getIndirectMeasures(){
+		return this.indirectMeasures;
 	}
 	
 	public LinkedList<Short> getHopsIndexes(){

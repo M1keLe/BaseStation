@@ -11,11 +11,14 @@ USBSpeedPort: 57600
 ResetTime: 22_02_20 
 ## 23_59_59
 
-## Capabilities da sommare (es people, cows, flies)
-SumCap:people#cows#temperature
+## Capabilities indirette (es people, cows, flies) che per calcolare tale misura c'è bisogno di un passaggio intermedio
+IndirectMeasures:people#cows#temperature
 
 ## Capabilities globali (es temperature, luminosity, pressure,)
-GlobalCap:temperature#luminosity#noise#
+GlobalCap:temperature#luminosity#noise#people_in#people_out
+
+## Derived Measure (es people_inside=people_in-people_out)
+DerivedMeasure:people_inside= ( people_in - people_out )
 
 ## Range Capabilities (capability's name[min value - max value])
 CapRange:temperature[10-50]
@@ -31,4 +34,4 @@ Node:6;51;168;counter#pressure#co2#temperature
 Node:7;10;11;counter#pressure#co2#temperature
 Node:8;10;11;counter#pressure#co2#temperature
 Node:9;10;11;counter#pressure#temperature
-Node:10;10;11;counter#pressure#co2#temperature
+Node:10;10;11;counter#pressure#co2#temperature#people_inside

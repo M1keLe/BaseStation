@@ -10,6 +10,7 @@ public class LastPeriodNodeStats implements IStats {
 
 	//public void elabNodeLists(Hashtable<Short, LinkedList<Packet>> packetsOfNodes) {
 	
+	@Override
 	public void elabLastPeriodPacketList(LinkedList<Packet> lastPeriodPacketList){
 		Hashtable<Short, LinkedList<Packet>> packetsOfNodes = new Hashtable<Short, LinkedList<Packet>>();
 		// lista cap sommabili e globali
@@ -41,7 +42,7 @@ public class LastPeriodNodeStats implements IStats {
 				Packet p = i.next();
 				// estraggo le capability dal nodo in 2 liste (summable e non)
 				LinkedList<Capability> capList = p.getData();
-				LinkedList<Capability> summableCapList = p.getSummableData();
+				LinkedList<Capability> summableCapList = p.getIndirectMeasures();
 				Iterator<Capability> iCap = capList.iterator();
 				Iterator<Capability> iteratorSumCap = summableCapList.iterator();
 				

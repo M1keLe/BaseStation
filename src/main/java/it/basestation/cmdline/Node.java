@@ -1,6 +1,7 @@
 package it.basestation.cmdline;
 
 import java.awt.Point;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -15,6 +16,8 @@ public class Node {
 	private Hashtable<String,Double> lastSummableValues = new Hashtable<String,Double>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
+	private boolean hasDerivedMeasures = false;
+	private Hashtable<String,String> derivedMeasures = new Hashtable<String,String>();
 
 	public Node(short nodeID, int xValue, int yValue, HashSet<String> capabilities) {
 		this.nodeID = nodeID;
@@ -31,10 +34,6 @@ public class Node {
 	
 	public HashSet<String> getCapabilities(){
 		return this.capabilities;
-	}
-	
-	public Iterator<String> getCapabilitiesIterator(){
-		return this.capabilities.iterator();
 	}
 	
 	public short getMyID(){
@@ -70,7 +69,21 @@ public class Node {
 		return this.lastSummableValues.get(name);
 	}
 	
+	public boolean hasDerivedMeasures(){
+		return this.hasDerivedMeasures;
+	}
 	
+	public void addDerivedMeasure(String measure, String syntax){
+		this.hasDerivedMeasures = true;
+		this.derivedMeasures.put(measure, syntax);
+	}
+	
+	public Hashtable<String,String> getDerivedMeasures(){
+		return this.derivedMeasures;
+	}
+	
+	
+	@Override
 	public String toString(){
 		
 		String s = "";
@@ -78,7 +91,16 @@ public class Node {
 			s += " " + capName;
 		}
 		
+		Enumeration<String> e = this.derivedMeasures.keys();
+		String sD = "";
+		while(e.hasMoreElements()){
+			sD += " " +e.nextElement();
+		}
+		
 		s= s.trim() + ".";
+		if(sD.isEmpty())
+			sD="None";
+		sD = sD.trim() + ".";
 		return 	"********************* Node *********************" +
 				"\nID: " +
 				this.nodeID +
@@ -88,6 +110,8 @@ public class Node {
 				this.yValue +
 				"\nCapabilities:\n" +
 				s +
+				"\nDerived Measures:\n" +
+				sD +
 				"\nPacchetti generati: "+ this.myPackets.size() +
 				"\n******************  END Node ******************\n";
 	}

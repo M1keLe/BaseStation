@@ -9,7 +9,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -21,9 +20,20 @@ public class Configurator {
 	private static String usbPort = "/dev/ttyUSB0";
 	private static String speedUsbPort = "57600";
 	private static Calendar resetTime = null;
-	private static HashSet<String> sumCap = new HashSet<String>();
+	
+	// misure che non sono da mediare
+	private static HashSet<String> indirectMeasures = new HashSet<String>();
+	
+	// capabilities globali
 	private static HashSet<String> globalCap = new HashSet<String>();
-	private static LinkedList<Capability> capabilities = new LinkedList<Capability>();
+	
+	// capabilities con un range da rispettare
+	private static LinkedList<Capability> rangedCapabilities = new LinkedList<Capability>();
+	
+	// capabilities derivate (il dato non viene preso dal sensore ma calcolato da altre misure)
+	private static Hashtable<String,String> derivedMeasures = new Hashtable<String,String>();
+	
+	// lista di nodi
 	private static Hashtable<Short,Node> nodes = new Hashtable<Short,Node>();
 	
 	public static boolean loadConfigFile(){
@@ -80,11 +90,11 @@ public class Configurator {
 						}
 						break;
 						
-					case "sumcap":
+					case "indirectmeasures":
 						StringTokenizer tokSumCap = new StringTokenizer(valueToSet, "#");
 						while(tokSumCap.hasMoreTokens()){
 							String s = tokSumCap.nextToken();
-							sumCap.add(s);
+							indirectMeasures.add(s);
 							System.out.println("Aggiunta sumCap: " + s);
 						}
 						break;
@@ -109,9 +119,9 @@ public class Configurator {
 						if(tryParseInt(sMin) && tryParseInt(sMax)){
 							double min = Integer.parseInt(sMin);
 							double max = Integer.parseInt(sMax);
-							Capability c = new Capability(capName, isGlobalCapability(capName), isSummableCapability(capName));
+							Capability c = new Capability(capName, isGlobalCapability(capName), isIndirectMeasure(capName));
 							c.setRangeValues(min, max);
-							capabilities.add(c);
+							rangedCapabilities.add(c);
 							System.out.println(c);
 							
 						}
@@ -119,6 +129,14 @@ public class Configurator {
 							System.out.println("Cababilities Range ERROR: controllare il file di configurazione");
 							toRet = false;
 						}
+						break;
+					case "derivedmeasure": // non ho effettuato un controllo sul parsing
+						StringTokenizer tokMeasure = new StringTokenizer(valueToSet, "=");
+						String name = tokMeasure.nextToken();
+						String syntax = tokMeasure.nextToken().replaceAll("( )+", " ").trim();
+						derivedMeasures.put(name, syntax);
+						System.out.println("Add new derived measure named: "+name);
+						System.out.println("Syntax: "+syntax);
 						break;
 						
 					case "node":
@@ -136,8 +154,17 @@ public class Configurator {
 							while(tokCap.hasMoreTokens()){
 								capability.add(tokCap.nextToken());
 							}
-							nodes.put(nodeID, new Node(nodeID, xValue, yValue, capability));
-							//System.out.println("Creato Nuovo nodo con id " + nodeID);
+							
+							Node n = new Node(nodeID, xValue, yValue, capability);
+							// ----- controllo se le capability in elenco sono derivate o meno (es: controllare il numero di persone all'interno di una stanza)
+							for (String capab : capability) {
+								if(derivedMeasures.containsKey(capab)){
+									n.addDerivedMeasure(capab, derivedMeasures.get(capab));
+								}
+							}
+							
+							nodes.put(nodeID, n);
+							
 							System.out.println("\n" + nodes.get(nodeID) + "\n");
 						}else{
 							System.out.println("Node ERROR controllare file di configurazione");
@@ -183,20 +210,18 @@ public class Configurator {
 		return globalCap.contains(capability);
 	}
 	
-	public static boolean isSummableCapability(String capability){
-		return sumCap.contains(capability);
+	public static boolean isIndirectMeasure(String capability){
+		return indirectMeasures.contains(capability);
 	}
 	
 	public static Capability getRangedCapability(String name){
 		Capability toRet = null;
-		Iterator<Capability> i = capabilities.iterator();
-		while (i.hasNext()) {
-			Capability c = (Capability) i.next();
+		for (Capability c : rangedCapabilities) {
 			if(c.getName() == name){
 				toRet = c;
 				break;
 			}
-		}		
+		}				
 		return toRet;
 	}
 	
@@ -211,6 +236,9 @@ public class Configurator {
 	public static Hashtable<Short,Node> getNodeList(){
 		return nodes;
 	}
+	public static Node getNode(short nodeID){		
+		return nodes.get(nodeID);
+	}
 	
 	public static Date getResetTime(){
 		Date toRet = null;
@@ -218,6 +246,10 @@ public class Configurator {
 			toRet = resetTime.getTime();
 		
 		return toRet;
+	}
+	
+	public static String getDerivedMeasureSyntax(String name){
+		return derivedMeasures.get(name);
 	}
 	
 	// controllo sul parsing di dati
