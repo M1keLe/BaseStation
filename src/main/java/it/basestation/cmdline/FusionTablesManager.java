@@ -90,7 +90,6 @@ public class FusionTablesManager {
 	
 	private static TableList listTables() throws IOException {
 
-	    TableList tableList = null;
 
 	    // Fetch the table list
 	    Fusiontables.Table.List listTables = fusiontables.table().list();
@@ -159,9 +158,7 @@ public class FusionTablesManager {
 	
 	private static boolean tableExists (short nodeID){
 		boolean toRet = false;
-	    if(tableList == null){
-	    	toRet = false;
-	    } else {
+	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals("Nodo_"+(int) nodeID)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());

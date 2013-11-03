@@ -27,14 +27,13 @@ public class DerivedMeasure extends Capability {
 				for (Capability c : capabilityList) {
 					if(string == c.getName()){
 						string = "" + c.getValue();
-						break;
 					}
 				}
 			}
 			// calcolo il valore derivato
 			double value = DijkstraTwoStack(arrayString);
 			// imposto il valore
-			setValue(value);
+			this.setValue(value);
 		}else{
 			System.out.println("Impossibile calcolare questa misura ("+this.getName()+"). Nessuna regola impostata.");
 			System.out.println("Controllare il file di configurazione.");

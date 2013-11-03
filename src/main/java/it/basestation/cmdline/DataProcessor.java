@@ -3,7 +3,6 @@ package it.basestation.cmdline;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 public class DataProcessor extends Thread {
