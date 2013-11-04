@@ -20,10 +20,10 @@ public class LastPeriodNodeRecord {
 		}
 	}
 	
-	public void setValue(String capName, double value){
+	public void setValue (Capability capToStore){
 		for (Capability c : this.capabilities) {
-			if(capName == c.getName()){
-				c.setValue(value);
+			if(capToStore.getName() == c.getName()){
+				c.setValue(capToStore.getValue());
 				break;
 			}
 		}
@@ -48,7 +48,7 @@ public class LastPeriodNodeRecord {
 			for (String dMeasureName : derivedMeasures) {
 				DerivedMeasure dM = new DerivedMeasure(dMeasureName);
 				dM.setDerivedMeasure(this.capabilities);
-				this.setValue(dM.getName(), dM.getValue());
+				this.setValue(dM);
 			}
 		}
 		

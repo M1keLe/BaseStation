@@ -31,7 +31,7 @@ public class DerivedMeasure extends Capability {
 				}
 			}
 			// calcolo il valore derivato
-			double value = DijkstraTwoStack(arrayString);
+			double value = dijkstraTwoStack(arrayString);
 			// imposto il valore
 			this.setValue(value);
 		}else{
@@ -44,7 +44,7 @@ public class DerivedMeasure extends Capability {
 	// metodi privati
 	
 	
-	private double DijkstraTwoStack(String[] arrayString) {
+	private double dijkstraTwoStack(String[] arrayString) {
 		Stack<String> ops = new Stack<String>();
 		Stack<Double> vals = new Stack<Double>();
 		double result = -1.00;

@@ -12,6 +12,7 @@ public class Node {
 	private LinkedList<Packet> myPackets = new LinkedList<Packet>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
+	// misure derivate
 	private boolean hasDerivedMeasures = false;
 	private HashSet<String> derivedMeasures = new HashSet<String>();
 	

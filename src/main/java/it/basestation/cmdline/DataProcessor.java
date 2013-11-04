@@ -9,8 +9,11 @@ public class DataProcessor extends Thread {
 	
 	
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-	private LastPeriodGlobalRecord lastPeriodGlobalRecord = new LastPeriodGlobalRecord(); 
-	private Hashtable<Short, LinkedList<Capability>> lastRecordedValues = new Hashtable<Short, LinkedList<Capability>>(); 
+	 
+	private Hashtable<Short, LinkedList<Capability>> lastRecordedValues = new Hashtable<Short, LinkedList<Capability>>();
+	
+	// non ancora utilizzato
+	private LastPeriodGlobalRecord lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
 
 	@Override
 	public void run(){
@@ -69,17 +72,16 @@ public class DataProcessor extends Thread {
 						}// end for che cicla sulla lista pacchetti
 						// calcolo le medie
 						LinkedList<Capability> capToStore = computeTheAverage(capToElab);
-						LinkedList<Capability> capToMerge = elabIndirectMeasures(indirectMeasuresToElab);
-						// unisco le due liste
-						for (Capability c : capToMerge) {
-							capToStore.add(c);							
-						}
-						
+						LinkedList<Capability> capToStore2 = elabIndirectMeasures(indirectMeasuresToElab);
+																		
 						// setto i valori nel node record
 						for (Capability c : capToStore) {
-							newNodeRecord.setValue(c.getName(), c.getValue());
+							newNodeRecord.setValue(c);
 						}
 						
+						for (Capability c : capToStore2) {
+							newNodeRecord.setValue(c);
+						}
 						// calcolo le grandezze derivate
 						newNodeRecord.setDerivedMeasures();
 						

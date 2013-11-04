@@ -95,7 +95,7 @@ public class Configurator {
 						while(tokSumCap.hasMoreTokens()){
 							String s = tokSumCap.nextToken();
 							indirectMeasures.add(s);
-							System.out.println("Aggiunta sumCap: " + s);
+							System.out.println("Aggiunta indirectMeasure: " + s);
 						}
 						break;
 						
