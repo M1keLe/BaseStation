@@ -5,16 +5,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 public class Node {
-	private short nodeID;
-	private int xValue;
-	private int yValue;
-	private HashSet<String> capabilities;
+	private short nodeID = 0;
+	private int xValue = 0;
+	private int yValue = 0;
+	private HashSet<String> capabilities = new HashSet<String>();
 	private LinkedList<Packet> myPackets = new LinkedList<Packet>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
-	// misure derivate
-	private boolean hasDerivedMeasures = false;
-	private HashSet<String> derivedMeasures = new HashSet<String>();
 	
 
 	public Node(short nodeID, int xValue, int yValue, HashSet<String> capabilities) {
@@ -30,7 +27,7 @@ public class Node {
 		return this.capabilities.contains(c);
 	}
 	
-	public HashSet<String> getCapabilities(){
+	public HashSet<String> getCapabilitiesSet(){
 		return this.capabilities;
 	}
 	
@@ -59,19 +56,6 @@ public class Node {
 		return this.lastPacketTimeStamp;
 	}
 	
-	public boolean hasDerivedMeasures(){
-		return this.hasDerivedMeasures;
-	}
-	
-	public void addDerivedMeasure(String measure){
-		this.hasDerivedMeasures = true;
-		this.derivedMeasures.add(measure);
-	}
-	
-	public HashSet<String> getDerivedMeasures(){
-		return this.derivedMeasures;
-	}
-	
 	
 	@Override
 	public String toString(){
@@ -80,16 +64,9 @@ public class Node {
 		for (String capName : this.capabilities) {
 			s += " " + capName;
 		}
-		
-		String sD = "";
-		for (String derivedMeasure : this.derivedMeasures) {
-			sD += " " + derivedMeasure;
-		}
-		
+				
 		s= s.trim() + ".";
-		if(sD.isEmpty())
-			sD="None";
-		sD = sD.trim() + ".";
+		
 		return 	"********************* Node *********************" +
 				"\nID: " +
 				this.nodeID +
@@ -99,8 +76,6 @@ public class Node {
 				this.yValue +
 				"\nCapabilities:\n" +
 				s +
-				"\nDerived Measures:\n" +
-				sD +
 				"\nPacchetti generati: "+ this.myPackets.size() +
 				"\n******************  END Node ******************\n";
 	}

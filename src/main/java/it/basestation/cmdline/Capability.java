@@ -1,55 +1,47 @@
 package it.basestation.cmdline;
 
 public class Capability {
-	private String name;
-	private double value;
-	private boolean isGlobal;
-	private boolean isIndirect;
-	private boolean hasARange;
-	private double minValue;
-	private double maxValue;
-	
+	private String name = "";
+	private String local = "";
+	private String global = "";
+	private Double minValue = Double.NEGATIVE_INFINITY;
+	private Double maxValue = Double.POSITIVE_INFINITY;
+	private double value = 0.00;
 	public Capability(String name){
 		this.name = name;
-		this.isGlobal = false;
-		this.isIndirect = false;
-		this.hasARange = false;
-		this.value = 0.00;
-		this.minValue = 0.00;
-		this.maxValue = 0.00;
 	}
 	
-	public Capability(String name, boolean isGlobal, boolean isIndirect){
+	public Capability(String name, String local, String global){
 		this.name = name;
-		this.isGlobal = isGlobal;
-		this.isIndirect = isIndirect;
-		this.hasARange = false;
-		this.value = 0.00;
-		this.minValue = 0.00;
-		this.maxValue = 0.00;
+		this.local = local;
+		this.global = global;
 	}
 	
 	// set
 	
 	public void setValue(double value){
-		if(this.hasARange){
-			if(value >= this.minValue && value <= this.maxValue){
-				this.value = value;
-			}else{
-				this.value = -1.00;
-			}
-		}else{
+		//if(this.minValue <= value && value <= maxValue){
 			this.value = value;
-		}
-		
+		//}else{
+			//System.out.println("DEBUG: Il valore " +value+ "è out of range. CAPABILITY NAME = "+this.name);
+		//}
 	}
 	
-	public void setRangeValues(double minValue, double maxValue){
+	public void setMinValue(Double minValue){
 		this.minValue = minValue;
+	}
+	
+	public void setMaxValue(Double maxValue){
 		this.maxValue = maxValue;
-		this.hasARange = true;
+	}
+	
+	public void setLocalRule(String local){
+		this.local=local;
 	}
 
+	public void setGlobalRule(String global){
+		this.global=global;
+	}
 	// get
 	
 	public String getName(){
@@ -64,29 +56,32 @@ public class Capability {
 		return this.maxValue;
 	}
 		
-	public boolean isGlobal(){
-		return this.isGlobal;
-	}
-	
-	public boolean isIndirect(){
-		return this.isIndirect;
-	}
-	
-	public boolean hasARange(){
-		return this.hasARange;
-	}
 	
 	public double getValue(){
 		return this.value;
+	}
+	
+	public String getLocalRule(){
+		return this.local;
+	}
+	
+	public boolean isGlobal(){
+		boolean toRet = false;
+		if(!this.global.isEmpty())
+			toRet = true;
+		return toRet;
+	}
+	
+	public String getGlobalRule(){
+		return this.global;
 	}
 	
 	@Override
 	public String toString(){
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
-		toRet += "Is Global: " + this.isGlobal + "\n";
-		toRet += "Is Indirect: " + this.isIndirect + "\n";
-		toRet += "Has a Range: " + this.hasARange + "\n";
+		toRet += "Local: " + this.local + "\n";
+		toRet += "Global: " + this.global + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";
 		toRet += "Max Value: " + this.maxValue + "\n";
 		toRet += "Value: " + this.value + "\n";

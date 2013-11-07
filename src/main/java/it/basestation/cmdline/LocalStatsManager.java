@@ -18,7 +18,7 @@ public class LocalStatsManager {
 	private static LinkedList<Packet> pushPacketList = new LinkedList<Packet>();
 	private static LinkedList<Packet> pullPacketList = new LinkedList<Packet>();
 	
-	private static ReentrantLock lock = new ReentrantLock();
+	private static final ReentrantLock lock = new ReentrantLock();
 	
 	// metodo invocato dal thread serial reader
 	public static void addNewPacket(Packet p){		
@@ -27,14 +27,17 @@ public class LocalStatsManager {
 		// e aggiorno i contatori routedPackets dei nodi "router"
 		if(nodeList.containsKey(p.getSenderID())){
 			updatePacketLists(p);
-			updateRouterCounter(p);
-			// inserisco il paccketto nella lista push
-			pushPacketList.add(p);
+			//updateRouterCounter(p);
+			
+			
+			
+			//System.out.println(p);
 			
 			
 		}else{
 			// altrimenti lo scarto
 			System.out.println("Il pacchetto non appartiene alla lista di nodi conosciuti");
+			System.out.println(p.toString());
 			System.out.println("Controllare il file di configurazione");
 		}
 		lock.unlock();
@@ -44,8 +47,9 @@ public class LocalStatsManager {
 	public static LinkedList<Packet> getLastPeriodPacketsList(){
 		lock.lock();
 		pullPacketList = pushPacketList;
-		pushPacketList.clear();
+		pushPacketList = new LinkedList<Packet>();
 		lock.unlock();
+		System.out.println("DEBUG: iL DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
 		return pullPacketList;
 	}
 	
@@ -82,8 +86,11 @@ public class LocalStatsManager {
 	private static void updatePacketLists(Packet packet){
 		// inserisco il pacchetto nella lista di pacchetti
 		packetsList.add(packet);
+		pushPacketList.add(packet);
+		//System.out.println("DEBUG: La lista per le fusion Tables contiene " + pushPacketList.size()+ " pacchetti");
 		// aggiorno la lista mypackets del nodo
 		nodeList.get(packet.getSenderID()).addMyPacket(packet);
+		//System.out.println("Debug"+packet);
 	}
 	
 	// aggiornamento contatore routedPacket

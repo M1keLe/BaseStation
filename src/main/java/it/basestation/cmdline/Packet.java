@@ -8,17 +8,16 @@ public class Packet {
 	private short sender;
 	private short counter;
 	private short route;
-	// distinzione tra due tipi di capability
+	
 	private LinkedList<Capability> data = new LinkedList<Capability>();
-	private LinkedList<Capability> indirectMeasures = new LinkedList<Capability>();
+	
 	
 	public Packet(long time,
 			short lastRouter, 
 			short sender, 
 			short counter, 
 			short route, 
-			LinkedList<Capability> data, 
-			LinkedList<Capability> indirectMeasures){
+			LinkedList<Capability> data){
 		
 		this.time = time;
 		this.lastRouter = lastRouter;
@@ -26,7 +25,7 @@ public class Packet {
 		this.counter = counter;
 		this.route = route;
 		this.data = data;
-		this.indirectMeasures = indirectMeasures;
+		
 	}
 	
 	public long getTime(){
@@ -49,10 +48,6 @@ public class Packet {
 		return this.data;
 	}
 	
-	public LinkedList<Capability> getIndirectMeasures(){
-		return this.indirectMeasures;
-	}
-	
 	public LinkedList<Short> getHopsIndexes(){
 		 LinkedList<Short> list = null;
 		 if(this.route != 0){
@@ -66,5 +61,19 @@ public class Packet {
 			 }
 		 }
 		 return list;
+	}
+	
+	private String getCapabilitiesListData(){
+		String toRet = "";
+		for (Capability c : this.data) {
+			Double value = c.getValue(); 
+			toRet += "\nCapName=" + c.getName() + "\nValue: " + value.toString(); 
+		}
+		return toRet;
+	}
+	
+	public String toString(){
+		
+		return "Packet Sender: " + this.sender + getCapabilitiesListData();
 	}
 }

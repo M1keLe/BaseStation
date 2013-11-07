@@ -2,7 +2,9 @@ package it.basestation.cmdline;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -19,6 +21,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.fusiontables.Fusiontables;
+import com.google.api.services.fusiontables.Fusiontables.Query.Sql;
 import com.google.api.services.fusiontables.Fusiontables.Table.Delete;
 import com.google.api.services.fusiontables.FusiontablesScopes;
 import com.google.api.services.fusiontables.model.Column;
@@ -41,11 +44,13 @@ public class FusionTablesManager {
 	
 	private static Fusiontables fusiontables;
 	
-	private static Hashtable <Short,Node> nodeList = new Hashtable <Short,Node>();
+	//private static Hashtable <Short,Node> nodeList = new Hashtable <Short,Node>();
 	  
 	private static TableList tableList = null;
 	  
 	private static Hashtable <Short, String> tablesID = new Hashtable <Short, String>();
+	
+	private static String globalTableID = new String();
 	
 	private static Credential authorize() throws Exception {
 	    // load client secrets
@@ -107,7 +112,7 @@ public class FusionTablesManager {
 	    table.setName("Nodo_"+n.getMyID());
 	    table.setIsExportable(false);
 	    LinkedList <Column> columns = new LinkedList<Column>();
-	    HashSet <String> capability = n.getCapabilities();
+	    HashSet <String> capability = n.getCapabilitiesSet();
 	    for (String c : capability) {
 	    	columns.add(new Column().setName(c).setType("NUMBER"));
 		}
@@ -124,6 +129,29 @@ public class FusionTablesManager {
 	    return r.getTableId();   
 	}
 	
+	private static String createGlobalTable()throws IOException{
+	    Table table = new Table();
+	    table.setName("Global_Table");
+	    table.setIsExportable(false);
+	    LinkedList <Column> columns = new LinkedList<Column>();
+	    HashSet <String> capability = Configurator.getGlobalCapabilitiesSet();
+	    for (String c : capability) {
+	    	columns.add(new Column().setName(c).setType("NUMBER"));
+		}
+	   
+	    // aggiungo il campo data
+	    columns.add(new Column().setName("Date").setType("DATETIME"));
+	    
+	    
+	    table.setColumns(columns);
+	    Fusiontables.Table.Insert t = fusiontables.table().insert(table);
+	    Table r = t.execute();
+	    // salvo l'id della tabella globale
+	    globalTableID =  r.getTableId();
+	    return r.getTableId();   
+	}
+	
+	
 	public static void deleteTable(String tableId) throws IOException {
 	    // Deletes a table
 	    Delete delete = fusiontables.table().delete(tableId);
@@ -132,13 +160,14 @@ public class FusionTablesManager {
 	
 	
 	public static void setupTables(Hashtable<Short, Node> nList){
-		nodeList = nList;
+		//nodeList = nList;
 		try {
 			tableList = listTables();
 		} catch (IOException exception) {
 			// TODO Auto-generated catch block
 	        exception.printStackTrace();
 		}
+		// creo le tabelle relative ai nodi
 		Enumeration<Short> e = nList.keys();
 		while(e.hasMoreElements()){
 			short id = e.nextElement();
@@ -154,6 +183,18 @@ public class FusionTablesManager {
 				System.out.println("Nodo_"+ id +": La tabella esiste già!");
 			}
 		}
+		// creo la tabella globale se non esiste
+		if(!globalTableExists()){
+			try {
+				String s = createGlobalTable();          
+    			System.out.println("Creata \"Global Table\" con id = " +s);
+			} catch (IOException exception) {
+				// TODO Auto-generated catch block
+    			exception.printStackTrace();
+    		}
+		} else {
+			System.out.println("La \"Global Table\" esiste già!");
+		}
 	}
 	
 	private static boolean tableExists (short nodeID){
@@ -162,6 +203,21 @@ public class FusionTablesManager {
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals("Nodo_"+(int) nodeID)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			toRet = true;
+	    			break;
+	    		}
+	    	}
+	    }
+	    return toRet;
+	}
+	
+	private static boolean globalTableExists (){
+		boolean toRet = false;
+	    if(tableList != null){
+	    	for (Table table : tableList.getItems()){
+	    		if(table.getName().equals("Global_Table")){
+	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			globalTableID = table.getTableId();
 	    			toRet = true;
 	    			break;
 	    		}
@@ -181,8 +237,43 @@ public class FusionTablesManager {
 	    }
 	    return tableID;
 	}
+
+	public static void insertData(short nodeID,	LinkedList<Capability> capListToStore) throws IOException {
+		String tableID = tablesID.get(nodeID);
+		if(tableID == null)
+	    {
+	      tableID = getTableID(nodeID);
+	      tablesID.put(nodeID, tableID);
+	    }
+		
+		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore));
+		try {
+			sql.execute();
+			System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati: " + getQueryInsert(tableID, capListToStore));
+		    } catch (IllegalArgumentException e) {
+		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
+		      // been thrown.
+		      // Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
+		      // http://code.google.com/p/google-api-java-client/issues/detail?id=545
+		    }
+	}
+
+	public static void insertData(LinkedList<Capability> globalValuesToStore) throws IOException {
+		Sql sql = fusiontables.query().sql(getQueryInsert(globalTableID, globalValuesToStore));
+		try {
+			sql.execute();
+			
+			System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
+		    } catch (IllegalArgumentException e) {
+		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
+		      // been thrown.
+		      // Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
+		      // http://code.google.com/p/google-api-java-client/issues/detail?id=545
+		    }
+	}
 	
-/*	private static String getQueryInsert(Node n, FusionTableNodeRecord nr, String tableID){
+	
+	private static String getQueryInsert(String tableID, LinkedList<Capability> capListToStore){
 	    java.text.DecimalFormat format = new java.text.DecimalFormat("0.00");
 	    
 	    String queryHead = new String();
@@ -192,35 +283,10 @@ public class FusionTablesManager {
 	    String queryTail = new String();
 	    queryTail = queryTail.concat(" VALUES (");
 	    
-	    if(n.hasCapability("Noise")){
-	      queryHead = queryHead.concat("Noise,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.noise)+"', ");
-	    }
-	    if(n.hasCapability("Co2")){
-	      queryHead = queryHead.concat("Co2,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.co2)+"', ");
-	    }
-	    if(n.hasCapability("Temp")){
-	      queryHead = queryHead.concat("Temperature,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.temperature)+"', ");
-	    }      
-	    if(n.hasCapability("Pressure")){
-	      queryHead = queryHead.concat("Pressure,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.pressure)+"', ");
-	    }
-	    if(n.hasCapability("Light"))
-	    {
-	      queryHead = queryHead.concat("Light,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.luminosity)+"', ");
-	    }
-	    if(n.hasCapability("People")){
-	      queryHead = queryHead.concat("PeopleOut,PeopleIn,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.out)+"', '"+format.format(nr.in)+"', ");
-	    }
-	    if(n.hasCapability("Counter")){
-	      queryHead = queryHead.concat("Counter,");
-	      queryTail = queryTail.concat(" '" +format.format(nr.counter)+"', ");
-	    }
+	    for (Capability c : capListToStore) {
+			queryHead = queryHead.concat(c.getName()+",");
+			queryTail = queryTail.concat(" '" +format.format(c.getValue())+"', ");
+		}
 	    
 	    queryHead = queryHead.concat("Date) ");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -228,7 +294,7 @@ public class FusionTablesManager {
 	    queryTail = queryTail.concat(" '" + dateFormat.format(new Date())+"') ");
 	    //System.out.println(queryHead.concat(queryTail));    
 	    return queryHead.concat(queryTail);
-	} */
+	} 
 	  
 	
 	

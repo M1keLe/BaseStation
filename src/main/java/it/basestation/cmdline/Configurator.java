@@ -21,20 +21,14 @@ public class Configurator {
 	private static String speedUsbPort = "57600";
 	private static Calendar resetTime = null;
 	
-	// misure che non sono da mediare
-	private static HashSet<String> indirectMeasures = new HashSet<String>();
-	
-	// capabilities globali
-	private static HashSet<String> globalCapabilitiesSet = new HashSet<String>();
-	
-	// capabilities con un range da rispettare
-	private static LinkedList<Capability> rangedCapabilities = new LinkedList<Capability>();
-	
-	// capabilities derivate (il dato non viene preso dal sensore ma calcolato da altre misure)
-	private static Hashtable<String,String> derivedMeasures = new Hashtable<String,String>();
+	// elenco capabilities
+	private static LinkedList<Capability> capabilities = new LinkedList<Capability>();
 	
 	// lista di nodi
 	private static Hashtable<Short,Node> nodes = new Hashtable<Short,Node>();
+	
+	// set capabilities globali
+	private static HashSet <String> globalCapabilitiesSet = new HashSet<String>();
 	
 	public static boolean loadConfigFile(){
 		boolean toRet = true;
@@ -42,149 +36,130 @@ public class Configurator {
 		BufferedReader bReader = null;
 		try {
 			bReader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE_NAME)));
-			String temp = bReader.readLine();
+			String line;
+			String name = "";
+			String local = "";
+			String global = "";
+			String minValue = "";
+			String maxValue = "";
 		
-			while(temp != null){
-				if(!temp.isEmpty() && !temp.startsWith("##")){					
-					StringTokenizer tok = new StringTokenizer(temp, ":");
-					String varToSet = tok.nextToken().toLowerCase();
-					System.out.println("varToSet = "+varToSet);
-					String valueToSet = tok.nextToken().trim();
-					
-					switch (varToSet) {
-					
-					case "usbport":
-						usbPort = valueToSet;
-						System.out.println("USBPort impostata su: " + usbPort);
-						break;
-						
-					case "freqdataprocessor":
-						if(tryParseInt(valueToSet)){
-							freqDataProcessor = Integer.parseInt(valueToSet) * 1000 * 60;
-							System.out.println("frequenza ftupdater impostata a: " + freqDataProcessor/(1000*60) + " Minuti");							
+			while((line = bReader.readLine()) != null){
+				line = line.toLowerCase().trim();
+				
+				// commenti su config.txt
+				if(!line.startsWith("##")){
+				
+					if(line.indexOf("freqdataprocessor") != -1){
+						String freq = line.substring(line.indexOf(':')+1).trim();
+						System.out.println("La freq è: ->"+freq+ "<- minuti");
+						if(tryParseInt(freq)){
+							freqDataProcessor = Integer.parseInt(freq) *1000*60;
 						}else{
-							System.out.println("FreqFTUpdater ERROR controllare file di configurazione");
+							System.out.println("La freq non è stata impostata correttamente: ->"+freq);
 							toRet = false;
 						}
-						break;
-						
-					case "usbspeedport":
-						speedUsbPort = valueToSet;
-						System.out.println("Baud Rate Usb Port: " + speedUsbPort);
-						break;
-						
-					case "resettime":
-						StringTokenizer tokTimer = new StringTokenizer(valueToSet, "_");
-						String hour = tokTimer.nextToken().trim();
-						String minute = tokTimer.nextToken().trim();
-						String second = tokTimer.nextToken().trim();
-						if (tryParseInt(hour) && tryParseInt(minute) && tryParseInt(second)) {
-							resetTime = Calendar.getInstance();
-							resetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
-							resetTime.set(Calendar.MINUTE, Integer.parseInt(minute));
-							resetTime.set(Calendar.SECOND, Integer.parseInt(second));
-							System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());							
-						} else {
-							System.out.println("Reset Time ERROR: Controllare il file di configurazione");
-							toRet = false;
-						}
-						break;
-						
-					case "indirectmeasures":
-						StringTokenizer tokSumCap = new StringTokenizer(valueToSet, "#");
-						while(tokSumCap.hasMoreTokens()){
-							String s = tokSumCap.nextToken();
-							indirectMeasures.add(s);
-							System.out.println("Aggiunta indirectMeasure: " + s);
-						}
-						break;
-						
-					case "globalcap":
-						StringTokenizer tokGlobalCap = new StringTokenizer(valueToSet, "#");
-						while(tokGlobalCap.hasMoreTokens()){
-							String s = tokGlobalCap.nextToken();
-							globalCapabilitiesSet.add(s);
-							System.out.println("Aggiunta globalCap: " + s);
-						}
-						break;
-
-					case "caprange":
-						String capName = valueToSet.substring(0, valueToSet.indexOf('['));
-						//System.out.println(capName);
-						String range = valueToSet.substring(1+valueToSet.indexOf('['), valueToSet.indexOf(']'));
-						//System.out.println(range);
-						StringTokenizer tokRange = new StringTokenizer(range, "-");
-						String sMin = tokRange.nextToken();
-						String sMax = tokRange.nextToken();
-						if(tryParseInt(sMin) && tryParseInt(sMax)){
-							double min = Integer.parseInt(sMin);
-							double max = Integer.parseInt(sMax);
-							Capability c = new Capability(capName, isGlobalCapability(capName), isIndirectMeasure(capName));
-							c.setRangeValues(min, max);
-							rangedCapabilities.add(c);
-							System.out.println(c);
-							
-						}
-						else{
-							System.out.println("Cababilities Range ERROR: controllare il file di configurazione");
-							toRet = false;
-						}
-						break;
-					case "derivedmeasure": // non ho effettuato un controllo sul parsing
-						StringTokenizer tokMeasure = new StringTokenizer(valueToSet, "=");
-						String name = tokMeasure.nextToken();
-						String syntax = tokMeasure.nextToken().replaceAll("( )+", " ").trim();
-						derivedMeasures.put(name, syntax);
-						System.out.println("Add new derived measure named: "+name);
-						System.out.println("Syntax: "+syntax);
-						break;
-						
-					case "node":
-						StringTokenizer tokNode = new StringTokenizer(valueToSet, ";");
-						String sNodeID = tokNode.nextToken();
-						String sXValue = tokNode.nextToken();
-						String sYValue = tokNode.nextToken();
-						if (tryParseShort(sNodeID) && tryParseInt(sXValue) && tryParseInt(sYValue)) {
-							short nodeID = Short.parseShort(sNodeID);
-							int xValue = Integer.parseInt(sXValue);
-							int yValue = Integer.parseInt(sYValue);
-							String cap = tokNode.nextToken();
-							StringTokenizer tokCap = new StringTokenizer(cap, "#");
-							HashSet<String> capability = new HashSet<String>();
-							while(tokCap.hasMoreTokens()){
-								capability.add(tokCap.nextToken());
-							}
-							
-							Node n = new Node(nodeID, xValue, yValue, capability);
-							// ----- controllo se le capability in elenco sono derivate o meno 
-							// (es: controllare il numero di persone all'interno di una stanza)
-							for (String capab : capability) {
-								if(derivedMeasures.containsKey(capab)){
-									n.addDerivedMeasure(capab);
-								}
-							}
-							
-							nodes.put(nodeID, n);
-							
-							System.out.println("\n" + nodes.get(nodeID) + "\n");
-						}else{
-							System.out.println("Node ERROR controllare file di configurazione");
-							toRet = false;
-						}
-						break;
-						
-					default:
-						System.out.println("Default .....");
-						break;
 					}
+					if(line.indexOf("usbport") != -1){
+						usbPort = line.substring(line.indexOf(':')+1).trim();
+						System.out.println("La usbport è: ->"+usbPort);						
+					}
+					if(line.indexOf("usbspeedport") != -1){
+						speedUsbPort = line.substring(line.indexOf(':')+1).trim();
+						System.out.println("Speed usbport ->"+speedUsbPort);
+					}
+					if(line.indexOf("resettime") != -1){
+						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), "_");
+	                    String hour = tokTimer.nextToken().trim();
+	                    String minute = tokTimer.nextToken().trim();
+	                    String second = tokTimer.nextToken().trim();
+	                    if (tryParseInt(hour) && tryParseInt(minute) && tryParseInt(second)) {
+	                            resetTime = Calendar.getInstance();
+	                            resetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
+	                            resetTime.set(Calendar.MINUTE, Integer.parseInt(minute));
+	                            resetTime.set(Calendar.SECOND, Integer.parseInt(second));
+	                            System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());                                                        
+	                    } else {
+	                            System.out.println("Reset Time ERROR: Controllare il file di configurazione");
+	                            toRet = false;
+	                    }					
+					}
+					
+					if(line.contains("<") && line.contains("[")){
+						name = line.substring(line.indexOf('<')+1, line.indexOf('[')).trim();
+						minValue = line.substring(line.indexOf('[')+1, line.indexOf('-')).trim();
+						maxValue = line.substring(line.indexOf('-')+1, line.indexOf(']')).trim();
+					}
+					if(line.contains("local")){
+						local = line.substring(line.indexOf(':')+1).trim();
+					}
+					if(line.contains("global")){
+						global = line.substring(line.indexOf(':')+1).trim();
+					}
+					if(line.contains("</"+name+">")){
+						Capability c = new Capability(name);
+						c.setLocalRule(local);
+						c.setGlobalRule(global);
+						
+						if(!minValue.equals("*")){
+							if(tryParseDouble(minValue)){
+								c.setMinValue(Double.parseDouble(minValue));
+							}else{
+								toRet = false;
+								System.out.println("Errore impostazione minValue Capability chiamata: " +name);
+							}
+							
+						}
+						if(!maxValue.equals("*")){
+							if(tryParseDouble(maxValue)){
+								c.setMaxValue(Double.parseDouble(maxValue));
+							}else{
+								toRet = false;
+								System.out.println("Errore impostazione maxValue Capability chiamata: " +name);
+								System.out.println("Stringa maxValue ->" +maxValue+"<-");
+							}
+						}
+						System.out.println("Creata nuova capability:\n" +c);
+						capabilities.add(c);
+						if(!global.isEmpty()){
+							globalCapabilitiesSet.add(c.getName());
+							System.out.println("Aggiunta Capability set globale ->"+global+"<-");
+						}
+						name = "";
+						local = "";
+						global = "";
+						minValue = "";
+						maxValue = "";
+					}
+					if(line.indexOf("node") != -1){
+						String nodeLine = line.substring(line.indexOf(':')+1).trim();
+						StringTokenizer tokNode = new StringTokenizer(nodeLine, ";");
+	                    String sNodeID = tokNode.nextToken();
+	                    String sXValue = tokNode.nextToken();
+	                    String sYValue = tokNode.nextToken();
+	                    if (tryParseShort(sNodeID) && tryParseInt(sXValue) && tryParseInt(sYValue)) {
+	                            short nodeID = Short.parseShort(sNodeID);
+	                            int xValue = Integer.parseInt(sXValue);
+	                            int yValue = Integer.parseInt(sYValue);
+	                            String cap = tokNode.nextToken();
+	                            StringTokenizer tokCap = new StringTokenizer(cap, "#");
+	                            HashSet<String> capability = new HashSet<String>();
+	                            while(tokCap.hasMoreTokens()){
+	                                    capability.add(tokCap.nextToken());
+	                            }
+	                            
+	                            Node n = new Node(nodeID, xValue, yValue, capability);
+	                            
+	                            nodes.put(nodeID, n);
+	                            
+	                            System.out.println("\n" + nodes.get(nodeID) + "\n");
+	                    }else{
+	                            System.out.println("Node ERROR controllare file di configurazione");
+	                            toRet = false;
+	                    }
+					}
+					
 				}
-				temp = bReader.readLine();
 			}
-			
-			bReader.close();
-			
-			
-			
 		} catch (FileNotFoundException e) {
 			
 			e.printStackTrace();
@@ -197,38 +172,30 @@ public class Configurator {
 			
 			e.printStackTrace();
 			toRet = false;
+		} finally {
+			try {
+				if (bReader != null)
+					bReader.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 		
 		if(nodes.isEmpty()){
 			toRet = false;
 			System.out.println("Errore: nessun nodo configurato");
 		}
+		
+		if(capabilities.isEmpty()){
+			toRet = false;
+			System.out.println("Errore: nessuna capability configurata");
+		}
+		
 		return toRet;
 		
 	}
 	
-	public static boolean isGlobalCapability(String capability){
-		return globalCapabilitiesSet.contains(capability);
-	}
 	
-	public static boolean isIndirectMeasure(String capability){
-		return indirectMeasures.contains(capability);
-	}
-	
-	public static Capability getRangedCapability(String name){
-		Capability toRet = null;
-		for (Capability c : rangedCapabilities) {
-			if(c.getName() == name){
-				toRet = c;
-				break;
-			}
-		}				
-		return toRet;
-	}
-	
-	public static HashSet<String> getGlobalCapabilitiesSet(){
-		return globalCapabilitiesSet;
-	}
 	
 	public static String getUSBPort(){
 		return usbPort;
@@ -236,6 +203,21 @@ public class Configurator {
 	
 	public static int getFreqDataProcessor(){
 		return freqDataProcessor;
+	}
+	
+	public static Capability getCapability(String name){
+		Capability toRet = new Capability("");
+		for (Capability c : capabilities) {
+			if(name.equals(c.getName())){
+				toRet = c;
+				break;
+			}
+		}
+		return toRet;
+	}
+	
+	public static HashSet<String> getGlobalCapabilitiesSet(){
+		return globalCapabilitiesSet;
 	}
 	
 	public static Hashtable<Short,Node> getNodeList(){
@@ -253,15 +235,20 @@ public class Configurator {
 		return toRet;
 	}
 	
-	public static String getDerivedMeasureSyntax(String name){
-		return derivedMeasures.get(name);
-	}
-	
-	public static boolean isADerivedMeasure(String name){
-		return derivedMeasures.containsKey(name);
-	}
+
 	
 	// controllo sul parsing di dati
+	
+	private static boolean tryParseDouble(String value){
+		boolean toRet = false;
+		 try {
+			Double.parseDouble(value);
+			toRet = true;
+		} catch (NumberFormatException e) {
+			toRet = false;
+		}
+		return toRet;
+	}
 	
 	private static boolean tryParseInt(String value){
 		boolean toRet = false;

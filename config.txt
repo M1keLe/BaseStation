@@ -5,33 +5,68 @@ FreqDataProcessor:   1
 USBPort:/dev/ttyUSB0 
 
 ## Speed USB port default = Baud Rate 57600
-USBSpeedPort: 57600
+## USBSpeedPort: 57600
 
 ## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
-ResetTime: 22_02_20 
-## 23_59_59
+ResetTime: 23_59_59
 
-## Capabilities indirette (es people, cows, flies) che per calcolare tale misura c'è bisogno di un passaggio intermedio
-IndirectMeasures:people#cows#temperature
+## Capabilities
 
-## Capabilities globali (es temperature, luminosity, pressure,)
-GlobalCap:temperature#luminosity#noise#people_in#people_out
-
-## Derived Measure (es people_inside=people_in-people_out)
-DerivedMeasure:people_inside= ( people_in - people_out )
-
-## Range Capabilities (capability's name[min value - max value])
-CapRange:temperature[10-50]
-CapRange:pressure[800-1200]
+<capabilities>
+ 
+	<counter[0-*]>
+		local:last
+	</counter>
+	
+	<temperature[15-40]>
+		local:avg
+		global:avg
+	</temperature>
+	
+	<pressure[800-1200]>
+		local:avg
+		global:avg
+	</pressure>
+	
+	<co2[0-*]>
+		local:avg
+	</co2>
+	
+	<noise[0-*]>
+		local:avg
+		global:avg
+	</noise>
+	
+	<light[0-*]>
+		local:avg
+	</light>
+	
+	<people_in[0-*]>
+		local:last
+		global:sum
+	</people_in>
+	
+	<people_out[0-*]>
+		local:last
+		global:sum
+	</people_out>
+	
+	<people_inside[0-*]>
+		global: ( people_in - people_out )
+	</people_inside>
+	
+</capabilities>
 
 ## Nodi (id,xValue,yValue,capabilities)
-Node:1;120;11;counter#pressure#co2#temperature
-## Node:2;10;111;counter#pressure#co2#temperature
-## Node:3;40;12;counter#pressure#co2#temperature
-Node:4;210;141;counter#pressure#co2#temperature
-Node:5;130;151;counter#pressure#co2#temperature
-Node:6;51;168;counter#pressure#co2#temperature
-Node:7;10;11;counter#pressure#co2#temperature
-Node:8;10;11;counter#pressure#co2#temperature
-Node:9;10;11;counter#pressure#temperature
-Node:10;10;11;counter#pressure#co2#temperature#people_inside
+
+Node:2;562;549;Counter
+Node:3;565;580;Counter#Noise#CO2
+Node:4;423;550;Counter#Noise#CO2
+Node:5;360;580;Counter#Noise#CO2#Pressure#Temperature#Light
+Node:6;272;550;Counter#Pressure#Temperature#Light
+Node:7;249;483;Counter#Pressure#Temperature#Light
+Node:8;249;358;Counter#Noise#CO2#Pressure#Temperature#Light
+Node:9;249;235;Counter
+Node:10;607;514;Counter#People_in#People_out
+Node:11;410;573;Counter#People_in#People_out
+Node:12;256;152;Counter#People_in#People_out

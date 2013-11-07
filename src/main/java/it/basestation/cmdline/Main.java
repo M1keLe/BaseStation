@@ -19,6 +19,7 @@ public class Main
     		// controllare e creare tabelle
     		FusionTablesManager.connect();
     		FusionTablesManager.setupTables(Configurator.getNodeList());
+    		LocalStatsManager.setNodeList(Configurator.getNodeList());
     		/*
     		 * - lanciare serial reader
     		 * 
@@ -28,6 +29,10 @@ public class Main
     		//new DataProcessor().start();
     		DataProcessor dp = new DataProcessor();
     		dp.start();
+    		
+    		//Test
+    		PacketGenerator pg = new PacketGenerator();
+    		pg.start();
     		
     		// se specificato nel file di configurazione avvio il thread resetter
     		if(Configurator.getResetTime() != null){
