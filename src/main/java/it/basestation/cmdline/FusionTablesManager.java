@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -112,7 +111,7 @@ public class FusionTablesManager {
 	    table.setName("Nodo_"+n.getMyID());
 	    table.setIsExportable(false);
 	    LinkedList <Column> columns = new LinkedList<Column>();
-	    HashSet <String> capability = n.getCapabilitiesSet();
+	    LinkedList <String> capability = n.getCapabilitiesSet();
 	    for (String c : capability) {
 	    	columns.add(new Column().setName(c).setType("NUMBER"));
 		}
@@ -134,7 +133,7 @@ public class FusionTablesManager {
 	    table.setName("Global_Table");
 	    table.setIsExportable(false);
 	    LinkedList <Column> columns = new LinkedList<Column>();
-	    HashSet <String> capability = Configurator.getGlobalCapabilitiesSet();
+	    LinkedList <String> capability = Configurator.getGlobalCapabilitiesSet();
 	    for (String c : capability) {
 	    	columns.add(new Column().setName(c).setType("NUMBER"));
 		}
@@ -237,8 +236,8 @@ public class FusionTablesManager {
 	    }
 	    return tableID;
 	}
-
-	public static void insertData(short nodeID,	LinkedList<Capability> capListToStore) throws IOException {
+	public static void insertData(LastPeriodNodeRecord nodeRecord) throws IOException {
+		short nodeID = nodeRecord.getNodeID();
 		String tableID = tablesID.get(nodeID);
 		if(tableID == null)
 	    {
@@ -246,6 +245,7 @@ public class FusionTablesManager {
 	      tablesID.put(nodeID, tableID);
 	    }
 		
+		LinkedList<Capability> capListToStore = nodeRecord.getCapListToStore();
 		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore));
 		try {
 			sql.execute();

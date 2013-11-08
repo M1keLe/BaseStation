@@ -1,57 +1,57 @@
 ## frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor:   1
+FreqDataProcessor: 1
 
 ## porta USB default = /dev/ttyUSB0
-USBPort:/dev/ttyUSB0 
+USBPort: /dev/ttyUSB0 
 
 ## Speed USB port default = Baud Rate 57600
 ## USBSpeedPort: 57600
 
 ## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
-ResetTime: 23_59_59
+ResetTime: 23:59:59
 
 ## Capabilities
 
 <capabilities>
  
-	<counter[0-*]>
+	<counter[0,*]>
 		local:last
 	</counter>
 	
-	<temperature[15-40]>
+	<temperature[15,40]>
 		local:avg
 		global:avg
 	</temperature>
 	
-	<pressure[800-1200]>
+	<pressure[800,1200]>
 		local:avg
 		global:avg
 	</pressure>
 	
-	<co2[0-*]>
+	<co2[0,*]>
 		local:avg
 	</co2>
 	
-	<noise[0-*]>
+	<noise[0,*]>
 		local:avg
 		global:avg
 	</noise>
 	
-	<light[0-*]>
+	<light[0,*]>
 		local:avg
 	</light>
 	
-	<people_in[0-*]>
+	<people_in[0,*]>
 		local:last
 		global:sum
 	</people_in>
 	
-	<people_out[0-*]>
+	<people_out[0,*]>
 		local:last
 		global:sum
 	</people_out>
 	
-	<people_inside[0-*]>
+	<people_inside[0,*]>
 		global: ( people_in - people_out )
 	</people_inside>
 	
@@ -59,9 +59,9 @@ ResetTime: 23_59_59
 
 ## Nodi (id,xValue,yValue,capabilities)
 
-Node:2;562;549;Counter
+Node:2;562;549;Counter#
 Node:3;565;580;Counter#Noise#CO2
-Node:4;423;550;Counter#Noise#CO2
+Node:4;423;550;Counter#Noise#CO2#
 Node:5;360;580;Counter#Noise#CO2#Pressure#Temperature#Light
 Node:6;272;550;Counter#Pressure#Temperature#Light
 Node:7;249;483;Counter#Pressure#Temperature#Light

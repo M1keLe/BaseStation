@@ -1,28 +1,35 @@
 package it.basestation.cmdline;
 
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Stack;
 
 public class LastPeriodNodeRecord {
 	
 	private Hashtable<String, LinkedList<Capability>> capabilitiesToElab = new Hashtable<String, LinkedList<Capability>>();
 	private LinkedList<Capability> capListToStore = new LinkedList<Capability>();
+	private LinkedList<Capability> derivedCapListToStore = new LinkedList<Capability>();
 	private short nodeID;
 	public LastPeriodNodeRecord(short nodeID){
 		System.out.println("Creato node record con id " +nodeID);
 		this.nodeID = nodeID;
-/*		HashSet<String> capabilitiesSet = Configurator.getNode(nodeID).getCapabilitiesSet();
-		System.out.println("DEBUG: NodeRecord_"+nodeID+" capabilitiesSet = "+capabilitiesSet);
-		for (String c : capabilitiesSet) {
-			this.capabilitiesToElab.put(c, new LinkedList<Capability>());
-			this.capListToStore.add(Configurator.getCapability(c));
+		LinkedList<String> capabilitiesSet = Configurator.getNode(this.nodeID).getCapabilitiesSet();
+		System.out.println("DEBUG: NodeRecord_"+this.nodeID+" capabilitiesSet = "+capabilitiesSet);
+		for (String s : capabilitiesSet) {
+			Capability c = Configurator.getCapability(s);
+			if(c.localOperator().equals("avg")||c.localOperator().equals("last")){
+				this.capListToStore.add(c);
+			}else{
+				this.derivedCapListToStore.add(c);
+			}
+			
+			
 			
 		}
-*/	}
+	}
 	
 	public void addPacket(Packet p){
-		LinkedList<Capability> data = p.getData();
+		LinkedList<Capability> data = p.getCapabilityList();
 		for (Capability c : data) {
 			if(!this.capabilitiesToElab.containsKey(c.getName())){
 				this.capabilitiesToElab.put(c.getName(), new LinkedList<Capability>());
@@ -31,46 +38,29 @@ public class LastPeriodNodeRecord {
 		}
 	}
 	
-/*	public void addCapability (Capability capability){
-		System.out.println("DEBUG: NODE_RECORD ID = "+this.nodeID+" Sto aggiungendo alla lista da elaborare la capability: \n" +capability);
-		this.capabilitiesToElab.get(capability.getName()).add(capability);
-	}
-	
 	public LinkedList<Capability> getCapListToStore(){
-		HashSet<String> capSet = Configurator.getNode(nodeID).getCapabilitiesSet();
-		LinkedList<Capability> toRet = new LinkedList<Capability>();
-		for (String c : capSet) {
-			Capability cap = Configurator.getCapability(c);
-			if(cap.getLocalRule().equals("avg")){
-				cap.setValue(getAvg(cap.getName()));
-				
-			} else if(cap.getLocalRule().equals("last")){
-				cap.setValue(getLastRecordedValue(cap.getName()));
-			}
-			toRet.add(cap);
-		}
-		return toRet;
-	}
-*/	
-	public LinkedList<Capability> getCapListToStore(){
-		HashSet<String> capabilitiesSet = Configurator.getNode(this.nodeID).getCapabilitiesSet();
-		System.out.println("DEBUG: NodeRecord_"+this.nodeID+" capabilitiesSet = "+capabilitiesSet);
-		for (String c : capabilitiesSet) {
-			
-			this.capListToStore.add(Configurator.getCapability(c));
-			
-		}
+		LinkedList<Capability> localValuesToStore = new LinkedList<Capability>();
 		
 		for (Capability c : this.capListToStore) {
 			
-			if(c.getLocalRule().equals("avg")){
+			if(c.localOperator().equals("avg")){
 				c.setValue(getAvg(c.getName()));
 				
-			} else if(c.getLocalRule().equals("last")){
+			} else if(c.localOperator().equals("last")){
 				c.setValue(getLastRecordedValue(c.getName()));
 			}
 		}
-		return this.capListToStore;
+		
+		localValuesToStore = this.capListToStore;
+		
+		// elaboro le misure derivate se presenti
+		if(this.derivedCapListToStore != null){
+			for(Capability c : this.derivedCapListToStore){
+				c.setValue(getDerivedMeasure(c));
+				localValuesToStore.add(c);
+			}
+		}
+		return localValuesToStore;
 	}
 	
 	public double getLastRecordedValue(String name){
@@ -111,6 +101,59 @@ public class LastPeriodNodeRecord {
 		return this.nodeID;
 	}
 	
+	private double getDerivedMeasure(Capability c) {
+		double result = 0.00;
+		String syntax = c.globalOperator();
+		// suddivido la stringa in vari tokens
+        String[] tokens = syntax.split(" ");
+        
+        // sostituisco il nome della capability con il valore
+        
+        for (int i = 0; i < tokens.length; i++) {
+        	for (Capability cap : this.capListToStore) {
+        		if(tokens[i].equals(cap.getName())){
+        			Double value = cap.getValue();
+        			//System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
+        			tokens[i] = value.toString();
+        			//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+        		}
+        	}
+		}
+        
+        // calcolo il valore derivato
+        Stack<String> ops = new Stack<String>();
+        Stack<Double> vals = new Stack<Double>();
+        
+        for (String s : tokens) {
+        	if (s.equals("(")) ;
+		    else if (s.equals("+")) ops.push(s);
+		    else if (s.equals("-")) ops.push(s);
+		    else if (s.equals("*")) ops.push(s);
+		    else if (s.equals("/")) ops.push(s);
+		    else if (s.equals("sqrt")) ops.push(s);
+		    else if (s.equals(")")) {
+		        String op = ops.pop();
+		        double v = vals.pop();
+		        if (op.equals("+")) v = vals.pop() + v;
+		        else if (op.equals("-")) v = vals.pop() - v;
+		        else if (op.equals("*")) v = vals.pop() * v;
+		        else if (op.equals("/")) v = vals.pop() / v;
+		        else if (op.equals("sqrt")) v = Math.sqrt(v);
+		        vals.push(v);
+		    }
+        	
+        	else{
+        		
+        		vals.push(Double.parseDouble(s));
+        	}
+        }
+        if(!vals.isEmpty()){
+        	result = vals.pop();
+        }else{
+        	System.out.println("DijkstraTwoStack ERROR: impossibile impostare il valore di questa misura");
+        }      
+        return result;
 	
+	}
 	
 }

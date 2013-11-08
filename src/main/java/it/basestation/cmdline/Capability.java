@@ -2,8 +2,8 @@ package it.basestation.cmdline;
 
 public class Capability {
 	private String name = "";
-	private String local = "";
-	private String global = "";
+	private String localOperator = "";
+	private String globalOperator = "";
 	private Double minValue = Double.NEGATIVE_INFINITY;
 	private Double maxValue = Double.POSITIVE_INFINITY;
 	private double value = 0.00;
@@ -13,8 +13,8 @@ public class Capability {
 	
 	public Capability(String name, String local, String global){
 		this.name = name;
-		this.local = local;
-		this.global = global;
+		this.localOperator = local;
+		this.globalOperator = global;
 	}
 	
 	// set
@@ -35,12 +35,12 @@ public class Capability {
 		this.maxValue = maxValue;
 	}
 	
-	public void setLocalRule(String local){
-		this.local=local;
+	public void setLocalOperator(String local){
+		this.localOperator=local;
 	}
 
-	public void setGlobalRule(String global){
-		this.global=global;
+	public void setGlobalOperator(String global){
+		this.globalOperator=global;
 	}
 	// get
 	
@@ -61,27 +61,27 @@ public class Capability {
 		return this.value;
 	}
 	
-	public String getLocalRule(){
-		return this.local;
+	public String localOperator(){
+		return this.localOperator;
 	}
 	
 	public boolean isGlobal(){
 		boolean toRet = false;
-		if(!this.global.isEmpty())
+		if(!this.globalOperator.isEmpty())
 			toRet = true;
 		return toRet;
 	}
 	
-	public String getGlobalRule(){
-		return this.global;
+	public String globalOperator(){
+		return this.globalOperator;
 	}
 	
 	@Override
 	public String toString(){
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
-		toRet += "Local: " + this.local + "\n";
-		toRet += "Global: " + this.global + "\n";
+		toRet += "Local: " + this.localOperator + "\n";
+		toRet += "Global: " + this.globalOperator + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";
 		toRet += "Max Value: " + this.maxValue + "\n";
 		toRet += "Value: " + this.value + "\n";

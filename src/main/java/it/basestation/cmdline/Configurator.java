@@ -15,11 +15,16 @@ import java.util.StringTokenizer;
 
 public class Configurator {
 	private static final String FILE_NAME = "config.txt"; 
+	private static final int MINUTE =1000*60; 
 	
-	private static int freqDataProcessor = 1000*60*10;
+	private static int freqDataProcessor = MINUTE * 10;
 	private static String usbPort = "/dev/ttyUSB0";
 	private static String speedUsbPort = "57600";
 	private static Calendar resetTime = null;
+	
+	// Stringa che contiene eventuali errori nel file di configurazione
+	private static String log = "";
+	private static int lineCounter = 0;
 	
 	// elenco capabilities
 	private static LinkedList<Capability> capabilities = new LinkedList<Capability>();
@@ -28,7 +33,7 @@ public class Configurator {
 	private static Hashtable<Short,Node> nodes = new Hashtable<Short,Node>();
 	
 	// set capabilities globali
-	private static HashSet <String> globalCapabilitiesSet = new HashSet<String>();
+	private static LinkedList <String> globalCapabilitiesSet = new LinkedList<String>();
 	
 	public static boolean loadConfigFile(){
 		boolean toRet = true;
@@ -44,6 +49,7 @@ public class Configurator {
 			String maxValue = "";
 		
 			while((line = bReader.readLine()) != null){
+				++lineCounter;
 				line = line.toLowerCase().trim();
 				
 				// commenti su config.txt
@@ -53,9 +59,9 @@ public class Configurator {
 						String freq = line.substring(line.indexOf(':')+1).trim();
 						System.out.println("La freq è: ->"+freq+ "<- minuti");
 						if(tryParseInt(freq)){
-							freqDataProcessor = Integer.parseInt(freq) *1000*60;
+							freqDataProcessor = Integer.parseInt(freq) * MINUTE;
 						}else{
-							System.out.println("La freq non è stata impostata correttamente: ->"+freq);
+							log += "[Line: "+lineCounter+"] La freq non è stata impostata correttamente: ->"+freq +"\n";
 							toRet = false;
 						}
 					}
@@ -68,7 +74,7 @@ public class Configurator {
 						System.out.println("Speed usbport ->"+speedUsbPort);
 					}
 					if(line.indexOf("resettime") != -1){
-						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), "_");
+						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), ":");
 	                    String hour = tokTimer.nextToken().trim();
 	                    String minute = tokTimer.nextToken().trim();
 	                    String second = tokTimer.nextToken().trim();
@@ -79,15 +85,15 @@ public class Configurator {
 	                            resetTime.set(Calendar.SECOND, Integer.parseInt(second));
 	                            System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());                                                        
 	                    } else {
-	                            System.out.println("Reset Time ERROR: Controllare il file di configurazione");
+	                            log += "[Line: "+lineCounter+"] Reset Time ERROR: Controllare il file di configurazione\n";
 	                            toRet = false;
 	                    }					
 					}
 					
 					if(line.contains("<") && line.contains("[")){
 						name = line.substring(line.indexOf('<')+1, line.indexOf('[')).trim();
-						minValue = line.substring(line.indexOf('[')+1, line.indexOf('-')).trim();
-						maxValue = line.substring(line.indexOf('-')+1, line.indexOf(']')).trim();
+						minValue = line.substring(line.indexOf('[')+1, line.indexOf(',')).trim();
+						maxValue = line.substring(line.indexOf(',')+1, line.indexOf(']')).trim();
 					}
 					if(line.contains("local")){
 						local = line.substring(line.indexOf(':')+1).trim();
@@ -97,15 +103,15 @@ public class Configurator {
 					}
 					if(line.contains("</"+name+">")){
 						Capability c = new Capability(name);
-						c.setLocalRule(local);
-						c.setGlobalRule(global);
+						c.setLocalOperator(local);
+						c.setGlobalOperator(global);
 						
 						if(!minValue.equals("*")){
 							if(tryParseDouble(minValue)){
 								c.setMinValue(Double.parseDouble(minValue));
 							}else{
 								toRet = false;
-								System.out.println("Errore impostazione minValue Capability chiamata: " +name);
+								log += "[Line: "+lineCounter+"] Errore impostazione minValue Capability chiamata: " +name+"\n";
 							}
 							
 						}
@@ -114,8 +120,8 @@ public class Configurator {
 								c.setMaxValue(Double.parseDouble(maxValue));
 							}else{
 								toRet = false;
-								System.out.println("Errore impostazione maxValue Capability chiamata: " +name);
-								System.out.println("Stringa maxValue ->" +maxValue+"<-");
+								log += "[Line: "+lineCounter+"] Errore impostazione maxValue Capability chiamata: " +name +"\n";
+								//System.out.println("Stringa maxValue ->" +maxValue+"<-");
 							}
 						}
 						System.out.println("Creata nuova capability:\n" +c);
@@ -142,18 +148,26 @@ public class Configurator {
 	                            int yValue = Integer.parseInt(sYValue);
 	                            String cap = tokNode.nextToken();
 	                            StringTokenizer tokCap = new StringTokenizer(cap, "#");
-	                            HashSet<String> capability = new HashSet<String>();
+	                            LinkedList<String> capability = new LinkedList<String>();
 	                            while(tokCap.hasMoreTokens()){
-	                                    capability.add(tokCap.nextToken());
+	                            	// controllo se le capabilities sono state tutte dichiarate
+	                            	String s = tokCap.nextToken();
+	                            	if(getCapability(s) == null){
+	                            		log += "[Line: "+lineCounter+"] La capability \""+s+"\" non è stata dichiarata! controllare il file di configurazione\n";
+	                            		toRet = false;
+	                            	}else{
+	                            		capability.add(s);
+	                            	}
+                                    
 	                            }
-	                            
+
 	                            Node n = new Node(nodeID, xValue, yValue, capability);
 	                            
 	                            nodes.put(nodeID, n);
 	                            
 	                            System.out.println("\n" + nodes.get(nodeID) + "\n");
 	                    }else{
-	                            System.out.println("Node ERROR controllare file di configurazione");
+	                            log += "[Line: "+lineCounter+"] Node ERROR controllare file di configurazione\n";
 	                            toRet = false;
 	                    }
 					}
@@ -161,15 +175,16 @@ public class Configurator {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			
+			log += e + "\n";
 			e.printStackTrace();
 			toRet = false;
 		}catch (NoSuchElementException e) {
+			log += e + "\n";
 			e.printStackTrace();
 			toRet = false;
 		
 		} catch (IOException e) {
-			
+			log += e + "\n";
 			e.printStackTrace();
 			toRet = false;
 		} finally {
@@ -183,13 +198,20 @@ public class Configurator {
 		
 		if(nodes.isEmpty()){
 			toRet = false;
-			System.out.println("Errore: nessun nodo configurato");
+			log += "Errore: nessun nodo configurato\n";
 		}
 		
 		if(capabilities.isEmpty()){
 			toRet = false;
-			System.out.println("Errore: nessuna capability configurata");
+			log += "Errore: nessuna capability configurata\n";
 		}
+		
+		if(toRet)
+			System.out.println("Il file di configurazione è stato caricato correttamente.");
+		else
+			System.out.println(log);
+		
+		lineCounter = 0;
 		
 		return toRet;
 		
@@ -206,7 +228,7 @@ public class Configurator {
 	}
 	
 	public static Capability getCapability(String name){
-		Capability toRet = new Capability("");
+		Capability toRet = null;
 		for (Capability c : capabilities) {
 			if(name.equals(c.getName())){
 				toRet = c;
@@ -216,7 +238,7 @@ public class Configurator {
 		return toRet;
 	}
 	
-	public static HashSet<String> getGlobalCapabilitiesSet(){
+	public static LinkedList<String> getGlobalCapabilitiesSet(){
 		return globalCapabilitiesSet;
 	}
 	

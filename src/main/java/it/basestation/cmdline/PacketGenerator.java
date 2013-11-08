@@ -1,9 +1,8 @@
 package it.basestation.cmdline;
 
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Hashtable;
 import java.util.Random;
 
 public class PacketGenerator extends Thread {
@@ -26,7 +25,7 @@ public class PacketGenerator extends Thread {
 	Random rand = new Random();
 	public PacketGenerator() {
 		//randomList.add(new Capability(""));
-		HashSet<String> cSet = Configurator.getNode((short) 2).getCapabilitiesSet();
+		LinkedList<String> cSet = Configurator.getNode((short) 2).getCapabilitiesSet();
 		for (String string : cSet) {
 			p2List.add(Configurator.getCapability(string));
 		}

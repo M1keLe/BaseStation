@@ -11,8 +11,6 @@ public class DataProcessor extends Thread {
 	
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 
-	private LastPeriodGlobalRecord lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
-
 	@Override
 	public void run(){
 
@@ -44,13 +42,16 @@ public class DataProcessor extends Thread {
 					
 					// store dei dati sulle fusion tables
 					Enumeration<Short> e = newNodesRecord.keys();
-					
+					LinkedList<Capability> listForGlobal = new LinkedList<Capability>();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
+						
+						listForGlobal.addAll(recordToStore.getCapListToStore());
+						
 						//LinkedList<Capability> toStore = newNodesRecord.get(nodeID).getCapListToStore();
 						try {
-							FusionTablesManager.insertData(recordToStore.getNodeID(),recordToStore.getCapListToStore());
+							FusionTablesManager.insertData(recordToStore);
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -58,19 +59,14 @@ public class DataProcessor extends Thread {
 					}
 					
 					// store dei valori globali
-					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
-					newGlobalRecord.setLastNodesRecord(newNodesRecord);
-					
-					try {
-						FusionTablesManager.insertData(newGlobalRecord.getGlobalValuesToStore());
-						//FusionTablesManager.insertData(newGlobalRecord.getGlobalValuesToStore(newNodesRecord));
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+					Hashtable<String, LastPeriodGlobalRecord> globalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
+					for(String s  : Configurator.getGlobalCapabilitiesSet()){
+						globalRecords.put(s, new LastPeriodGlobalRecord(Configurator.getCapability(s), listForGlobal));
+						//FusionTablesManager.insertData(globalRecords.get(s));
 					}
 					
 					this.lastPeriodNodesRecord = newNodesRecord;
-					this.lastPeriodGlobalRecord = newGlobalRecord;
+					
 					
 					
 					
@@ -83,8 +79,7 @@ public class DataProcessor extends Thread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
-		}
-	
+		}	
 	}
 }
 				// ***************************************************************************************************

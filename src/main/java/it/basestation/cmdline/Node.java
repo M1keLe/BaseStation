@@ -1,20 +1,19 @@
 package it.basestation.cmdline;
 
 import java.awt.Point;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 public class Node {
 	private short nodeID = 0;
 	private int xValue = 0;
 	private int yValue = 0;
-	private HashSet<String> capabilities = new HashSet<String>();
+	private LinkedList<String> capabilities = new LinkedList<String>();
 	private LinkedList<Packet> myPackets = new LinkedList<Packet>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
 	
 
-	public Node(short nodeID, int xValue, int yValue, HashSet<String> capabilities) {
+	public Node(short nodeID, int xValue, int yValue, LinkedList<String> capabilities) {
 		this.nodeID = nodeID;
 		this.xValue = xValue;
 		this.yValue = yValue;
@@ -27,7 +26,7 @@ public class Node {
 		return this.capabilities.contains(c);
 	}
 	
-	public HashSet<String> getCapabilitiesSet(){
+	public LinkedList<String> getCapabilitiesSet(){
 		return this.capabilities;
 	}
 	

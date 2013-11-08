@@ -9,7 +9,7 @@ public class Packet {
 	private short counter;
 	private short route;
 	
-	private LinkedList<Capability> data = new LinkedList<Capability>();
+	private LinkedList<Capability> capabilityList = new LinkedList<Capability>();
 	
 	
 	public Packet(long time,
@@ -24,7 +24,7 @@ public class Packet {
 		this.sender = sender;
 		this.counter = counter;
 		this.route = route;
-		this.data = data;
+		this.capabilityList = data;
 		
 	}
 	
@@ -44,8 +44,8 @@ public class Packet {
 		return this.counter;
 	}
 	
-	public LinkedList<Capability> getData(){
-		return this.data;
+	public LinkedList<Capability> getCapabilityList(){
+		return this.capabilityList;
 	}
 	
 	public LinkedList<Short> getHopsIndexes(){
@@ -65,7 +65,7 @@ public class Packet {
 	
 	private String getCapabilitiesListData(){
 		String toRet = "";
-		for (Capability c : this.data) {
+		for (Capability c : this.capabilityList) {
 			Double value = c.getValue(); 
 			toRet += "\nCapName=" + c.getName() + "\nValue: " + value.toString(); 
 		}

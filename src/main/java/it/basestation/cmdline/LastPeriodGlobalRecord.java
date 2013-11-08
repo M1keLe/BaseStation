@@ -1,90 +1,57 @@
 package it.basestation.cmdline;
 
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Stack;
 
 public class LastPeriodGlobalRecord {
 	
-	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
+	private String name = "";
+	private Capability capabilityToStore = new Capability("");
+	private LinkedList<Capability> capabilityToElab = new LinkedList<Capability>();
+	private String globalOperator = "";
 	
-	private LinkedList<Capability> globalCapabilitiesListToStore = new LinkedList<Capability>();
-	private LinkedList<Capability> derivedCapabilitiesListToStore = new LinkedList<Capability>();
-	
-	public LastPeriodGlobalRecord(){
-		HashSet<String> globalCapabilitiesSet = new HashSet<String>();
-		globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
-		for (String s : globalCapabilitiesSet) {
-			Capability c = Configurator.getCapability(s);
-			if(c.getGlobalRule().equals("avg")|| c.getGlobalRule().equals("sum")){
-				//System.out.println("DEBUG: globalCapabilitiesListToStore = " + c.getName());
-				this.globalCapabilitiesListToStore.add(c);
-			}else{
-				this.derivedCapabilitiesListToStore.add(c);
-				//System.out.println("DEBUG: derivedCapabilitiesListToStore = " + c.getName());
-				
-			}
-			
-		}
+	public LastPeriodGlobalRecord(Capability globalCapability, LinkedList <Capability> capabilityToElab){
+		this.name = globalCapability.getName();
+		this.capabilityToStore = Configurator.getCapability(name);
+		this.globalOperator = globalCapability.globalOperator();
+		this.capabilityToElab = capabilityToElab;
 	}
 	
-	//public LinkedList<Capability> getGlobalValuesToStore(Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord){
-	public LinkedList<Capability> getGlobalValuesToStore(){
-		
-		LinkedList<Capability> globalValuesToStore = new LinkedList<Capability>();
-		//this.lastPeriodNodesRecord = lastPeriodNodesRecord;
-		
-		for (Capability c : this.globalCapabilitiesListToStore) {
+	public Capability getValueToStore(){
+		if(this.globalOperator.equals("avg")){
+			this.capabilityToStore.setValue(getAvg(this.name));
 			
-			if(c.getGlobalRule().equals("avg")){
-				c.setValue(getAvg(c.getName()));
-				
-			}else if(c.getGlobalRule().equals("sum")){
-				c.setValue(getSumOfValues(c.getName()));
-				
-			}				
-		} // end foreach capabilitiestostore
-		globalValuesToStore = this.globalCapabilitiesListToStore;
-		
-		// elaboro le misure derivate
-		for (Capability c : this.derivedCapabilitiesListToStore) {
-			c.setValue(getDerivedMeasure(c));
-			globalValuesToStore.add(c);
+		}else if(this.globalOperator.equals("sum")){
+			this.capabilityToStore.setValue(getSumOfValues(this.name));
+			
+		}else{
+			this.capabilityToStore.setValue(getDerivedMeasure());
 		}
-		return globalValuesToStore;
 		
+		return this.capabilityToStore;
 	}
 
-	private double getDerivedMeasure(Capability c) {
+	
+	
+	private double getDerivedMeasure() {
+		
 		double result = 0.00;
-		String syntax = c.getGlobalRule();
-		// suddivido la stringa in vari tokens
-        String[] tokens = syntax.split(" ");
-        
-        // sostituisco il nome della capability con il valore
-        
-        for (int i = 0; i < tokens.length; i++) {
-        	for (Capability cap : globalCapabilitiesListToStore) {
-        		if(tokens[i].equals(cap.getName())){
-        			Double value = cap.getValue();
-        			//System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
-        			tokens[i] = value.toString();
-        			//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
-        		}
-        	}
+		LinkedList<String> done = new LinkedList<String>();
+		
+		String[] tokens = this.globalOperator.split(" ");
+		for (int i = 0; i < tokens.length; i++) {
+			for (Capability cap : this.capabilityToElab) {
+				if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
+					Double value = getSumOfValues(cap.getName());
+					//System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
+					tokens[i] = value.toString();
+					//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+					done.add(cap.getName());
+				}
+			}
 		}
-/*        for (String string : tokens) {
-        	for (Capability cap : globalCapabilitiesListToStore) {
-        		if(string.equals(cap.getName())){
-        			Double value = cap.getValue();
-        			//System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
-        			string = value.toString();
-        		}
-        	}
-        }
-*/        // calcolo il valore derivato
+		
+		// calcolo il valore derivato
         Stack<String> ops = new Stack<String>();
         Stack<Double> vals = new Stack<Double>();
         
@@ -104,67 +71,46 @@ public class LastPeriodGlobalRecord {
 		        else if (op.equals("/")) v = vals.pop() / v;
 		        else if (op.equals("sqrt")) v = Math.sqrt(v);
 		        vals.push(v);
-		    }
-        	
-        	else{
-        		
-        		vals.push(Double.parseDouble(s));
+		    }else{
+		    	vals.push(Double.parseDouble(s));
         	}
         }
         if(!vals.isEmpty()){
         	result = vals.pop();
         }else{
         	System.out.println("DijkstraTwoStack ERROR: impossibile impostare il valore di questa misura");
-        }      
-        return result;
+        }
+		return result;
 	}
 
 	private double getSumOfValues(String name) {
 		double toRet = 0.00;
-		Enumeration<Short> e = this.lastPeriodNodesRecord.keys();
-		while(e.hasMoreElements()){
-			short nodeID = e.nextElement();
-			
-			if(Configurator.getNode(nodeID).hasCapability(name)){
-				LastPeriodNodeRecord nodeRecord = this.lastPeriodNodesRecord.get(nodeID);
-					
-				if(nodeRecord != null){
-					System.out.println("ID DEL NODE_RECORD DA ESTRARRE = "+ nodeID + ", ID DEL NODE_RECORD ESTRATTO = "+ nodeRecord.getNodeID());
-					toRet += nodeRecord.getLastRecordedValue(name);
-				}
-				
+		for (Capability c : this.capabilityToElab) {
+			if(c.getName().equals(name)){
+				toRet+= c.getValue();
 			}
 		}
 		return toRet;
 	}
 
 	private double getAvg(String name) {
-		Enumeration<Short> e = this.lastPeriodNodesRecord.keys();
 		double toRet = 0.00;
-		int counter = 0;
 		double value = 0.00;
-		while(e.hasMoreElements()){
-			short nodeID = e.nextElement();
-			
-			if(Configurator.getNode(nodeID).hasCapability(name)){
-				LastPeriodNodeRecord nodeRecord = this.lastPeriodNodesRecord.get(nodeID);
-				
-				if(nodeRecord != null){
-					value+= nodeRecord.getAvg(name);
+		int counter = 0;
+		
+		for (Capability c : this.capabilityToElab) {
+			if(c.getName().equals(name)){
+				if(c.getMinValue()<=c.getValue() && c.getValue()<=c.getMaxValue()){
+					value += c.getValue();
 					counter++;
+				}
+				if(counter>0){
+					toRet = value/counter;
 				}
 			}
 		}
-		if(counter>0){
-			toRet = value/counter;
-		}
-		
 		return toRet;
 	}
 
-	public void setLastNodesRecord(	Hashtable<Short, LastPeriodNodeRecord> newNodesRecord) {
-		this.lastPeriodNodesRecord = newNodesRecord;
-		
-	}
-
+	
 }

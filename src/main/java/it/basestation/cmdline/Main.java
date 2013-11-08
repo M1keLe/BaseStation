@@ -9,10 +9,8 @@ public class Main
 	
     public static void main( String[] args )
     {
-    	if(!Configurator.loadConfigFile()){
-    		System.out.println("Sono presenti errori nel file di configurazione");
-    	}else{
-    		System.out.println("Il file di configurazione è stato caricato correttamente");
+    	if(Configurator.loadConfigFile()){
+    		
     		// passare la lista di nodi al local stats container
     		LocalStatsManager.setNodeList();
     		
