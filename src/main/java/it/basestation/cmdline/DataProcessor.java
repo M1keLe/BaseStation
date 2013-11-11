@@ -10,7 +10,13 @@ public class DataProcessor extends Thread {
 	
 	
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-
+	private Hashtable<String, LastPeriodGlobalRecord> lastPeriodGlobalRecord = new Hashtable<String, LastPeriodGlobalRecord>();
+	private LinkedList <Packet> packetsList = new LinkedList<Packet>();  
+	// costruttore che inizializza le hashtables?
+	public DataProcessor(){
+		super("Data Processor");
+	}
+	
 	@Override
 	public void run(){
 
@@ -25,50 +31,77 @@ public class DataProcessor extends Thread {
 				Thread.sleep(Configurator.getFreqDataProcessor());
 				
 				// Switch puntatori liste e prendo la lista di nodi da elaborare
-				LinkedList <Packet> packetsList = LocalStatsManager.getLastPeriodPacketsList();
+				this.packetsList = LocalStatsManager.getLastPeriodPacketsListOld();
 				
 				// se la lista non è vuota
 				if(!packetsList.isEmpty()){
 					for (Packet p : packetsList) {
+						System.out.println("========== [Pacchetto da gestire]\n" +p);
 						short nodeID = p.getSenderID();
 						System.out.println("DATAPROCESSOR STA GESTENDO UN PACCHETTO SPEDITO DAL NODO N° " +nodeID);
+						LinkedList<Capability> llc = p.getCapabilityList();
 						if(!newNodesRecord.containsKey(nodeID)){
 							newNodesRecord.put(nodeID, new LastPeriodNodeRecord(nodeID));
 						}
+						
 						newNodesRecord.get(nodeID).addPacket(p);
 					}
 					
-					
+					Enumeration<Short> e = newNodesRecord.keys();
+					while(e.hasMoreElements()){
+						short nodeID = e.nextElement();
+						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
+						System.out.println(recordToStore.debug());
+					}
 					
 					// store dei dati sulle fusion tables
-					Enumeration<Short> e = newNodesRecord.keys();
+/*					Enumeration<Short> e = newNodesRecord.keys();
 					LinkedList<Capability> listForGlobal = new LinkedList<Capability>();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
-						
 						listForGlobal.addAll(recordToStore.getCapListToStore());
 						
-						//LinkedList<Capability> toStore = newNodesRecord.get(nodeID).getCapListToStore();
+// DEBUG
+						
+						System.out.println("================= ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
+						for (Capability c : recordToStore.getCapListToStore()) {
+							System.out.println(c);
+						}
+						System.out.println("================= FINE ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
+						
+						
+						
+// END DEBUG
+						
+						
+ FUSION TABLES
 						try {
 							FusionTablesManager.insertData(recordToStore);
+							
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
+END FUSION TABLES 						
 					}
-					
+
+						
 					// store dei valori globali
-					Hashtable<String, LastPeriodGlobalRecord> globalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
+					Hashtable<String, LastPeriodGlobalRecord> newGlobalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
 					for(String s  : Configurator.getGlobalCapabilitiesSet()){
-						globalRecords.put(s, new LastPeriodGlobalRecord(Configurator.getCapability(s), listForGlobal));
+						newGlobalRecords.put(s, new LastPeriodGlobalRecord(Configurator.getCapability(s), listForGlobal));
 						//FusionTablesManager.insertData(globalRecords.get(s));
+						
+						System.out.println("+++++++++++++++++++++ Global_record +++++++++++++++++++++");
+						System.out.println(newGlobalRecords.get(s).getCapabilityToStore().toString());
+						System.out.println("++++++++++++++++ì+++ End_Global_record ++++++++++++++++++");
 					}
 					
 					this.lastPeriodNodesRecord = newNodesRecord;
+					this.lastPeriodGlobalRecord = newGlobalRecords;
 					
-					
-					
+*/					
 					
 					
 				}else{

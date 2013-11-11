@@ -9,16 +9,17 @@ public class Printer {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static void println(String toPrint){
+	public static void println(Object toPrint){
+		lock.lock();
+		System.out.println(toPrint);
+		lock.unlock();
+	}
+		
+	public static void print(Object toPrint){
 		lock.lock();
 		System.out.println(toPrint);
 		lock.unlock();
 	}
 	
-	public static void print(String toPrint){
-		lock.lock();
-		System.out.print(toPrint);
-		lock.unlock();
-	}
 
 }

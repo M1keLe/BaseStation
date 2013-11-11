@@ -17,87 +17,166 @@ public class LocalStatsManager {
 	// liste "ping pong" ultimo periodo
 	private static LinkedList<Packet> pushPacketList = new LinkedList<Packet>();
 	private static LinkedList<Packet> pullPacketList = new LinkedList<Packet>();
+	private static boolean listSelector = true;
 	
-	private static final ReentrantLock lock = new ReentrantLock();
+	private static ReentrantLock lock = new ReentrantLock();
 	
 	// metodo invocato dal thread serial reader
 	public static void addNewPacket(Packet p){		
-		lock.lock();	
-		// se il pacchetto proviene da un nodo conosciuto lo aggiungo alle varie liste
-		// e aggiorno i contatori routedPackets dei nodi "router"
-		if(nodeList.containsKey(p.getSenderID())){
-			updatePacketLists(p);
-			//updateRouterCounter(p);
+		lock.lock();
+		try{
+			// se il pacchetto proviene da un nodo conosciuto lo aggiungo alle varie liste
+			// e aggiorno i contatori routedPackets dei nodi "router"
+			if(nodeList.containsKey(p.getSenderID())){
+				packetsList.add(p);
+				//System.out.println("============= [Nuovo pacchetto:]" +p);
+				
+				if(listSelector){
+					pushPacketList.add(p);
+					System.out.println("============= [Nuovo pacchetto appena inserito:]" +pushPacketList.getLast());
+				}else{
+					pullPacketList.add(p);
+					System.out.println("============= [Nuovo pacchetto appena inserito:]" +pullPacketList.getLast());
+				}
+				
+				//System.out.println("DEBUG: La lista per le fusion Tables contiene " + pushPacketList.size()+ " pacchetti");
+				// aggiorno la lista mypackets del nodo
+				nodeList.get(p.getSenderID()).addMyPacket(p);
+				updateRouterCounter(p);
+				
+				
+			}else{
+				// altrimenti lo scarto
+				System.out.println("Il pacchetto non appartiene alla lista di nodi conosciuti");
+				System.out.println(p);
+				System.out.println("Controllare il file di configurazione");
+			}
 			
-			
-			
-			//System.out.println(p);
-			
-			
-		}else{
-			// altrimenti lo scarto
-			System.out.println("Il pacchetto non appartiene alla lista di nodi conosciuti");
-			System.out.println(p.toString());
-			System.out.println("Controllare il file di configurazione");
+		}finally{
+			lock.unlock();
 		}
-		lock.unlock();
+	}
+	public static LinkedList<Packet> getLastPeriodPacketlist(){
+		LinkedList<Packet> toRet = new LinkedList<Packet>();
+		lock.lock();
+		try{
+			while(!pushPacketList.isEmpty()){
+				toRet.add(pushPacketList.remove());
+				
+			}
+			return toRet;
+		}finally{
+			lock.unlock();
+		}
 	}
 	
 	// metodi invocato dal thread DataProcessor
-	public static LinkedList<Packet> getLastPeriodPacketsList(){
+	public static  LinkedList<Packet> getLastPeriodPacketsListNew(){
 		lock.lock();
-		pullPacketList = pushPacketList;
-		pushPacketList = new LinkedList<Packet>();
-		lock.unlock();
-		System.out.println("DEBUG: iL DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
-		return pullPacketList;
+		LinkedList<Packet> toRet = new LinkedList<Packet>();
+		try{
+		
+			if(listSelector){
+				toRet= pushPacketList;
+				pullPacketList = new LinkedList<Packet>();
+			}else{
+				toRet= pullPacketList;
+				pushPacketList = new LinkedList<Packet>();
+			}
+			
+			listSelector = (listSelector)? false : true;
+			
+			
+			
+			
+			// DEBUG
+			System.out.println("DEBUG: iL DATAPROCESSOR HA PRESO "+toRet.size()+" pacchetti da gestire");
+			for (Packet p : toRet) {
+				System.out.println("");
+				System.out.println(p);
+				System.out.println("");
+			}
+			
+			// END DEBUG
+			return toRet;
+			
+		}finally{
+			lock.unlock();
+		}
+	}
+	
+	public static LinkedList<Packet> getLastPeriodPacketsListOld(){
+		lock.lock();
+		try{
+			pullPacketList = pushPacketList;
+			pushPacketList = new LinkedList<Packet>();
+			System.out.println("DEBUG: iL DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
+/*			for (Packet p : pullPacketList) {
+				System.out.println("");
+				System.out.println(p);
+				System.out.println("");
+			}
+*/			
+			// END DEBUG
+			return pullPacketList;
+		}finally{
+			lock.unlock();
+		}
 	}
 	
 	// metodo invocato dal thread Resetter
 	
 	public static void resetAllStats(){
 		lock.lock();
-		nodeList = Configurator.getNodeList();
-		packetsList.clear();
-
-		// anche queste?
-		pushPacketList.clear();
-		pullPacketList.clear();
-		
-		// altri da inserire ...
-		lock.unlock();
-		System.out.println("Statistiche resettate");		
+		try{
+			nodeList = Configurator.getNodeList();
+			packetsList.clear();
+	
+			
+			pushPacketList.clear();
+			pullPacketList.clear();
+			System.out.println("Statistiche resettate");
+		}finally{
+			
+			lock.unlock();
+		}			
 	}
 	
 	public static void setNodeList(){
 		lock.lock();
-		nodeList = Configurator.getNodeList();
-		lock.unlock();
+		try{
+			nodeList = Configurator.getNodeList();
+		}finally{
+			lock.unlock();
+		}
+		
 	}
 	
 	public static void setNodeList(Hashtable<Short, Node> listOfNodes){
 		lock.lock();
-		nodeList = listOfNodes;
-		lock.unlock();
+		try{
+			nodeList = listOfNodes;
+		}finally{
+			lock.unlock();
+		}
+		
 	}
 	
 	// ------------------------- metodi privati
 	
-	private static void updatePacketLists(Packet packet){
-		// inserisco il pacchetto nella lista di pacchetti
-		packetsList.add(packet);
-		pushPacketList.add(packet);
-		//System.out.println("DEBUG: La lista per le fusion Tables contiene " + pushPacketList.size()+ " pacchetti");
-		// aggiorno la lista mypackets del nodo
-		nodeList.get(packet.getSenderID()).addMyPacket(packet);
-		//System.out.println("Debug"+packet);
-	}
 	
 	// aggiornamento contatore routedPacket
 	private static void updateRouterCounter(Packet packet){
-		LinkedList<Short> routers = packet.getHopsIndexes();
-		for (Short nodeID : routers) {
-			nodeList.get(nodeID).increaseRoutedPackets();
+		lock.lock();
+		try{
+			LinkedList<Short> routers = packet.getHopsIndexes();
+			if(routers != null){
+				for (Short nodeID : routers) {
+					nodeList.get(nodeID).increaseRoutedPackets();
+				}
+			}
+		}finally{
+			lock.unlock();
 		}
 	}
 

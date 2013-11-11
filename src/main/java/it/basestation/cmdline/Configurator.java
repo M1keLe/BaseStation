@@ -57,7 +57,7 @@ public class Configurator {
 				
 					if(line.indexOf("freqdataprocessor") != -1){
 						String freq = line.substring(line.indexOf(':')+1).trim();
-						System.out.println("La freq è: ->"+freq+ "<- minuti");
+						Printer.println("La freq è: ->"+freq+ "<- minuti");
 						if(tryParseInt(freq)){
 							freqDataProcessor = Integer.parseInt(freq) * MINUTE;
 						}else{
@@ -67,11 +67,11 @@ public class Configurator {
 					}
 					if(line.indexOf("usbport") != -1){
 						usbPort = line.substring(line.indexOf(':')+1).trim();
-						System.out.println("La usbport è: ->"+usbPort);						
+						Printer.println("La usbport è: ->"+usbPort);						
 					}
 					if(line.indexOf("usbspeedport") != -1){
 						speedUsbPort = line.substring(line.indexOf(':')+1).trim();
-						System.out.println("Speed usbport ->"+speedUsbPort);
+						Printer.println("Speed usbport ->"+speedUsbPort);
 					}
 					if(line.indexOf("resettime") != -1){
 						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), ":");
@@ -83,7 +83,7 @@ public class Configurator {
 	                            resetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
 	                            resetTime.set(Calendar.MINUTE, Integer.parseInt(minute));
 	                            resetTime.set(Calendar.SECOND, Integer.parseInt(second));
-	                            System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());                                                        
+	                            Printer.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());                                                        
 	                    } else {
 	                            log += "[Line: "+lineCounter+"] Reset Time ERROR: Controllare il file di configurazione\n";
 	                            toRet = false;
@@ -121,14 +121,14 @@ public class Configurator {
 							}else{
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione maxValue Capability chiamata: " +name +"\n";
-								//System.out.println("Stringa maxValue ->" +maxValue+"<-");
+								//Printer.println("Stringa maxValue ->" +maxValue+"<-");
 							}
 						}
-						System.out.println("Creata nuova capability:\n" +c);
+						Printer.println("Creata nuova capability:\n" +c);
 						capabilities.add(c);
 						if(!global.isEmpty()){
 							globalCapabilitiesSet.add(c.getName());
-							System.out.println("Aggiunta Capability set globale ->"+global+"<-");
+							Printer.println("Aggiunta Capability set globale ->"+global+"<-");
 						}
 						name = "";
 						local = "";
@@ -165,7 +165,7 @@ public class Configurator {
 	                            
 	                            nodes.put(nodeID, n);
 	                            
-	                            System.out.println("\n" + nodes.get(nodeID) + "\n");
+	                            Printer.println("\n" + nodes.get(nodeID) + "\n");
 	                    }else{
 	                            log += "[Line: "+lineCounter+"] Node ERROR controllare file di configurazione\n";
 	                            toRet = false;
@@ -207,9 +207,9 @@ public class Configurator {
 		}
 		
 		if(toRet)
-			System.out.println("Il file di configurazione è stato caricato correttamente.");
+			Printer.println("Il file di configurazione è stato caricato correttamente.");
 		else
-			System.out.println(log);
+			Printer.println(log);
 		
 		lineCounter = 0;
 		

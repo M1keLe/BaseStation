@@ -18,10 +18,10 @@ ResetTime: 23:59:59
 		local:last
 	</counter>
 	
-	<temperature[15,40]>
+	<temp[1500,4000]>
 		local:avg
 		global:avg
-	</temperature>
+	</temp>
 	
 	<pressure[800,1200]>
 		local:avg
@@ -41,18 +41,18 @@ ResetTime: 23:59:59
 		local:avg
 	</light>
 	
-	<people_in[0,*]>
+	<in[0,*]>
 		local:last
 		global:sum
-	</people_in>
+	</in>
 	
-	<people_out[0,*]>
+	<out[0,*]>
 		local:last
 		global:sum
-	</people_out>
+	</out>
 	
 	<people_inside[0,*]>
-		global: ( people_in - people_out )
+		global: ( in - out )
 	</people_inside>
 	
 </capabilities>
@@ -60,13 +60,13 @@ ResetTime: 23:59:59
 ## Nodi (id,xValue,yValue,capabilities)
 
 Node:2;562;549;Counter#
-Node:3;565;580;Counter#Noise#CO2
+Node:3;565;580;Counter#Noise#CO2#Temp
 Node:4;423;550;Counter#Noise#CO2#
-Node:5;360;580;Counter#Noise#CO2#Pressure#Temperature#Light
-Node:6;272;550;Counter#Pressure#Temperature#Light
-Node:7;249;483;Counter#Pressure#Temperature#Light
-Node:8;249;358;Counter#Noise#CO2#Pressure#Temperature#Light
+Node:5;360;580;Counter#Noise#CO2#Pressure#Temp#Light
+Node:6;272;550;Counter#Pressure#Temp#Light
+Node:7;249;483;Counter#Pressure#Temp#Light
+Node:8;249;358;Counter#Noise#CO2#Pressure#Temp#Light
 Node:9;249;235;Counter
-Node:10;607;514;Counter#People_in#People_out
-Node:11;410;573;Counter#People_in#People_out
-Node:12;256;152;Counter#People_in#People_out
+Node:10;607;514;Counter#in#out
+Node:11;410;573;Counter#in#out
+Node:12;256;152;Counter#in#out

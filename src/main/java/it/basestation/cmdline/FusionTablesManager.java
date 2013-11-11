@@ -59,7 +59,7 @@ public class FusionTablesManager {
 	            FusionTablesManager.class.getResourceAsStream("/client_secrets.json")));
 	    if (clientSecrets.getDetails().getClientId().startsWith("Enter")
 	        || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-	      System.out.println(
+	      Printer.println(
 	          "Enter Client ID and Secret from https://code.google.com/apis/console/?api=fusiontables "
 	          + "into fusiontables-cmdline-sample/src/main/resources/client_secrets.json");
 	      System.exit(1);
@@ -100,7 +100,7 @@ public class FusionTablesManager {
 	    tableList = listTables.execute();
 
 	    if (tableList.getItems() == null || tableList.getItems().isEmpty()) {
-	      System.out.println("Nessuna Tabella Trovata");
+	      Printer.println("Nessuna Tabella Trovata");
 	      tableList = null;
 	    }
 	    return tableList;
@@ -173,26 +173,26 @@ public class FusionTablesManager {
 			if(!tableExists(id)){
 				try {
 					String s = createTable(nList.get(id));          
-	    			System.out.println("Nodo_"+id+": Creata tabella con id = " +s);
+	    			Printer.println("Nodo_"+id+": Creata tabella con id = " +s);
 				} catch (IOException exception) {
 					// TODO Auto-generated catch block
 	    			exception.printStackTrace();
 	    		}
 			} else {
-				System.out.println("Nodo_"+ id +": La tabella esiste già!");
+				Printer.println("Nodo_"+ id +": La tabella esiste già!");
 			}
 		}
 		// creo la tabella globale se non esiste
 		if(!globalTableExists()){
 			try {
 				String s = createGlobalTable();          
-    			System.out.println("Creata \"Global Table\" con id = " +s);
+    			Printer.println("Creata \"Global Table\" con id = " +s);
 			} catch (IOException exception) {
 				// TODO Auto-generated catch block
     			exception.printStackTrace();
     		}
 		} else {
-			System.out.println("La \"Global Table\" esiste già!");
+			Printer.println("La \"Global Table\" esiste già!");
 		}
 	}
 	
@@ -201,7 +201,7 @@ public class FusionTablesManager {
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals("Nodo_"+(int) nodeID)){
-	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			//Printer.println("IDtabellaTROVATA: "+ table.getTableId());
 	    			toRet = true;
 	    			break;
 	    		}
@@ -215,7 +215,7 @@ public class FusionTablesManager {
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals("Global_Table")){
-	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			//Printer.println("IDtabellaTROVATA: "+ table.getTableId());
 	    			globalTableID = table.getTableId();
 	    			toRet = true;
 	    			break;
@@ -249,8 +249,9 @@ public class FusionTablesManager {
 		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore));
 		try {
 			sql.execute();
-			System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati: " + getQueryInsert(tableID, capListToStore));
+			Printer.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati: " + getQueryInsert(tableID, capListToStore));
 		    } catch (IllegalArgumentException e) {
+		    	Printer.print("ERROR TABLE NODE NR ="+nodeID + e.toString());
 		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
 		      // been thrown.
 		      // Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
@@ -263,7 +264,7 @@ public class FusionTablesManager {
 		try {
 			sql.execute();
 			
-			System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
+			Printer.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
 		    } catch (IllegalArgumentException e) {
 		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
 		      // been thrown.
@@ -292,7 +293,7 @@ public class FusionTablesManager {
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	    //queryTail.concat(" '" +format.format(new Date(System.currentTimeMillis()))+"') ");
 	    queryTail = queryTail.concat(" '" + dateFormat.format(new Date())+"') ");
-	    //System.out.println(queryHead.concat(queryTail));    
+	    //Printer.println(queryHead.concat(queryTail));    
 	    return queryHead.concat(queryTail);
 	} 
 	  

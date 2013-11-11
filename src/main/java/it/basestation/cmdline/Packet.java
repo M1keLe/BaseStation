@@ -9,7 +9,7 @@ public class Packet {
 	private short counter;
 	private short route;
 	
-	private LinkedList<Capability> capabilityList = new LinkedList<Capability>();
+	private  LinkedList<Capability> capabilityList = new LinkedList<Capability>();
 	
 	
 	public Packet(long time,
@@ -53,9 +53,9 @@ public class Packet {
 		 if(this.route != 0){
 			 list = new LinkedList<Short>();
 			 for(short i = 1; i < 16; i++){
-				//System.out.println("comparing "+(0x01 << i)+" and "+this.route+" results: "+((0x01 << i) & this.route));
+				//Printer.println("comparing "+(0x01 << i)+" and "+this.route+" results: "+((0x01 << i) & this.route));
 				if(((0x01 << i) & this.route) == (0x01 << i)){
-					//System.out.println(i+" is a router");					
+					//Printer.println(i+" is a router");					
 					list.add(new Short(i));
 				}
 			 }
@@ -67,13 +67,19 @@ public class Packet {
 		String toRet = "";
 		for (Capability c : this.capabilityList) {
 			Double value = c.getValue(); 
-			toRet += "\nCapName=" + c.getName() + "\nValue: " + value.toString(); 
+			toRet += "\n" + c.getName() + ": " + value.toString() +"\n\t- Local: "+ c.localOperator() +"\n\t- Global: "+ c.globalOperator(); 
 		}
 		return toRet;
 	}
 	
 	public String toString(){
 		
-		return "Packet Sender: " + this.sender + getCapabilitiesListData();
+		return "\n------------------ PACKET ---------------------\n" +
+			   "Sender: " + this.sender + getCapabilitiesListData() +
+			   "\nVARIABILI: \n\tCounter: "+ this.counter +
+			   "\n\tLast Router: "+this.lastRouter + 
+			   "\n\tRoute: "+this.route +
+			   "\n\tTime: "+ this.time +
+			   "\n-------------------END PACKET--------------------\n";
 	}
 }

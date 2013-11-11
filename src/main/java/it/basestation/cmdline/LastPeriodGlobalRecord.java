@@ -12,12 +12,16 @@ public class LastPeriodGlobalRecord {
 	
 	public LastPeriodGlobalRecord(Capability globalCapability, LinkedList <Capability> capabilityToElab){
 		this.name = globalCapability.getName();
-		this.capabilityToStore = Configurator.getCapability(name);
+		this.capabilityToStore = globalCapability;
 		this.globalOperator = globalCapability.globalOperator();
 		this.capabilityToElab = capabilityToElab;
 	}
 	
-	public Capability getValueToStore(){
+	public String getName(){	
+		return this.name;
+	}
+	
+	public Capability getCapabilityToStore(){
 		if(this.globalOperator.equals("avg")){
 			this.capabilityToStore.setValue(getAvg(this.name));
 			
@@ -31,6 +35,9 @@ public class LastPeriodGlobalRecord {
 		return this.capabilityToStore;
 	}
 
+	public String toString(){
+		return getCapabilityToStore().toString();
+	}
 	
 	
 	private double getDerivedMeasure() {
@@ -43,10 +50,10 @@ public class LastPeriodGlobalRecord {
 			for (Capability cap : this.capabilityToElab) {
 				if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
 					Double value = getSumOfValues(cap.getName());
-					//System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
+					//Printer.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
 					tokens[i] = value.toString();
-					//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
-					done.add(cap.getName());
+					//Printer.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+					//done.add(cap.getName());
 				}
 			}
 		}
@@ -78,7 +85,7 @@ public class LastPeriodGlobalRecord {
         if(!vals.isEmpty()){
         	result = vals.pop();
         }else{
-        	System.out.println("DijkstraTwoStack ERROR: impossibile impostare il valore di questa misura");
+        	Printer.println("DijkstraTwoStack ERROR: impossibile impostare il valore di questa misura");
         }
 		return result;
 	}
