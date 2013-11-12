@@ -12,10 +12,10 @@ public class LastPeriodNodeRecord {
 	private LinkedList<Capability> derivedCapListToStore = new LinkedList<Capability>();
 	private short nodeID;
 	public LastPeriodNodeRecord(short nodeID){
-		//Printer.println("Creato node record con id " +nodeID);
+		//System.out.println("Creato node record con id " +nodeID);
 		this.nodeID = nodeID;
 		LinkedList<String> capabilitiesSet = Configurator.getNode(this.nodeID).getCapabilitiesSet();
-		//Printer.println("DEBUG: NodeRecord_"+this.nodeID+" capabilitiesSet = "+capabilitiesSet);
+		//System.out.println("DEBUG: NodeRecord_"+this.nodeID+" capabilitiesSet = "+capabilitiesSet);
 		for (String s : capabilitiesSet) {
 			Capability c = Configurator.getCapability(s);
 			if(c.localOperator().equals("avg")||c.localOperator().equals("last")){
@@ -69,31 +69,13 @@ public class LastPeriodNodeRecord {
 		return this.nodeID;
 	}
 	
-	public String debug(){
-		String toRet = "";
-		toRet += "\n =====[NODE_RECORD_ID:"+this.nodeID+"] \n";
-		Enumeration<String> e = this.capabilitiesToElab.keys();
-		while(e.hasMoreElements()){
-			String name = e.nextElement();
-			toRet+= "\n["+name+"] ->> [";
-			for (Capability c : this.capabilitiesToElab.get(name)) {
-				toRet+= " " +c.getValue() + ",";
-			}
-			toRet = toRet.substring(0, toRet.length() -1);
-			toRet+= "]\n";
-		}
-		toRet +="\n ====[END_NODE_RECORD_ID:"+this.nodeID+"] \n";
-		
-		return toRet;
-	}
-	
 	private double getLastRecordedValue(String name){
 		double toRet = 0.00;
 		if(!this.capabilitiesToElab.get(name).isEmpty() && this.capabilitiesToElab.get(name) != null){
 			toRet = this.capabilitiesToElab.get(name).getLast().getValue();
-			Printer.println("NODE_RECORD_"+this.nodeID+": Ultimo valore registrato value = " +toRet+ " Capability: "+ name);
+			//System.out.println("NODE_RECORD_"+this.nodeID+": Ultimo valore registrato value = " +toRet+ " Capability: "+ name);
 		}else{
-			Printer.println("NODE_RECORD_"+this.nodeID+": Valore non presente!!!  Capability: "+ name);
+			//System.out.println("NODE_RECORD_"+this.nodeID+": Valore non presente!!!  Capability: "+ name);
 		}
 		return toRet;
 	}
@@ -106,18 +88,18 @@ public class LastPeriodNodeRecord {
 			double value = 0.00;
 			int counter = 0;
 			for (Capability c : capList) {
-				Printer.println("NODE_RECORD_"+this.nodeID+": Calcolo della media"+ name +": "+ value + " contatore = " +counter);
-				if(c.getMinValue()<=c.getValue() && c.getValue()<=c.getMaxValue()){
+				//System.out.println("NODE_RECORD_"+this.nodeID+": Calcolo della media"+ name +": "+ value + " contatore = " +counter);
+				if(c.getMinValue()<c.getValue() && c.getValue()<c.getMaxValue()){
 					value += c.getValue();
 					counter++;
-					Printer.println("NODE_RECORD_"+this.nodeID+":Aggiornamento media "+ name +": " +value+ " counter = " +counter +" valore appena sommato = "+ c.getValue());
+					//System.out.println("NODE_RECORD_"+this.nodeID+":Aggiornamento media "+ name +": " +value+ " counter = " +counter +" valore appena sommato = "+ c.getValue());
 				}
 			}
 			if(counter>0){
 				toRet = value/counter;
 			}
 		}
-		Printer.println("NODE_RECORD_"+this.nodeID+":La Media da registrare è: " +toRet+" Capability: "+ name);
+		//System.out.println("NODE_RECORD_"+this.nodeID+":La Media da registrare è: " +toRet+" Capability: "+ name);
 		return toRet;
 	}
 	
@@ -133,9 +115,9 @@ public class LastPeriodNodeRecord {
         	for (Capability cap : this.capListToStore) {
         		if(tokens[i].equals(cap.getName())){
         			Double value = cap.getValue();
-        			//Printer.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
+        			System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
         			tokens[i] = value.toString();
-        			//Printer.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+        			System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
         		}
         	}
 		}
@@ -170,10 +152,27 @@ public class LastPeriodNodeRecord {
         if(!vals.isEmpty()){
         	result = vals.pop();
         }else{
-        	Printer.println("DijkstraTwoStack ERROR: impossibile impostare il valore di questa misura");
+        	System.out.println("DijkstraTwoStack ERROR: impossibile impostare il valore di questa misura");
         }      
         return result;
+	}
 	
+	public String toString(){
+		String toRet = "";
+		toRet += "\n =====[NODE_RECORD_ID:"+this.nodeID+"] \n";
+		Enumeration<String> e = this.capabilitiesToElab.keys();
+		while(e.hasMoreElements()){
+			String name = e.nextElement();
+			toRet+= "\n["+name+"] ->> [";
+			for (Capability c : this.capabilitiesToElab.get(name)) {
+				toRet+= " " +c.getValue() + ",";
+			}
+			toRet = toRet.substring(0, toRet.length() -1);
+			toRet+= "]\n";
+		}
+		toRet +="\n ====[END_NODE_RECORD_ID:"+this.nodeID+"] \n";
+		
+		return toRet;
 	}
 	
 }

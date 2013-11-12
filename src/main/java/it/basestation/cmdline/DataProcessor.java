@@ -12,6 +12,7 @@ public class DataProcessor extends Thread {
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 	private Hashtable<String, LastPeriodGlobalRecord> lastPeriodGlobalRecord = new Hashtable<String, LastPeriodGlobalRecord>();
 	private LinkedList <Packet> packetsList = new LinkedList<Packet>();  
+	
 	// costruttore che inizializza le hashtables?
 	public DataProcessor(){
 		super("Data Processor");
@@ -31,15 +32,13 @@ public class DataProcessor extends Thread {
 				Thread.sleep(Configurator.getFreqDataProcessor());
 				
 				// Switch puntatori liste e prendo la lista di nodi da elaborare
-				this.packetsList = LocalStatsManager.getLastPeriodPacketsListOld();
+				this.packetsList = LocalStatsManager.getLastPeriodPacketsList();
 				
 				// se la lista non è vuota
 				if(!packetsList.isEmpty()){
 					for (Packet p : packetsList) {
-						System.out.println("========== [Pacchetto da gestire]\n" +p);
 						short nodeID = p.getSenderID();
-						System.out.println("DATAPROCESSOR STA GESTENDO UN PACCHETTO SPEDITO DAL NODO N° " +nodeID);
-						LinkedList<Capability> llc = p.getCapabilityList();
+						System.out.println("DATA_PROCESSOR STA GESTENDO UN PACCHETTO SPEDITO DAL NODO N° " +nodeID);
 						if(!newNodesRecord.containsKey(nodeID)){
 							newNodesRecord.put(nodeID, new LastPeriodNodeRecord(nodeID));
 						}
@@ -47,35 +46,31 @@ public class DataProcessor extends Thread {
 						newNodesRecord.get(nodeID).addPacket(p);
 					}
 					
+					
+					
+					// store dei dati sulle fusion tables
+					
+					LinkedList<Capability> listForGlobal = new LinkedList<Capability>();
 					Enumeration<Short> e = newNodesRecord.keys();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
-						System.out.println(recordToStore.debug());
-					}
-					
-					// store dei dati sulle fusion tables
-/*					Enumeration<Short> e = newNodesRecord.keys();
-					LinkedList<Capability> listForGlobal = new LinkedList<Capability>();
-					while(e.hasMoreElements()){
-						short nodeID = e.nextElement();
-						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
-						listForGlobal.addAll(recordToStore.getCapListToStore());
+						// Debug
+						System.out.println(recordToStore);
+						for (Capability c : recordToStore.getCapListToStore()) {
+							listForGlobal.add(c);
+						}
 						
-// DEBUG
 						
+						// DEBUG
 						System.out.println("================= ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
 						for (Capability c : recordToStore.getCapListToStore()) {
-							System.out.println(c);
+							System.out.println(c.toString());
 						}
 						System.out.println("================= FINE ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
+									
+
 						
-						
-						
-// END DEBUG
-						
-						
- FUSION TABLES
 						try {
 							FusionTablesManager.insertData(recordToStore);
 							
@@ -83,14 +78,14 @@ public class DataProcessor extends Thread {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-END FUSION TABLES 						
+ 						
 					}
-
-						
+	
 					// store dei valori globali
-					Hashtable<String, LastPeriodGlobalRecord> newGlobalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
+				Hashtable<String, LastPeriodGlobalRecord> newGlobalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
 					for(String s  : Configurator.getGlobalCapabilitiesSet()){
-						newGlobalRecords.put(s, new LastPeriodGlobalRecord(Configurator.getCapability(s), listForGlobal));
+						newGlobalRecords.put(s, new LastPeriodGlobalRecord(s, listForGlobal));
+						//newGlobalRecords.put(s, new LastPeriodGlobalRecord(Configurator.getCapability(s), listForGlobal));
 						//FusionTablesManager.insertData(globalRecords.get(s));
 						
 						System.out.println("+++++++++++++++++++++ Global_record +++++++++++++++++++++");
@@ -101,7 +96,7 @@ END FUSION TABLES
 					this.lastPeriodNodesRecord = newNodesRecord;
 					this.lastPeriodGlobalRecord = newGlobalRecords;
 					
-*/					
+					
 					
 					
 				}else{

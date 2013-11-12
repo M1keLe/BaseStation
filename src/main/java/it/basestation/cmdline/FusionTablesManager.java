@@ -59,7 +59,7 @@ public class FusionTablesManager {
 	            FusionTablesManager.class.getResourceAsStream("/client_secrets.json")));
 	    if (clientSecrets.getDetails().getClientId().startsWith("Enter")
 	        || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-	      Printer.println(
+	      System.out.println(
 	          "Enter Client ID and Secret from https://code.google.com/apis/console/?api=fusiontables "
 	          + "into fusiontables-cmdline-sample/src/main/resources/client_secrets.json");
 	      System.exit(1);
@@ -81,7 +81,10 @@ public class FusionTablesManager {
 	      Credential credential = authorize();
 	      // set up global FusionTables instance
 	      fusiontables = new Fusiontables.Builder(
+	    	  //httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
 	          httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
+	      
+	      System.out.println("Service Path: " + fusiontables.getServicePath());
 	
 	      return;
 	    } catch (IOException e) {
@@ -100,7 +103,7 @@ public class FusionTablesManager {
 	    tableList = listTables.execute();
 
 	    if (tableList.getItems() == null || tableList.getItems().isEmpty()) {
-	      Printer.println("Nessuna Tabella Trovata");
+	      System.out.println("Nessuna Tabella Trovata");
 	      tableList = null;
 	    }
 	    return tableList;
@@ -110,6 +113,8 @@ public class FusionTablesManager {
 	    Table table = new Table();
 	    table.setName("Nodo_"+n.getMyID());
 	    table.setIsExportable(false);
+	    table.setDescription("Recorded data from Node #" +n.getMyID());
+	
 	    LinkedList <Column> columns = new LinkedList<Column>();
 	    LinkedList <String> capability = n.getCapabilitiesSet();
 	    for (String c : capability) {
@@ -173,26 +178,26 @@ public class FusionTablesManager {
 			if(!tableExists(id)){
 				try {
 					String s = createTable(nList.get(id));          
-	    			Printer.println("Nodo_"+id+": Creata tabella con id = " +s);
+	    			System.out.println("Nodo_"+id+": Creata tabella con id = " +s);
 				} catch (IOException exception) {
 					// TODO Auto-generated catch block
 	    			exception.printStackTrace();
 	    		}
 			} else {
-				Printer.println("Nodo_"+ id +": La tabella esiste già!");
+				System.out.println("Nodo_"+ id +": La tabella esiste già!");
 			}
 		}
 		// creo la tabella globale se non esiste
 		if(!globalTableExists()){
 			try {
 				String s = createGlobalTable();          
-    			Printer.println("Creata \"Global Table\" con id = " +s);
+    			System.out.println("Creata \"Global Table\" con id = " +s);
 			} catch (IOException exception) {
 				// TODO Auto-generated catch block
     			exception.printStackTrace();
     		}
 		} else {
-			Printer.println("La \"Global Table\" esiste già!");
+			System.out.println("La \"Global Table\" esiste già!");
 		}
 	}
 	
@@ -201,7 +206,7 @@ public class FusionTablesManager {
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals("Nodo_"+(int) nodeID)){
-	    			//Printer.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
 	    			toRet = true;
 	    			break;
 	    		}
@@ -215,7 +220,7 @@ public class FusionTablesManager {
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals("Global_Table")){
-	    			//Printer.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
 	    			globalTableID = table.getTableId();
 	    			toRet = true;
 	    			break;
@@ -247,11 +252,12 @@ public class FusionTablesManager {
 		
 		LinkedList<Capability> capListToStore = nodeRecord.getCapListToStore();
 		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore));
+		System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati:\nQuery generata: " + getQueryInsert(tableID, capListToStore));
 		try {
 			sql.execute();
-			Printer.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati: " + getQueryInsert(tableID, capListToStore));
+			
 		    } catch (IllegalArgumentException e) {
-		    	Printer.print("ERROR TABLE NODE NR ="+nodeID + e.toString());
+		    	System.out.print("ERROR TABLE NODE NR ="+nodeID + e.toString());
 		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
 		      // been thrown.
 		      // Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
@@ -261,10 +267,11 @@ public class FusionTablesManager {
 
 	public static void insertData(LinkedList<Capability> globalValuesToStore) throws IOException {
 		Sql sql = fusiontables.query().sql(getQueryInsert(globalTableID, globalValuesToStore));
+		System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
 		try {
 			sql.execute();
 			
-			Printer.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
+			
 		    } catch (IllegalArgumentException e) {
 		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
 		      // been thrown.
@@ -285,7 +292,7 @@ public class FusionTablesManager {
 	    queryTail = queryTail.concat(" VALUES (");
 	    
 	    for (Capability c : capListToStore) {
-			queryHead = queryHead.concat(c.getName()+",");
+			queryHead = queryHead.concat(c.getName()+", ");
 			queryTail = queryTail.concat(" '" +format.format(c.getValue())+"', ");
 		}
 	    
@@ -293,8 +300,8 @@ public class FusionTablesManager {
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	    //queryTail.concat(" '" +format.format(new Date(System.currentTimeMillis()))+"') ");
 	    queryTail = queryTail.concat(" '" + dateFormat.format(new Date())+"') ");
-	    //Printer.println(queryHead.concat(queryTail));    
-	    return queryHead.concat(queryTail);
+	    //System.out.println(queryHead.concat(queryTail));    
+	    return queryHead.concat(queryTail).replaceAll(" {2,}", " ");
 	} 
 	  
 	

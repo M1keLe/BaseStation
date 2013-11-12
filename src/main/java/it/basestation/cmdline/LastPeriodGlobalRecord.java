@@ -6,14 +6,14 @@ import java.util.Stack;
 public class LastPeriodGlobalRecord {
 	
 	private String name = "";
-	private Capability capabilityToStore = new Capability("");
+	private Capability capabilityToStore;// = new Capability("");
 	private LinkedList<Capability> capabilityToElab = new LinkedList<Capability>();
 	private String globalOperator = "";
 	
-	public LastPeriodGlobalRecord(Capability globalCapability, LinkedList <Capability> capabilityToElab){
-		this.name = globalCapability.getName();
-		this.capabilityToStore = globalCapability;
-		this.globalOperator = globalCapability.globalOperator();
+	public LastPeriodGlobalRecord(String  capabilityName, LinkedList <Capability> capabilityToElab){
+		this.name = capabilityName;
+		this.capabilityToStore = Configurator.getCapability(capabilityName);
+		this.globalOperator = this.capabilityToStore.globalOperator();
 		this.capabilityToElab = capabilityToElab;
 	}
 	
@@ -43,16 +43,20 @@ public class LastPeriodGlobalRecord {
 	private double getDerivedMeasure() {
 		
 		double result = 0.00;
-		LinkedList<String> done = new LinkedList<String>();
-		
+		//LinkedList<String> done = new LinkedList<String>();
+		System.out.println("DEBUG: Stringa da splittare: ->"+this.globalOperator);
 		String[] tokens = this.globalOperator.split(" ");
 		for (int i = 0; i < tokens.length; i++) {
+			System.out.println("DEBUG: Tocken n° "+ i + " = " + tokens[i]);
 			for (Capability cap : this.capabilityToElab) {
-				if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
+				
+				if(tokens[i].equals(cap.getName())){
+				//if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
 					Double value = getSumOfValues(cap.getName());
-					//Printer.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
+					//double value = getSumOfValues(cap.getName());
+					System.out.println("DEBUG: Sto trasformando il token numero "+i+" con valore "+value+ " in stringa");
 					tokens[i] = value.toString();
-					//Printer.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+					System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
 					//done.add(cap.getName());
 				}
 			}
@@ -79,6 +83,7 @@ public class LastPeriodGlobalRecord {
 		        else if (op.equals("sqrt")) v = Math.sqrt(v);
 		        vals.push(v);
 		    }else{
+		    	System.out.println("+-+-+--+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-DijkstraTwoStack: Val to push: " +s );
 		    	vals.push(Double.parseDouble(s));
         	}
         }
@@ -107,7 +112,7 @@ public class LastPeriodGlobalRecord {
 		
 		for (Capability c : this.capabilityToElab) {
 			if(c.getName().equals(name)){
-				if(c.getMinValue()<=c.getValue() && c.getValue()<=c.getMaxValue()){
+				if(c.getMinValue()<c.getValue() && c.getValue()<c.getMaxValue()){
 					value += c.getValue();
 					counter++;
 				}

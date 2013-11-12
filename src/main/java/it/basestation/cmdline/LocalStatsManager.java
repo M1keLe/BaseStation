@@ -17,7 +17,7 @@ public class LocalStatsManager {
 	// liste "ping pong" ultimo periodo
 	private static LinkedList<Packet> pushPacketList = new LinkedList<Packet>();
 	private static LinkedList<Packet> pullPacketList = new LinkedList<Packet>();
-	private static boolean listSelector = true;
+	private static boolean listSelector = false;
 	
 	private static ReentrantLock lock = new ReentrantLock();
 	
@@ -29,14 +29,12 @@ public class LocalStatsManager {
 			// e aggiorno i contatori routedPackets dei nodi "router"
 			if(nodeList.containsKey(p.getSenderID())){
 				packetsList.add(p);
-				//System.out.println("============= [Nuovo pacchetto:]" +p);
-				
 				if(listSelector){
 					pushPacketList.add(p);
-					System.out.println("============= [Nuovo pacchetto appena inserito:]" +pushPacketList.getLast());
+					// System.out.println("============= [Nuovo pacchetto appena inserito:]" +pushPacketList.getLast());
 				}else{
 					pullPacketList.add(p);
-					System.out.println("============= [Nuovo pacchetto appena inserito:]" +pullPacketList.getLast());
+					// System.out.println("============= [Nuovo pacchetto appena inserito:]" +pullPacketList.getLast());
 				}
 				
 				//System.out.println("DEBUG: La lista per le fusion Tables contiene " + pushPacketList.size()+ " pacchetti");
@@ -56,22 +54,19 @@ public class LocalStatsManager {
 			lock.unlock();
 		}
 	}
-	public static LinkedList<Packet> getLastPeriodPacketlist(){
-		LinkedList<Packet> toRet = new LinkedList<Packet>();
+	public static LinkedList<Packet> getLastPeriodPacketlistOld(){
 		lock.lock();
 		try{
-			while(!pushPacketList.isEmpty()){
-				toRet.add(pushPacketList.remove());
-				
-			}
-			return toRet;
+			pullPacketList = pushPacketList;
+			pushPacketList = new LinkedList<Packet>();	
+			return pullPacketList;			
 		}finally{
 			lock.unlock();
 		}
 	}
 	
 	// metodi invocato dal thread DataProcessor
-	public static  LinkedList<Packet> getLastPeriodPacketsListNew(){
+	public static  LinkedList<Packet> getLastPeriodPacketsList(){
 		lock.lock();
 		LinkedList<Packet> toRet = new LinkedList<Packet>();
 		try{
@@ -85,17 +80,13 @@ public class LocalStatsManager {
 			}
 			
 			listSelector = (listSelector)? false : true;
-			
-			
-			
-			
 			// DEBUG
 			System.out.println("DEBUG: iL DATAPROCESSOR HA PRESO "+toRet.size()+" pacchetti da gestire");
-			for (Packet p : toRet) {
-				System.out.println("");
-				System.out.println(p);
-				System.out.println("");
-			}
+//			for (Packet p : toRet) {
+//				System.out.println("");
+//				System.out.println(p);
+//				System.out.println("");
+//			}
 			
 			// END DEBUG
 			return toRet;
@@ -131,13 +122,10 @@ public class LocalStatsManager {
 		try{
 			nodeList = Configurator.getNodeList();
 			packetsList.clear();
-	
-			
 			pushPacketList.clear();
 			pullPacketList.clear();
 			System.out.println("Statistiche resettate");
 		}finally{
-			
 			lock.unlock();
 		}			
 	}

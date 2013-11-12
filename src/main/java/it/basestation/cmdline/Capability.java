@@ -17,6 +17,13 @@ public class Capability {
 		this.globalOperator = global;
 	}
 	
+	public Capability(String name, String local, String global, Double minValue, Double maxValue){
+		this.name = name;
+		this.localOperator = local;
+		this.globalOperator = global;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
+	}
 	// set
 	
 	public void setValue(double value){
@@ -55,25 +62,17 @@ public class Capability {
 	public double getMaxValue(){
 		return this.maxValue;
 	}
-		
-	
-	public double getValue(){
-		return this.value;
-	}
 	
 	public String localOperator(){
 		return this.localOperator;
-	}
-	
-	public boolean isGlobal(){
-		boolean toRet = false;
-		if(!this.globalOperator.isEmpty())
-			toRet = true;
-		return toRet;
-	}
+	}	
 	
 	public String globalOperator(){
 		return this.globalOperator;
+	}
+	
+	public double getValue(){
+		return this.value;
 	}
 	
 	@Override

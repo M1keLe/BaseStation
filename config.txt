@@ -1,5 +1,5 @@
 ## frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor: 1
+FreqDataProcessor: 2
 
 ## porta USB default = /dev/ttyUSB0
 USBPort: /dev/ttyUSB0 
@@ -18,17 +18,17 @@ ResetTime: 23:59:59
 		local:last
 	</counter>
 	
-	<temp[1500,4000]>
+	<temp[0,10000]>
 		local:avg
 		global:avg
 	</temp>
 	
-	<pressure[800,1200]>
+	<pressure[700,1400]>
 		local:avg
 		global:avg
 	</pressure>
 	
-	<co2[0,*]>
+	<co2[100,*]>
 		local:avg
 	</co2>
 	
@@ -37,7 +37,7 @@ ResetTime: 23:59:59
 		global:avg
 	</noise>
 	
-	<light[0,*]>
+	<light[15,*]>
 		local:avg
 	</light>
 	

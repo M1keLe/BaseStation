@@ -9,7 +9,7 @@ public class Packet {
 	private short counter;
 	private short route;
 	
-	private  LinkedList<Capability> capabilityList = new LinkedList<Capability>();
+	private  LinkedList<Capability> capabilityList;
 	
 	
 	public Packet(long time,
@@ -24,6 +24,7 @@ public class Packet {
 		this.sender = sender;
 		this.counter = counter;
 		this.route = route;
+		capabilityList = new LinkedList<Capability>();
 		this.capabilityList = data;
 		
 	}

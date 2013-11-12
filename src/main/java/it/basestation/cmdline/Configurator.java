@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -57,7 +56,7 @@ public class Configurator {
 				
 					if(line.indexOf("freqdataprocessor") != -1){
 						String freq = line.substring(line.indexOf(':')+1).trim();
-						Printer.println("La freq è: ->"+freq+ "<- minuti");
+						System.out.println("La freq è: ->"+freq+ "<- minuti");
 						if(tryParseInt(freq)){
 							freqDataProcessor = Integer.parseInt(freq) * MINUTE;
 						}else{
@@ -67,11 +66,11 @@ public class Configurator {
 					}
 					if(line.indexOf("usbport") != -1){
 						usbPort = line.substring(line.indexOf(':')+1).trim();
-						Printer.println("La usbport è: ->"+usbPort);						
+						System.out.println("La usbport è: ->"+usbPort);						
 					}
 					if(line.indexOf("usbspeedport") != -1){
 						speedUsbPort = line.substring(line.indexOf(':')+1).trim();
-						Printer.println("Speed usbport ->"+speedUsbPort);
+						System.out.println("Speed usbport ->"+speedUsbPort);
 					}
 					if(line.indexOf("resettime") != -1){
 						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), ":");
@@ -83,7 +82,7 @@ public class Configurator {
 	                            resetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
 	                            resetTime.set(Calendar.MINUTE, Integer.parseInt(minute));
 	                            resetTime.set(Calendar.SECOND, Integer.parseInt(second));
-	                            Printer.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());                                                        
+	                            System.out.println("Il prossimo reset verrà effettuato il " + resetTime.getTime());                                                        
 	                    } else {
 	                            log += "[Line: "+lineCounter+"] Reset Time ERROR: Controllare il file di configurazione\n";
 	                            toRet = false;
@@ -99,7 +98,7 @@ public class Configurator {
 						local = line.substring(line.indexOf(':')+1).trim();
 					}
 					if(line.contains("global")){
-						global = line.substring(line.indexOf(':')+1).trim();
+						global = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
 					}
 					if(line.contains("</"+name+">")){
 						Capability c = new Capability(name);
@@ -121,14 +120,13 @@ public class Configurator {
 							}else{
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione maxValue Capability chiamata: " +name +"\n";
-								//Printer.println("Stringa maxValue ->" +maxValue+"<-");
 							}
 						}
-						Printer.println("Creata nuova capability:\n" +c);
+						System.out.println("Creata nuova capability:\n" +c);
 						capabilities.add(c);
 						if(!global.isEmpty()){
 							globalCapabilitiesSet.add(c.getName());
-							Printer.println("Aggiunta Capability set globale ->"+global+"<-");
+							System.out.println("Aggiunta Capability set globale ->"+global+"<-");
 						}
 						name = "";
 						local = "";
@@ -165,7 +163,7 @@ public class Configurator {
 	                            
 	                            nodes.put(nodeID, n);
 	                            
-	                            Printer.println("\n" + nodes.get(nodeID) + "\n");
+	                            System.out.println("\n" + nodes.get(nodeID) + "\n");
 	                    }else{
 	                            log += "[Line: "+lineCounter+"] Node ERROR controllare file di configurazione\n";
 	                            toRet = false;
@@ -207,17 +205,15 @@ public class Configurator {
 		}
 		
 		if(toRet)
-			Printer.println("Il file di configurazione è stato caricato correttamente.");
+			System.out.println("Il file di configurazione è stato caricato correttamente.");
 		else
-			Printer.println(log);
+			System.out.println(log);
 		
 		lineCounter = 0;
 		
 		return toRet;
 		
-	}
-	
-	
+	}	
 	
 	public static String getUSBPort(){
 		return usbPort;
@@ -231,7 +227,7 @@ public class Configurator {
 		Capability toRet = null;
 		for (Capability c : capabilities) {
 			if(name.equals(c.getName())){
-				toRet = c;
+				toRet = new Capability(c.getName(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
 				break;
 			}
 		}
