@@ -6,13 +6,13 @@ import java.util.Stack;
 public class LastPeriodGlobalRecord {
 	
 	private String name = "";
-	private Capability capabilityToStore;// = new Capability("");
-	private LinkedList<Capability> capabilityToElab = new LinkedList<Capability>();
+	private DataContainer capabilityToStore;// = new Capability("");
+	private LinkedList<DataContainer> capabilityToElab = new LinkedList<DataContainer>();
 	private String globalOperator = "";
 	
-	public LastPeriodGlobalRecord(String  capabilityName, LinkedList <Capability> capabilityToElab){
+	public LastPeriodGlobalRecord(String  capabilityName, LinkedList <DataContainer> capabilityToElab){
 		this.name = capabilityName;
-		this.capabilityToStore = Configurator.getCapability(capabilityName);
+		this.capabilityToStore = Configurator.getDataContainerByName(capabilityName);
 		this.globalOperator = this.capabilityToStore.globalOperator();
 		this.capabilityToElab = capabilityToElab;
 	}
@@ -32,9 +32,16 @@ public class LastPeriodGlobalRecord {
 			this.capabilityToStore.setValue(getDerivedMeasure());
 		}
 		
+		if(this.capabilityToStore.getValue() < this.capabilityToStore.getMinValue()||
+				this.capabilityToStore.getMaxValue() < this.capabilityToStore.getValue()){
+			
+			this.capabilityToStore.setValue(0.00);
+		}
+		
 		return this.capabilityToStore;
 	}
 
+	@Override
 	public String toString(){
 		return getCapabilityToStore().toString();
 	}
@@ -44,7 +51,7 @@ public class LastPeriodGlobalRecord {
 		
 		double result = 0.00;
 		//LinkedList<String> done = new LinkedList<String>();
-		System.out.println("DEBUG: Stringa da splittare: ->"+this.globalOperator);
+		//System.out.println("DEBUG: Stringa da splittare: ->"+this.globalOperator);
 		String[] tokens = this.globalOperator.split(" ");
 		for (int i = 0; i < tokens.length; i++) {
 			System.out.println("DEBUG: Tocken n° "+ i + " = " + tokens[i]);
@@ -54,9 +61,9 @@ public class LastPeriodGlobalRecord {
 				//if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
 					Double value = getSumOfValues(cap.getName());
 					//double value = getSumOfValues(cap.getName());
-					System.out.println("DEBUG: Sto trasformando il token numero "+i+" con valore "+value+ " in stringa");
+					//System.out.println("DEBUG: Sto trasformando il token numero "+i+" con valore "+value+ " in stringa");
 					tokens[i] = value.toString();
-					System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+					//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
 					//done.add(cap.getName());
 				}
 			}
@@ -83,7 +90,7 @@ public class LastPeriodGlobalRecord {
 		        else if (op.equals("sqrt")) v = Math.sqrt(v);
 		        vals.push(v);
 		    }else{
-		    	System.out.println("+-+-+--+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-DijkstraTwoStack: Val to push: " +s );
+		    	//System.out.println("+-+-+--+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-DijkstraTwoStack: Val to push: " +s );
 		    	vals.push(Double.parseDouble(s));
         	}
         }
@@ -97,7 +104,7 @@ public class LastPeriodGlobalRecord {
 
 	private double getSumOfValues(String name) {
 		double toRet = 0.00;
-		for (Capability c : this.capabilityToElab) {
+		for (DataContainer c : this.capabilityToElab) {
 			if(c.getName().equals(name)){
 				toRet+= c.getValue();
 			}
@@ -110,7 +117,7 @@ public class LastPeriodGlobalRecord {
 		double value = 0.00;
 		int counter = 0;
 		
-		for (Capability c : this.capabilityToElab) {
+		for (DataContainer c : this.capabilityToElab) {
 			if(c.getName().equals(name)){
 				if(c.getMinValue()<c.getValue() && c.getValue()<c.getMaxValue()){
 					value += c.getValue();

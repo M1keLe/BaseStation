@@ -1,72 +1,84 @@
-## frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor: 2
+# frequenza aggiornamento Fusion Tables (default 10 minuti)
+FreqDataProcessor: 1
 
-## porta USB default = /dev/ttyUSB0
+# porta USB default = /dev/ttyUSB0
 USBPort: /dev/ttyUSB0 
 
-## Speed USB port default = Baud Rate 57600
-## USBSpeedPort: 57600
+# Speed USB port default = Baud Rate 57600
+USBSpeedPort: 57600
 
-## Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
+# Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
 ResetTime: 23:59:59
 
-## Capabilities
+# Capabilities
 
 <capabilities>
  
-	<counter[0,*]>
+	<Counter[0,*]>
+		sensorID:counter
 		local:last
-	</counter>
+	</Counter>
 	
-	<temp[0,10000]>
+	<Temperature[0,10000]>
+		sensorID:temp
 		local:avg
 		global:avg
-	</temp>
+	</Temperature>
 	
-	<pressure[700,1400]>
+	<Pressure[700,1400]>
+		sensorID:pressure
 		local:avg
 		global:avg
-	</pressure>
+	</Pressure>
 	
-	<co2[100,*]>
+	<CO2[100,*]>
+		sensorID:co2
 		local:avg
-	</co2>
+	</CO2>
 	
-	<noise[0,*]>
+	<Noise[0,*]>
+		sensorID:noise
 		local:avg
 		global:avg
-	</noise>
+	</Noise>
 	
-	<light[15,*]>
+	<Light[15,*]>
+		sensorID:light
 		local:avg
-	</light>
+	</Light>
 	
-	<in[0,*]>
+	<PeopleIn[0,*]>
+		sensorID:in
 		local:last
 		global:sum
-	</in>
+	</PeopleIn>
 	
-	<out[0,*]>
+	<PeopleOut[0,*]>
+		sensorID:out
 		local:last
 		global:sum
-	</out>
+	</PeopleOut>
 	
-	<people_inside[0,*]>
-		global: ( in - out )
-	</people_inside>
+	<TestCO2Noise[*,*]>
+		local: ( CO2 + Noise )
+	</TestCO2Noise>
+	
+	<PeopleInside[0,*]>
+		global: ( PeopleIn - PeopleOut )
+	</PeopleInside>
 	
 </capabilities>
 
-## Nodi (id,xValue,yValue,capabilities)
+# Nodi (id,xValue,yValue,capabilities)
 
 Node:2;562;549;Counter#
-Node:3;565;580;Counter#Noise#CO2#Temp
-Node:4;423;550;Counter#Noise#CO2#
-Node:5;360;580;Counter#Noise#CO2#Pressure#Temp#Light
-Node:6;272;550;Counter#Pressure#Temp#Light
-Node:7;249;483;Counter#Pressure#Temp#Light
-Node:8;249;358;Counter#Noise#CO2#Pressure#Temp#Light
+Node:3;565;580;Counter#Noise#CO2#Temperature#TestCO2Noise
+Node:4;423;550;Counter#Noise#CO2#TestCO2Noise
+Node:5;360;580;Counter#Noise#CO2#Pressure#Temperature#Light#TestCO2Noise
+Node:6;272;550;Counter#Pressure#Temperature#Light
+Node:7;249;483;Counter#Pressure#Temperature#Light
+Node:8;249;358;Counter#Noise#CO2#Pressure#Temperature#Light#TestCO2Noise
 Node:9;249;235;Counter
-Node:10;607;514;Counter#in#out
-Node:11;410;573;Counter#in#out
-Node:12;256;152;Counter#in#out
+Node:10;607;514;Counter#PeopleIn#PeopleOut
+Node:11;410;573;Counter#PeopleIn#PeopleOut
+Node:12;256;152;Counter#PeopleIn#PeopleOut

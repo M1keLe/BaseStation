@@ -7,9 +7,8 @@ import java.util.Stack;
 
 public class LastPeriodNodeRecord {
 	
-	private Hashtable<String, LinkedList<Capability>> capabilitiesToElab = new Hashtable<String, LinkedList<Capability>>();
-	private LinkedList<Capability> capListToStore = new LinkedList<Capability>();
-	private LinkedList<Capability> derivedCapListToStore = new LinkedList<Capability>();
+	private Hashtable<String, LinkedList<DataContainer>> capabilitiesToElab = new Hashtable<String, LinkedList<DataContainer>>();
+	private LinkedList<DataContainer> capListToStore = new LinkedList<DataContainer>();
 	private short nodeID;
 	public LastPeriodNodeRecord(short nodeID){
 		//System.out.println("Creato node record con id " +nodeID);
@@ -17,52 +16,48 @@ public class LastPeriodNodeRecord {
 		LinkedList<String> capabilitiesSet = Configurator.getNode(this.nodeID).getCapabilitiesSet();
 		//System.out.println("DEBUG: NodeRecord_"+this.nodeID+" capabilitiesSet = "+capabilitiesSet);
 		for (String s : capabilitiesSet) {
-			Capability c = Configurator.getCapability(s);
-			if(c.localOperator().equals("avg")||c.localOperator().equals("last")){
-				this.capListToStore.add(c);
-			}else{
-				this.derivedCapListToStore.add(c);
-			}
-			
-			
-			
+			DataContainer c = Configurator.getDataContainerByName(s);
+			this.capListToStore.add(c);	
 		}
 	}
 	
 	public void addPacket(Packet p){
-		LinkedList<Capability> data = p.getCapabilityList();
-		for (Capability c : data) {
+		LinkedList<DataContainer> data = p.getCapabilityList();
+		for (DataContainer c : data) {
 			if(!this.capabilitiesToElab.containsKey(c.getName())){
-				this.capabilitiesToElab.put(c.getName(), new LinkedList<Capability>());
+				this.capabilitiesToElab.put(c.getName(), new LinkedList<DataContainer>());
 			}
 			this.capabilitiesToElab.get(c.getName()).add(c);
 		}
 	}
 	
-	public LinkedList<Capability> getCapListToStore(){
-		LinkedList<Capability> localValuesToStore = new LinkedList<Capability>();
-		
-		for (Capability c : this.capListToStore) {
-			
+	public LinkedList<DataContainer> getCapListToStore(){
+		//LinkedList<DataContainer> localValuesToStore = new LinkedList<DataContainer>();
+		boolean needToElabDerivedMeasure = false;
+		for (DataContainer c : this.capListToStore) {			
 			if(c.localOperator().contains("avg")){
+				// inserire controlli su min e max value
 				c.setValue(getAvg(c.getName()));
-			}
-				
-			if(c.localOperator().contains("last")){
+			}	
+			else if(c.localOperator().contains("last")){
+				// inserire controlli su min e max value
 				c.setValue(getLastRecordedValue(c.getName()));
+			}else{
+				needToElabDerivedMeasure = true;
+			}
+			
+		}
+		if(needToElabDerivedMeasure){
+			
+			for (DataContainer c : this.capListToStore) {
+				if(!c.localOperator().contains("avg") && !c.localOperator().contains("last")){
+					// inserire controlli su min e max value
+					c.setValue(getDerivedMeasure(c));
+				}
 			}
 		}
 		
-		localValuesToStore = this.capListToStore;
-		
-		// elaboro le misure derivate se presenti
-		if(this.derivedCapListToStore != null){
-			for(Capability c : this.derivedCapListToStore){
-				c.setValue(getDerivedMeasure(c));
-				localValuesToStore.add(c);
-			}
-		}
-		return localValuesToStore;
+		return this.capListToStore;
 	}
 	
 	public short getNodeID(){
@@ -84,10 +79,10 @@ public class LastPeriodNodeRecord {
 		double toRet = 0.00;
 		
 		if(!this.capabilitiesToElab.get(name).isEmpty() && this.capabilitiesToElab.get(name) != null){
-			LinkedList<Capability> capList = this.capabilitiesToElab.get(name);
+			LinkedList<DataContainer> capList = this.capabilitiesToElab.get(name);
 			double value = 0.00;
 			int counter = 0;
-			for (Capability c : capList) {
+			for (DataContainer c : capList) {
 				//System.out.println("NODE_RECORD_"+this.nodeID+": Calcolo della media"+ name +": "+ value + " contatore = " +counter);
 				if(c.getMinValue()<c.getValue() && c.getValue()<c.getMaxValue()){
 					value += c.getValue();
@@ -105,19 +100,19 @@ public class LastPeriodNodeRecord {
 	
 	private double getDerivedMeasure(Capability c) {
 		double result = 0.00;
-		String syntax = c.globalOperator();
+		String syntax = c.localOperator();
 		// suddivido la stringa in vari tokens
         String[] tokens = syntax.split(" ");
         
         // sostituisco il nome della capability con il valore
         
         for (int i = 0; i < tokens.length; i++) {
-        	for (Capability cap : this.capListToStore) {
+        	for (DataContainer cap : this.capListToStore) {
         		if(tokens[i].equals(cap.getName())){
         			Double value = cap.getValue();
-        			System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
+        			//System.out.println("DEBUG: Sto trasformando il valore "+value+ "in stringa");
         			tokens[i] = value.toString();
-        			System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
+        			//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
         		}
         	}
 		}
@@ -157,6 +152,7 @@ public class LastPeriodNodeRecord {
         return result;
 	}
 	
+	@Override
 	public String toString(){
 		String toRet = "";
 		toRet += "\n =====[NODE_RECORD_ID:"+this.nodeID+"] \n";
@@ -164,7 +160,7 @@ public class LastPeriodNodeRecord {
 		while(e.hasMoreElements()){
 			String name = e.nextElement();
 			toRet+= "\n["+name+"] ->> [";
-			for (Capability c : this.capabilitiesToElab.get(name)) {
+			for (DataContainer c : this.capabilitiesToElab.get(name)) {
 				toRet+= " " +c.getValue() + ",";
 			}
 			toRet = toRet.substring(0, toRet.length() -1);

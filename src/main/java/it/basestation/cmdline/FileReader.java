@@ -17,7 +17,7 @@ public class FileReader extends Thread {
 	private short sender;
 	private short counter;
 	private short route;
-	private LinkedList<Capability> capabilityList = new LinkedList<Capability>();
+	private LinkedList<DataContainer> dataContainerList = new LinkedList<DataContainer>();
 	private LinkedList<String> capabilitiesSet = new LinkedList<String>();
 	
 	// timestamp arrivo pacchetto simulo tempo tra arrivo di un pacchetto ed un altro
@@ -29,6 +29,7 @@ public class FileReader extends Thread {
 	}
 	
 	
+	@Override
 	public void run(){
 		while(true){		
 			
@@ -40,44 +41,48 @@ public class FileReader extends Thread {
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							//Thread.sleep(this.newTimeStamp - this.lastTimeStamp);
-							Thread.sleep(1000*1);
-							//Thread.sleep(0);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
+							// Thread.sleep(1000*5);
+							// Thread.sleep(0);
 						}
-						reset();
+						//reset();
 					}
-					if(line.contains(">time:")){
+					else if(line.contains(">time:")){
 						this.time = Long.parseLong(line.substring(line.indexOf(":")+1 ).trim()); 
 					}
-					if(line.contains(">router:")){
+					else if(line.contains(">router:")){
 						this.lastRouter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 					}
-					if(line.contains(">sender:")){
+					else if(line.contains(">sender:")){
 						this.sender = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 						this.capabilitiesSet = Configurator.getNode(this.sender).getCapabilitiesSet();
 					}
-					if(line.contains(">counter:")){
+					else if(line.contains(">counter:")){
+						// da definire meglio!!!
 						this.counter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
+						DataContainer dc = Configurator.getDataContainerBySensorID("counter");
+						dc.setValue(counter);
+						this.dataContainerList.add(dc);
 					}
-					if(line.contains(">route:")){
+					else if(line.contains(">route:")){
 						this.route = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 					}
-					if(line.contains(">") && line.contains(":") && !line.contains("<")){
-						String capabilityName = line.substring(line.indexOf('>')+1, line.indexOf(':'));
-						if(capabilitiesSet.contains(capabilityName)){
-							Capability c = Configurator.getCapability(capabilityName);
-							if(c != null){
-								c.setValue(Double.parseDouble(line.substring(line.indexOf(':')+1).trim()));
-								this.capabilityList.add(c);
-							}
+					else if (line.contains(">") && line.contains(":") && !line.contains("<")){
+						String sensorID = line.substring(line.indexOf('>')+1, line.indexOf(':'));
+						DataContainer c = Configurator.getDataContainerBySensorID(sensorID);
+						
+						//System.out.println("SENSOR ID PARSATO: " +sensorID);
+						
+						if(c != null && capabilitiesSet.contains(c.getName())){
+							c.setValue(Double.parseDouble(line.substring(line.indexOf(':')+1).trim()));
+							this.dataContainerList.add(c);		
 						}
 					}
 					if(line.contains("</packet>")){
-						//if(this.time != -1 && this.lastRouter != -1 && this.sender != -1 && this.counter != -1 && this.route != -1 && !this.capabilityList.isEmpty()){
-							Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.capabilityList);
-							LocalStatsManager.addNewPacket(p);
-							reset();
-						//}
+						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.dataContainerList);
+						LocalStatsManager.addNewPacket(p);
+						//System.out.println(p);
+						reset();
 					}
 				}
 					
@@ -104,10 +109,8 @@ public class FileReader extends Thread {
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} 
-			
-		}
-		
+			} 			
+		}		
 	}
 	
 	private void reset(){
@@ -116,7 +119,7 @@ public class FileReader extends Thread {
 		this.sender = -1;
 		this.counter = -1;
 		this.route = -1;
-		this.capabilityList = new LinkedList<Capability>();
+		this.dataContainerList = new LinkedList<DataContainer>();
 		this.capabilitiesSet = new LinkedList<String>();
 	}
 

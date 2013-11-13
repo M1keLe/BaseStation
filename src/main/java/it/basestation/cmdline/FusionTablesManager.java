@@ -250,7 +250,7 @@ public class FusionTablesManager {
 	      tablesID.put(nodeID, tableID);
 	    }
 		
-		LinkedList<Capability> capListToStore = nodeRecord.getCapListToStore();
+		LinkedList<DataContainer> capListToStore = nodeRecord.getCapListToStore();
 		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore));
 		System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati:\nQuery generata: " + getQueryInsert(tableID, capListToStore));
 		try {
@@ -265,7 +265,7 @@ public class FusionTablesManager {
 		    }
 	}
 
-	public static void insertData(LinkedList<Capability> globalValuesToStore) throws IOException {
+	public static void insertData(LinkedList<DataContainer> globalValuesToStore) throws IOException {
 		Sql sql = fusiontables.query().sql(getQueryInsert(globalTableID, globalValuesToStore));
 		System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
 		try {
@@ -281,7 +281,7 @@ public class FusionTablesManager {
 	}
 	
 	
-	private static String getQueryInsert(String tableID, LinkedList<Capability> capListToStore){
+	private static String getQueryInsert(String tableID, LinkedList<DataContainer> capListToStore){
 	    java.text.DecimalFormat format = new java.text.DecimalFormat("0.00");
 	    
 	    String queryHead = new String();
@@ -291,7 +291,7 @@ public class FusionTablesManager {
 	    String queryTail = new String();
 	    queryTail = queryTail.concat(" VALUES (");
 	    
-	    for (Capability c : capListToStore) {
+	    for (DataContainer c : capListToStore) {
 			queryHead = queryHead.concat(c.getName()+", ");
 			queryTail = queryTail.concat(" '" +format.format(c.getValue())+"', ");
 		}

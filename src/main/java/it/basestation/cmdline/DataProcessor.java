@@ -50,14 +50,15 @@ public class DataProcessor extends Thread {
 					
 					// store dei dati sulle fusion tables
 					
-					LinkedList<Capability> listForGlobal = new LinkedList<Capability>();
+					LinkedList<DataContainer> listForGlobal = new LinkedList<DataContainer>();
 					Enumeration<Short> e = newNodesRecord.keys();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
 						// Debug
 						System.out.println(recordToStore);
-						for (Capability c : recordToStore.getCapListToStore()) {
+// da testare ---->		listForGlobal.addAll(recordToStore.getCapListToStore());
+						for (DataContainer c : recordToStore.getCapListToStore()) {
 							listForGlobal.add(c);
 						}
 						

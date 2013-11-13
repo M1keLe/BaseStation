@@ -1,92 +1,88 @@
 package it.basestation.cmdline;
 
-public class Capability {
+public abstract class Capability {
+
 	private String name = "";
+	private String sensorID = "";
 	private String localOperator = "";
 	private String globalOperator = "";
 	private Double minValue = Double.NEGATIVE_INFINITY;
 	private Double maxValue = Double.POSITIVE_INFINITY;
-	private double value = 0.00;
+
 	public Capability(String name){
 		this.name = name;
 	}
 	
-	public Capability(String name, String local, String global){
+	public Capability(String name, String localOperator, String globalOperator){
 		this.name = name;
-		this.localOperator = local;
-		this.globalOperator = global;
+		this.localOperator = localOperator;
+		this.globalOperator = globalOperator;
 	}
 	
-	public Capability(String name, String local, String global, Double minValue, Double maxValue){
+	public Capability(String name, String sensorID, String localOperator, String globalOperator, Double minValue, Double maxValue) {
 		this.name = name;
-		this.localOperator = local;
-		this.globalOperator = global;
+		this.sensorID = sensorID;
+		this.localOperator = localOperator;
+		this.globalOperator = globalOperator;
 		this.minValue = minValue;
 		this.maxValue = maxValue;
 	}
-	// set
-	
-	public void setValue(double value){
-		//if(this.minValue <= value && value <= maxValue){
-			this.value = value;
-		//}else{
-			//System.out.println("DEBUG: Il valore " +value+ "è out of range. CAPABILITY NAME = "+this.name);
-		//}
-	}
-	
-	public void setMinValue(Double minValue){
+
+	public void setMinValue(Double minValue) {
 		this.minValue = minValue;
 	}
-	
-	public void setMaxValue(Double maxValue){
+
+	public void setMaxValue(Double maxValue) {
 		this.maxValue = maxValue;
 	}
-	
-	public void setLocalOperator(String local){
+
+	public void setLocalOperator(String local) {
 		this.localOperator=local;
 	}
 
-	public void setGlobalOperator(String global){
+	public void setGlobalOperator(String global) {
 		this.globalOperator=global;
 	}
 	// get
-	
-	public String getName(){
+
+	public String getName() {
 		return this.name;
 	}
 	
-	public double getMinValue(){
+	public String getSensorID(){
+		return this.sensorID;
+	}
+
+	public double getMinValue() {
 		return this.minValue;
 	}
-	
-	public double getMaxValue(){
+
+	public double getMaxValue() {
 		return this.maxValue;
 	}
-	
-	public String localOperator(){
+
+	public String localOperator() {
 		return this.localOperator;
-	}	
-	
-	public String globalOperator(){
+	}
+
+	public String globalOperator() {
 		return this.globalOperator;
 	}
 	
-	public double getValue(){
-		return this.value;
-	}
-	
+	abstract void setValue(double value);
+	abstract double getValue();
+
 	@Override
-	public String toString(){
+	public String toString() {
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
 		toRet += "Local: " + this.localOperator + "\n";
 		toRet += "Global: " + this.globalOperator + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";
 		toRet += "Max Value: " + this.maxValue + "\n";
-		toRet += "Value: " + this.value + "\n";
 		toRet += "********* End Capability *********\n";
 		
 		return toRet;
 	}
-	
+
 }

@@ -42,19 +42,22 @@ public class Configurator {
 			bReader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE_NAME)));
 			String line;
 			String name = "";
-			String local = "";
-			String global = "";
-			String minValue = "";
-			String maxValue = "";
+			String sensorID = "";
+			String localOperator = "";
+			String globalOperator = "";
+			String min = "";
+			String max = "";
+			Double minValue = Double.NEGATIVE_INFINITY;
+			Double maxValue = Double.POSITIVE_INFINITY;
 		
 			while((line = bReader.readLine()) != null){
 				++lineCounter;
-				line = line.toLowerCase().trim();
+				line = line.trim();
 				
 				// commenti su config.txt
-				if(!line.startsWith("##")){
-				
-					if(line.indexOf("freqdataprocessor") != -1){
+				if(!line.startsWith("#")){									
+					if(line.indexOf("FreqDataProcessor") != -1){
+						
 						String freq = line.substring(line.indexOf(':')+1).trim();
 						System.out.println("La freq è: ->"+freq+ "<- minuti");
 						if(tryParseInt(freq)){
@@ -64,15 +67,15 @@ public class Configurator {
 							toRet = false;
 						}
 					}
-					if(line.indexOf("usbport") != -1){
+					else if(line.indexOf("USBPort") != -1){
 						usbPort = line.substring(line.indexOf(':')+1).trim();
 						System.out.println("La usbport è: ->"+usbPort);						
 					}
-					if(line.indexOf("usbspeedport") != -1){
+					else if(line.indexOf("USBSpeedPort") != -1){
 						speedUsbPort = line.substring(line.indexOf(':')+1).trim();
 						System.out.println("Speed usbport ->"+speedUsbPort);
 					}
-					if(line.indexOf("resettime") != -1){
+					else if(line.indexOf("ResetTime") != -1){
 						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), ":");
 	                    String hour = tokTimer.nextToken().trim();
 	                    String minute = tokTimer.nextToken().trim();
@@ -89,52 +92,64 @@ public class Configurator {
 	                    }					
 					}
 					
-					if(line.contains("<") && line.contains("[")){
+					else if(line.contains("<") && line.contains("[")){
 						name = line.substring(line.indexOf('<')+1, line.indexOf('[')).trim();
-						minValue = line.substring(line.indexOf('[')+1, line.indexOf(',')).trim();
-						maxValue = line.substring(line.indexOf(',')+1, line.indexOf(']')).trim();
+						min = line.substring(line.indexOf('[')+1, line.indexOf(',')).trim();
+						max = line.substring(line.indexOf(',')+1, line.indexOf(']')).trim();
 					}
-					if(line.contains("local")){
-						local = line.substring(line.indexOf(':')+1).trim();
+					else if(line.contains("sensorID")){
+						sensorID = line.substring(line.indexOf(':')+1).trim();
 					}
-					if(line.contains("global")){
-						global = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
+					else if(line.contains("local")){
+						localOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
 					}
-					if(line.contains("</"+name+">")){
-						Capability c = new Capability(name);
-						c.setLocalOperator(local);
-						c.setGlobalOperator(global);
-						
-						if(!minValue.equals("*")){
-							if(tryParseDouble(minValue)){
-								c.setMinValue(Double.parseDouble(minValue));
+					else if(line.contains("global")){
+						globalOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
+					}
+					else if(line.contains("</"+name+">")){
+		
+						if(!min.equals("*")){
+							if(tryParseDouble(min)){
+								minValue = Double.parseDouble(min);
 							}else{
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione minValue Capability chiamata: " +name+"\n";
 							}
 							
 						}
-						if(!maxValue.equals("*")){
-							if(tryParseDouble(maxValue)){
-								c.setMaxValue(Double.parseDouble(maxValue));
+						if(!max.equals("*")){
+							if(tryParseDouble(max)){
+								maxValue = Double.parseDouble(max);
 							}else{
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione maxValue Capability chiamata: " +name +"\n";
 							}
 						}
-						System.out.println("Creata nuova capability:\n" +c);
-						capabilities.add(c);
-						if(!global.isEmpty()){
-							globalCapabilitiesSet.add(c.getName());
-							System.out.println("Aggiunta Capability set globale ->"+global+"<-");
+						capabilities.add(new DataContainer(name, sensorID, localOperator, globalOperator, minValue, maxValue));
+						System.out.println("*********** New Capability ***********");
+						System.out.println("Name: " +name);
+						System.out.println("Sensor ID: " +sensorID);
+						System.out.println("Local Operator: " +localOperator);
+						System.out.println("Global Operator: " +globalOperator);
+						System.out.println("Min Value: " +minValue);
+						System.out.println("Max Value: " +maxValue);
+						System.out.println("********* End New Capability *********\n");
+						if(!globalOperator.isEmpty()){
+							globalCapabilitiesSet.add(name);
+							System.out.println("Aggiunta Capability set globale ->"+globalOperator+"<-");
 						}
+						
 						name = "";
-						local = "";
-						global = "";
-						minValue = "";
-						maxValue = "";
+						sensorID = "";
+						localOperator = "";
+						globalOperator = "";
+						min = "";
+						max = "";
+						minValue = Double.NEGATIVE_INFINITY;
+						maxValue = Double.POSITIVE_INFINITY;
+					
 					}
-					if(line.indexOf("node") != -1){
+					else if(line.indexOf("Node") != -1){
 						String nodeLine = line.substring(line.indexOf(':')+1).trim();
 						StringTokenizer tokNode = new StringTokenizer(nodeLine, ";");
 	                    String sNodeID = tokNode.nextToken();
@@ -150,7 +165,7 @@ public class Configurator {
 	                            while(tokCap.hasMoreTokens()){
 	                            	// controllo se le capabilities sono state tutte dichiarate
 	                            	String s = tokCap.nextToken();
-	                            	if(getCapability(s) == null){
+	                            	if(getDataContainerByName(s) == null){
 	                            		log += "[Line: "+lineCounter+"] La capability \""+s+"\" non è stata dichiarata! controllare il file di configurazione\n";
 	                            		toRet = false;
 	                            	}else{
@@ -169,9 +184,9 @@ public class Configurator {
 	                            toRet = false;
 	                    }
 					}
-					
 				}
 			}
+			
 		} catch (FileNotFoundException e) {
 			log += e + "\n";
 			e.printStackTrace();
@@ -223,11 +238,22 @@ public class Configurator {
 		return freqDataProcessor;
 	}
 	
-	public static Capability getCapability(String name){
-		Capability toRet = null;
+	public static DataContainer getDataContainerByName(String name){
+		DataContainer toRet = null;
 		for (Capability c : capabilities) {
 			if(name.equals(c.getName())){
-				toRet = new Capability(c.getName(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
+				toRet = new DataContainer(c.getName(), c.getSensorID(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
+				break;
+			}
+		}
+		return toRet;
+	}
+	
+	public static DataContainer getDataContainerBySensorID(String sensorID){
+		DataContainer toRet = null;
+		for (Capability c : capabilities) {
+			if(sensorID.equals(c.getSensorID())){
+				toRet = new DataContainer(c.getName(), c.getSensorID(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
 				break;
 			}
 		}

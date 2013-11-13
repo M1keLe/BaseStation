@@ -9,7 +9,7 @@ public class Packet {
 	private short counter;
 	private short route;
 	
-	private  LinkedList<Capability> capabilityList;
+	private  LinkedList<DataContainer> dataList;
 	
 	
 	public Packet(long time,
@@ -17,15 +17,15 @@ public class Packet {
 			short sender, 
 			short counter, 
 			short route, 
-			LinkedList<Capability> data){
+			LinkedList<DataContainer> data){
 		
 		this.time = time;
 		this.lastRouter = lastRouter;
 		this.sender = sender;
 		this.counter = counter;
 		this.route = route;
-		capabilityList = new LinkedList<Capability>();
-		this.capabilityList = data;
+		dataList = new LinkedList<DataContainer>();
+		this.dataList = data;
 		
 	}
 	
@@ -45,8 +45,8 @@ public class Packet {
 		return this.counter;
 	}
 	
-	public LinkedList<Capability> getCapabilityList(){
-		return this.capabilityList;
+	public LinkedList<DataContainer> getCapabilityList(){
+		return this.dataList;
 	}
 	
 	public LinkedList<Short> getHopsIndexes(){
@@ -66,13 +66,14 @@ public class Packet {
 	
 	private String getCapabilitiesListData(){
 		String toRet = "";
-		for (Capability c : this.capabilityList) {
+		for (DataContainer c : this.dataList) {
 			Double value = c.getValue(); 
 			toRet += "\n" + c.getName() + ": " + value.toString() +"\n\t- Local: "+ c.localOperator() +"\n\t- Global: "+ c.globalOperator(); 
 		}
 		return toRet;
 	}
 	
+	@Override
 	public String toString(){
 		
 		return "\n------------------ PACKET ---------------------\n" +
