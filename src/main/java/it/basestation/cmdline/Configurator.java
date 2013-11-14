@@ -43,6 +43,7 @@ public class Configurator {
 			String line;
 			String name = "";
 			String sensorID = "";
+			boolean fixReboot = false;
 			String localOperator = "";
 			String globalOperator = "";
 			String min = "";
@@ -100,6 +101,9 @@ public class Configurator {
 					else if(line.contains("sensorID")){
 						sensorID = line.substring(line.indexOf(':')+1).trim();
 					}
+					else if(line.contains("FixReboot:true")){
+						fixReboot = true;
+					}
 					else if(line.contains("local")){
 						localOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
 					}
@@ -125,10 +129,11 @@ public class Configurator {
 								log += "[Line: "+lineCounter+"] Errore impostazione maxValue Capability chiamata: " +name +"\n";
 							}
 						}
-						capabilities.add(new DataContainer(name, sensorID, localOperator, globalOperator, minValue, maxValue));
+						capabilities.add(new DataContainer(name, sensorID, fixReboot, localOperator, globalOperator, minValue, maxValue));
 						System.out.println("*********** New Capability ***********");
 						System.out.println("Name: " +name);
 						System.out.println("Sensor ID: " +sensorID);
+						System.out.println("Fix Reboot: " +fixReboot);
 						System.out.println("Local Operator: " +localOperator);
 						System.out.println("Global Operator: " +globalOperator);
 						System.out.println("Min Value: " +minValue);
@@ -141,6 +146,7 @@ public class Configurator {
 						
 						name = "";
 						sensorID = "";
+						fixReboot = false;
 						localOperator = "";
 						globalOperator = "";
 						min = "";
@@ -242,7 +248,7 @@ public class Configurator {
 		DataContainer toRet = null;
 		for (Capability c : capabilities) {
 			if(name.equals(c.getName())){
-				toRet = new DataContainer(c.getName(), c.getSensorID(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
+				toRet = new DataContainer(c.getName(), c.getSensorID(), c.needFixReboot(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
 				break;
 			}
 		}
@@ -253,7 +259,7 @@ public class Configurator {
 		DataContainer toRet = null;
 		for (Capability c : capabilities) {
 			if(sensorID.equals(c.getSensorID())){
-				toRet = new DataContainer(c.getName(), c.getSensorID(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
+				toRet = new DataContainer(c.getName(), c.getSensorID(), c.needFixReboot(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
 				break;
 			}
 		}

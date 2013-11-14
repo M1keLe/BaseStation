@@ -83,8 +83,6 @@ public class FusionTablesManager {
 	      fusiontables = new Fusiontables.Builder(
 	    	  //httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
 	          httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
-	      
-	      System.out.println("Service Path: " + fusiontables.getServicePath());
 	
 	      return;
 	    } catch (IOException e) {
@@ -250,7 +248,7 @@ public class FusionTablesManager {
 	      tablesID.put(nodeID, tableID);
 	    }
 		
-		LinkedList<DataContainer> capListToStore = nodeRecord.getCapListToStore();
+		LinkedList<DataContainer> capListToStore = nodeRecord.getDataListToStore();
 		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore));
 		System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati:\nQuery generata: " + getQueryInsert(tableID, capListToStore));
 		try {

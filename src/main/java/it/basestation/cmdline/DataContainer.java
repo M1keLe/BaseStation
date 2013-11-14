@@ -11,8 +11,8 @@ public class DataContainer extends Capability {
 		super(name, localOperator, globalOperator);
 	}
 	
-	public DataContainer(String name, String sensorID, String localOperator, String globalOperator, Double minValue, Double maxValue){
-		super(name, sensorID, localOperator, globalOperator, minValue, maxValue);
+	public DataContainer(String name, String sensorID, boolean fixReboot, String localOperator, String globalOperator, Double minValue, Double maxValue){
+		super(name, sensorID, fixReboot, localOperator, globalOperator, minValue, maxValue);
 	}
 	// set
 	

@@ -9,9 +9,11 @@ import java.util.LinkedList;
 public class DataProcessor extends Thread {
 	
 	
-	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-	private Hashtable<String, LastPeriodGlobalRecord> lastPeriodGlobalRecord = new Hashtable<String, LastPeriodGlobalRecord>();
-	private LinkedList <Packet> packetsList = new LinkedList<Packet>();  
+	//private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
+	//private Hashtable<String, LastPeriodGlobalRecord> lastPeriodGlobalRecord = new Hashtable<String, LastPeriodGlobalRecord>();
+	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
+	
+	//private Hashtable<Short, RebootFixer> lastRecordedValues = new Hashtable<Short, RebootFixer>();
 	
 	// costruttore che inizializza le hashtables?
 	public DataProcessor(){
@@ -24,7 +26,7 @@ public class DataProcessor extends Thread {
 		while (true) {
 			
 			Hashtable<Short, LastPeriodNodeRecord> newNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-			
+			Hashtable<Short, RebootFixer> lastRecordedValues = new Hashtable<Short, RebootFixer>();
 			try {
 				System.out.println("Data Processor in esecuzione " + new Date());
 				
@@ -38,12 +40,29 @@ public class DataProcessor extends Thread {
 				if(!packetsList.isEmpty()){
 					for (Packet p : packetsList) {
 						short nodeID = p.getSenderID();
-						System.out.println("DATA_PROCESSOR STA GESTENDO UN PACCHETTO SPEDITO DAL NODO N° " +nodeID);
+						//System.out.println("DATA_PROCESSOR STA GESTENDO UN PACCHETTO SPEDITO DAL NODO N° " +nodeID);
 						if(!newNodesRecord.containsKey(nodeID)){
 							newNodesRecord.put(nodeID, new LastPeriodNodeRecord(nodeID));
 						}
+						//newNodesRecord.get(nodeID).addPacket(p); metodo senza fix del reboot
 						
-						newNodesRecord.get(nodeID).addPacket(p);
+						// fix people in e out
+						LinkedList<DataContainer> dCList = p.getDataList();
+						for (DataContainer dC : dCList) {
+							// se devo controllare gli ultimi valori registrati...
+							if(dC.needFixReboot()){
+								if(!lastRecordedValues.containsKey(nodeID)){
+									lastRecordedValues.put(nodeID, new RebootFixer(nodeID));
+								}
+								//System.out.println("[DEBUG nodeID_"+ nodeID +"_"+dC.getName()+"]-> Valore prima del fix: " + dC.getValue());
+								double newValue = lastRecordedValues.get(nodeID).fixReboot(dC);
+								dC.setValue(newValue);
+								//System.out.println("[DEBUG nodeID_"+ nodeID +"_"+dC.getName()+"]-> Valore dopo il fix: " + dC.getValue());
+							}
+							newNodesRecord.get(nodeID).addDataContainer(dC);
+						}
+						
+						
 					}
 					
 					
@@ -56,20 +75,20 @@ public class DataProcessor extends Thread {
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
 						// Debug
-						System.out.println(recordToStore);
-// da testare ---->		listForGlobal.addAll(recordToStore.getCapListToStore());
-						for (DataContainer c : recordToStore.getCapListToStore()) {
-							listForGlobal.add(c);
-						}
+						//System.out.println(recordToStore);
+						listForGlobal.addAll(recordToStore.getDataListToStore());
+//						for (DataContainer c : recordToStore.getDataListToStore()) {
+//							listForGlobal.add(c);
+//						}
 						
 						
 						// DEBUG
-						System.out.println("================= ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
-						for (Capability c : recordToStore.getCapListToStore()) {
+/*						System.out.println("================= ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
+						for (Capability c : recordToStore.getDataListToStore()) {
 							System.out.println(c.toString());
 						}
 						System.out.println("================= FINE ELENCO CAPABILITY DA SALVARE RISPETTIVE AL NODO NUMERO " + recordToStore.getNodeID());
-									
+*/									
 
 						
 						try {
@@ -94,8 +113,8 @@ public class DataProcessor extends Thread {
 						System.out.println("++++++++++++++++ì+++ End_Global_record ++++++++++++++++++");
 					}
 					
-					this.lastPeriodNodesRecord = newNodesRecord;
-					this.lastPeriodGlobalRecord = newGlobalRecords;
+					//this.lastPeriodNodesRecord = newNodesRecord;
+					//this.lastPeriodGlobalRecord = newGlobalRecords;
 					
 					
 					

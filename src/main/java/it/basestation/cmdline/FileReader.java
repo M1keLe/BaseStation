@@ -41,9 +41,9 @@ public class FileReader extends Thread {
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
+							// Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
 							// Thread.sleep(1000*5);
-							// Thread.sleep(0);
+							Thread.sleep(0);
 						}
 						//reset();
 					}

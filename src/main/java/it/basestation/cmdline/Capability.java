@@ -4,6 +4,7 @@ public abstract class Capability {
 
 	private String name = "";
 	private String sensorID = "";
+	private boolean fixReboot = false;
 	private String localOperator = "";
 	private String globalOperator = "";
 	private Double minValue = Double.NEGATIVE_INFINITY;
@@ -19,9 +20,10 @@ public abstract class Capability {
 		this.globalOperator = globalOperator;
 	}
 	
-	public Capability(String name, String sensorID, String localOperator, String globalOperator, Double minValue, Double maxValue) {
+	public Capability(String name, String sensorID, boolean fixReboot, String localOperator, String globalOperator, Double minValue, Double maxValue) {
 		this.name = name;
 		this.sensorID = sensorID;
+		this.fixReboot = fixReboot;
 		this.localOperator = localOperator;
 		this.globalOperator = globalOperator;
 		this.minValue = minValue;
@@ -52,6 +54,10 @@ public abstract class Capability {
 	public String getSensorID(){
 		return this.sensorID;
 	}
+	
+	public boolean needFixReboot(){
+		return this.fixReboot;
+	}
 
 	public double getMinValue() {
 		return this.minValue;
@@ -76,6 +82,8 @@ public abstract class Capability {
 	public String toString() {
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
+		toRet += "Sensor ID: " + this.sensorID + "\n";
+		toRet += "Fix Reboot: "+ this.fixReboot + "\n";
 		toRet += "Local: " + this.localOperator + "\n";
 		toRet += "Global: " + this.globalOperator + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";

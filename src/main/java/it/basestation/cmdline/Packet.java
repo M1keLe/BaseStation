@@ -45,7 +45,7 @@ public class Packet {
 		return this.counter;
 	}
 	
-	public LinkedList<DataContainer> getCapabilityList(){
+	public LinkedList<DataContainer> getDataList(){
 		return this.dataList;
 	}
 	

@@ -49,12 +49,14 @@ ResetTime: 23:59:59
 	
 	<PeopleIn[0,*]>
 		sensorID:in
+		FixReboot:true
 		local:last
 		global:sum
 	</PeopleIn>
 	
 	<PeopleOut[0,*]>
 		sensorID:out
+		FixReboot:true
 		local:last
 		global:sum
 	</PeopleOut>
