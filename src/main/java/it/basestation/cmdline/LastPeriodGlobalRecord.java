@@ -21,7 +21,7 @@ public class LastPeriodGlobalRecord {
 		return this.name;
 	}
 	
-	public Capability getCapabilityToStore(){
+	public DataContainer getCapabilityToStore(){
 		if(this.globalOperator.equals("avg")){
 			this.capabilityToStore.setValue(getAvg(this.name));
 			
@@ -50,21 +50,22 @@ public class LastPeriodGlobalRecord {
 	private double getDerivedMeasure() {
 		
 		double result = 0.00;
-		//LinkedList<String> done = new LinkedList<String>();
+		// lista per non ripere la somma sulle capability con stesso nome
+		LinkedList<String> done = new LinkedList<String>();
 		//System.out.println("DEBUG: Stringa da splittare: ->"+this.globalOperator);
 		String[] tokens = this.globalOperator.split(" ");
 		for (int i = 0; i < tokens.length; i++) {
 			System.out.println("DEBUG: Tocken n° "+ i + " = " + tokens[i]);
 			for (Capability cap : this.capabilityToElab) {
 				
-				if(tokens[i].equals(cap.getName())){
-				//if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
+				//if(tokens[i].equals(cap.getName())){  
+				if(tokens[i].equals(cap.getName()) && !done.contains(cap.getName())){
 					Double value = getSumOfValues(cap.getName());
-					//double value = getSumOfValues(cap.getName());
+					
 					//System.out.println("DEBUG: Sto trasformando il token numero "+i+" con valore "+value+ " in stringa");
 					tokens[i] = value.toString();
 					//System.out.println("DEBUG: Modificato il token numero "+i+ "in " + tokens[i]);
-					//done.add(cap.getName());
+					done.add(cap.getName());
 				}
 			}
 		}

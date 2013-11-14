@@ -13,7 +13,7 @@ public class DataProcessor extends Thread {
 	//private Hashtable<String, LastPeriodGlobalRecord> lastPeriodGlobalRecord = new Hashtable<String, LastPeriodGlobalRecord>();
 	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
 	
-	//private Hashtable<Short, RebootFixer> lastRecordedValues = new Hashtable<Short, RebootFixer>();
+	private Hashtable<Short, RebootFixer> lastRecordedValues = new Hashtable<Short, RebootFixer>();
 	
 	// costruttore che inizializza le hashtables?
 	public DataProcessor(){
@@ -26,7 +26,7 @@ public class DataProcessor extends Thread {
 		while (true) {
 			
 			Hashtable<Short, LastPeriodNodeRecord> newNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-			Hashtable<Short, RebootFixer> lastRecordedValues = new Hashtable<Short, RebootFixer>();
+			//Hashtable<Short, RebootFixer> lastRecordedValues = new Hashtable<Short, RebootFixer>();
 			try {
 				System.out.println("Data Processor in esecuzione " + new Date());
 				
@@ -44,7 +44,7 @@ public class DataProcessor extends Thread {
 						if(!newNodesRecord.containsKey(nodeID)){
 							newNodesRecord.put(nodeID, new LastPeriodNodeRecord(nodeID));
 						}
-						//newNodesRecord.get(nodeID).addPacket(p); metodo senza fix del reboot
+						//newNodesRecord.get(nodeID).addPacket(p); metodo senza "fix del reboot"
 						
 						// fix people in e out
 						LinkedList<DataContainer> dCList = p.getDataList();
@@ -55,13 +55,14 @@ public class DataProcessor extends Thread {
 									lastRecordedValues.put(nodeID, new RebootFixer(nodeID));
 								}
 								//System.out.println("[DEBUG nodeID_"+ nodeID +"_"+dC.getName()+"]-> Valore prima del fix: " + dC.getValue());
-								double newValue = lastRecordedValues.get(nodeID).fixReboot(dC);
-								dC.setValue(newValue);
+								//double newValue = lastRecordedValues.get(nodeID).fixReboot(dC);
+								lastRecordedValues.get(nodeID).fixReboot(dC);
+								//dC.setValue(newValue);
 								//System.out.println("[DEBUG nodeID_"+ nodeID +"_"+dC.getName()+"]-> Valore dopo il fix: " + dC.getValue());
 							}
 							newNodesRecord.get(nodeID).addDataContainer(dC);
 						}
-						
+						// end fix in e out
 						
 					}
 					
@@ -69,14 +70,14 @@ public class DataProcessor extends Thread {
 					
 					// store dei dati sulle fusion tables
 					
-					LinkedList<DataContainer> listForGlobal = new LinkedList<DataContainer>();
+					LinkedList<DataContainer> globalList = new LinkedList<DataContainer>();
 					Enumeration<Short> e = newNodesRecord.keys();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
 						// Debug
 						//System.out.println(recordToStore);
-						listForGlobal.addAll(recordToStore.getDataListToStore());
+						globalList.addAll(recordToStore.getDataListToStore());
 //						for (DataContainer c : recordToStore.getDataListToStore()) {
 //							listForGlobal.add(c);
 //						}
@@ -104,13 +105,13 @@ public class DataProcessor extends Thread {
 					// store dei valori globali
 				Hashtable<String, LastPeriodGlobalRecord> newGlobalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
 					for(String s  : Configurator.getGlobalCapabilitiesSet()){
-						newGlobalRecords.put(s, new LastPeriodGlobalRecord(s, listForGlobal));
+						newGlobalRecords.put(s, new LastPeriodGlobalRecord(s, globalList));
 						//newGlobalRecords.put(s, new LastPeriodGlobalRecord(Configurator.getCapability(s), listForGlobal));
 						//FusionTablesManager.insertData(globalRecords.get(s));
 						
 						System.out.println("+++++++++++++++++++++ Global_record +++++++++++++++++++++");
 						System.out.println(newGlobalRecords.get(s).getCapabilityToStore().toString());
-						System.out.println("++++++++++++++++ì+++ End_Global_record ++++++++++++++++++");
+						System.out.println("++++++++++++++++++++ End_Global_record ++++++++++++++++++");
 					}
 					
 					//this.lastPeriodNodesRecord = newNodesRecord;

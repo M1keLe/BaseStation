@@ -39,7 +39,7 @@ public class LastPeriodNodeRecord {
 	}
 	
 	public LinkedList<DataContainer> getDataListToStore(){
-		//LinkedList<DataContainer> localValuesToStore = new LinkedList<DataContainer>();
+		
 		boolean needToElabDerivedMeasure = false;
 		for (DataContainer c : this.dataListToStore) {			
 			if(c.localOperator().contains("avg")){
