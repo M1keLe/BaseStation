@@ -1,10 +1,8 @@
 package it.basestation.cmdline;
 
-public abstract class Capability {
+public class Capability {
 
 	private String name = "";
-	private String sensorID = "";
-	private boolean fixReboot = false;
 	private String localOperator = "";
 	private String globalOperator = "";
 	private Double minValue = Double.NEGATIVE_INFINITY;
@@ -20,10 +18,8 @@ public abstract class Capability {
 		this.globalOperator = globalOperator;
 	}
 	
-	public Capability(String name, String sensorID, boolean fixReboot, String localOperator, String globalOperator, Double minValue, Double maxValue) {
+	public Capability(String name, String localOperator, String globalOperator, Double minValue, Double maxValue) {
 		this.name = name;
-		this.sensorID = sensorID;
-		this.fixReboot = fixReboot;
 		this.localOperator = localOperator;
 		this.globalOperator = globalOperator;
 		this.minValue = minValue;
@@ -45,20 +41,13 @@ public abstract class Capability {
 	public void setGlobalOperator(String global) {
 		this.globalOperator=global;
 	}
+
 	// get
 
 	public String getName() {
 		return this.name;
 	}
 	
-	public String getSensorID(){
-		return this.sensorID;
-	}
-	
-	public boolean needFixReboot(){
-		return this.fixReboot;
-	}
-
 	public double getMinValue() {
 		return this.minValue;
 	}
@@ -75,15 +64,10 @@ public abstract class Capability {
 		return this.globalOperator;
 	}
 	
-	abstract void setValue(double value);
-	abstract double getValue();
-
 	@Override
 	public String toString() {
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
-		toRet += "Sensor ID: " + this.sensorID + "\n";
-		toRet += "Fix Reboot: "+ this.fixReboot + "\n";
 		toRet += "Local: " + this.localOperator + "\n";
 		toRet += "Global: " + this.globalOperator + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";

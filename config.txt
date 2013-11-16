@@ -15,48 +15,38 @@ ResetTime: 23:59:59
 <capabilities>
  
 	<Counter[0,*]>
-		sensorID:counter
 		local:last
 	</Counter>
 	
 	<Temperature[0,10000]>
-		sensorID:temp
 		local:avg
 		global:avg
 	</Temperature>
 	
 	<Pressure[700,1400]>
-		sensorID:pressure
 		local:avg
 		global:avg
 	</Pressure>
 	
 	<CO2[100,*]>
-		sensorID:co2
 		local:avg
 	</CO2>
 	
 	<Noise[0,*]>
-		sensorID:noise
 		local:avg
 		global:avg
 	</Noise>
 	
 	<Light[15,*]>
-		sensorID:light
 		local:avg
 	</Light>
 	
 	<PeopleIn[0,*]>
-		sensorID:in
-		FixReboot:true
 		local:last
 		global:sum
 	</PeopleIn>
 	
 	<PeopleOut[0,*]>
-		sensorID:out
-		FixReboot:true
 		local:last
 		global:sum
 	</PeopleOut>

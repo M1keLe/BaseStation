@@ -17,7 +17,7 @@ public class FileReader extends Thread {
 	private short sender;
 	private short counter;
 	private short route;
-	private LinkedList<DataContainer> dataContainerList = new LinkedList<DataContainer>();
+	private LinkedList<CapabilityInstance> capInstanceList = new LinkedList<CapabilityInstance>();
 	private LinkedList<String> capabilitiesSet = new LinkedList<String>();
 	
 	// timestamp arrivo pacchetto simulo tempo tra arrivo di un pacchetto ed un altro
@@ -41,9 +41,9 @@ public class FileReader extends Thread {
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
+							//Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
 							// Thread.sleep(1000*5);
-							// Thread.sleep(0);
+							Thread.sleep(0);
 						}
 						//reset();
 					}
@@ -57,29 +57,29 @@ public class FileReader extends Thread {
 						this.sender = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 						this.capabilitiesSet = Configurator.getNode(this.sender).getCapabilitiesSet();
 					}
-					else if(line.contains(">counter:")){
+					else if(line.contains(">Counter:")){
 						// da definire meglio!!!
 						this.counter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
-						DataContainer dc = Configurator.getDataContainerBySensorID("counter");
+						CapabilityInstance dc = Configurator.getCapabilityInstance("Counter");
 						dc.setValue(counter);
-						this.dataContainerList.add(dc);
+						this.capInstanceList.add(dc);
 					}
 					else if(line.contains(">route:")){
 						this.route = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 					}
 					else if (line.contains(">") && line.contains(":") && !line.contains("<")){
-						String sensorID = line.substring(line.indexOf('>')+1, line.indexOf(':'));
-						DataContainer c = Configurator.getDataContainerBySensorID(sensorID);
+						String name = line.substring(line.indexOf('>')+1, line.indexOf(':'));
+						CapabilityInstance c = Configurator.getCapabilityInstance(name);
 						
 						//System.out.println("SENSOR ID PARSATO: " +sensorID);
 						
 						if(c != null && capabilitiesSet.contains(c.getName())){
 							c.setValue(Double.parseDouble(line.substring(line.indexOf(':')+1).trim()));
-							this.dataContainerList.add(c);		
+							this.capInstanceList.add(c);		
 						}
 					}
 					if(line.contains("</packet>")){
-						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.dataContainerList);
+						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.capInstanceList);
 						LocalStatsManager.addNewPacket(p);
 						//System.out.println(p);
 						reset();
@@ -119,7 +119,7 @@ public class FileReader extends Thread {
 		this.sender = -1;
 		this.counter = -1;
 		this.route = -1;
-		this.dataContainerList = new LinkedList<DataContainer>();
+		this.capInstanceList = new LinkedList<CapabilityInstance>();
 		this.capabilitiesSet = new LinkedList<String>();
 	}
 

@@ -6,39 +6,37 @@ import java.util.Stack;
 public class LastPeriodGlobalRecord {
 	
 	private String name = "";
-	private DataContainer capabilityToStore;// = new Capability("");
-	private LinkedList<DataContainer> capabilityToElab = new LinkedList<DataContainer>();
+	private CapabilityInstance capabilityInstanceToStore;
 	private String globalOperator = "";
 	
-	public LastPeriodGlobalRecord(String  capabilityName, LinkedList <DataContainer> capabilityToElab){
-		this.name = capabilityName;
-		this.capabilityToStore = Configurator.getDataContainerByName(capabilityName);
-		this.globalOperator = this.capabilityToStore.globalOperator();
-		this.capabilityToElab = capabilityToElab;
+	public LastPeriodGlobalRecord(String  name){
+		this.name = name;
+		this.capabilityInstanceToStore = Configurator.getCapabilityInstance(name);
+		this.globalOperator = this.capabilityInstanceToStore.globalOperator();
 	}
 	
 	public String getName(){	
 		return this.name;
 	}
 	
-	public DataContainer getCapabilityToStore(){
+	public CapabilityInstance getCapabilityToStore(){
 		if(this.globalOperator.equals("avg")){
-			this.capabilityToStore.setValue(getAvg(this.name));
+			this.capabilityInstanceToStore.setValue(getAvg(this.name));
 			
 		}else if(this.globalOperator.equals("sum")){
-			this.capabilityToStore.setValue(getSumOfValues(this.name));
+			this.capabilityInstanceToStore.setValue(getSumOfValues(this.name));
 			
 		}else{
-			this.capabilityToStore.setValue(getDerivedMeasure());
+			this.capabilityInstanceToStore.setValue(getDerivedMeasure());
 		}
 		
-		if(this.capabilityToStore.getValue() < this.capabilityToStore.getMinValue()||
-				this.capabilityToStore.getMaxValue() < this.capabilityToStore.getValue()){
+		if(this.capabilityInstanceToStore.getValue() < this.capabilityInstanceToStore.getMinValue()||
+				this.capabilityInstanceToStore.getMaxValue() < this.capabilityInstanceToStore.getValue()){
 			
-			this.capabilityToStore.setValue(0.00);
+			this.capabilityInstanceToStore.setValue(0.00);
 		}
 		
-		return this.capabilityToStore;
+		return this.capabilityInstanceToStore;
 	}
 
 	@Override
@@ -105,7 +103,7 @@ public class LastPeriodGlobalRecord {
 
 	private double getSumOfValues(String name) {
 		double toRet = 0.00;
-		for (DataContainer c : this.capabilityToElab) {
+		for (CapabilityInstance c : this.capabilityToElab) {
 			if(c.getName().equals(name)){
 				toRet+= c.getValue();
 			}
@@ -118,7 +116,7 @@ public class LastPeriodGlobalRecord {
 		double value = 0.00;
 		int counter = 0;
 		
-		for (DataContainer c : this.capabilityToElab) {
+		for (CapabilityInstance c : this.capabilityToElab) {
 			if(c.getName().equals(name)){
 				if(c.getMinValue()<c.getValue() && c.getValue()<c.getMaxValue()){
 					value += c.getValue();

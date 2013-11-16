@@ -12,7 +12,7 @@ public class RebootFixer {
 		this.nodeID = nodeID;
 	}
 	
-	public void fixReboot(DataContainer dC){
+	public void fixReboot(CapabilityInstance dC){
 		double newValue = dC.getValue();
 		// se il valore  è presente effettuo il controllo se si è verificato un reboot del nodo
 		if(!this.lastRecordedValues.containsKey(dC.getName())){
