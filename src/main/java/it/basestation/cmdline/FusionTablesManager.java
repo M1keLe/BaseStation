@@ -49,7 +49,7 @@ public class FusionTablesManager {
 	  
 	private static Hashtable <Short, String> tablesID = new Hashtable <Short, String>();
 	
-	private static String globalTableID = new String();
+	private static Hashtable <String, String> globalTableID = new Hashtable <String, String>();
 	
 	private static Credential authorize() throws Exception {
 	    // load client secrets
@@ -81,7 +81,6 @@ public class FusionTablesManager {
 	      Credential credential = authorize();
 	      // set up global FusionTables instance
 	      fusiontables = new Fusiontables.Builder(
-	    	  //httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
 	          httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
 	
 	      return;
@@ -94,8 +93,6 @@ public class FusionTablesManager {
 	}
 	
 	private static TableList listTables() throws IOException {
-
-
 	    // Fetch the table list
 	    Fusiontables.Table.List listTables = fusiontables.table().list();
 	    tableList = listTables.execute();
@@ -131,6 +128,23 @@ public class FusionTablesManager {
 	    return r.getTableId();   
 	}
 	
+	private static String createGlobalTable(String name)throws IOException{
+	    Table table = new Table();
+	    table.setName(name);
+	    table.setIsExportable(false);
+	    LinkedList <Column> columns = new LinkedList<Column>();
+	    // aggiungo la colonna
+	    columns.add(new Column().setName(name).setType("NUMBER"));
+	    // aggiungo il campo data
+	    columns.add(new Column().setName("Date").setType("DATETIME"));
+	    table.setColumns(columns);
+	    Fusiontables.Table.Insert t = fusiontables.table().insert(table);
+	    Table r = t.execute();
+	    // salvo l'id della tabella globale
+	    globalTableID.put(name, r.getTableId());
+	    return r.getTableId();   
+	}
+	// vecchio metodo da eliminare
 	private static String createGlobalTable()throws IOException{
 	    Table table = new Table();
 	    table.setName("Global_Table");
@@ -149,7 +163,7 @@ public class FusionTablesManager {
 	    Fusiontables.Table.Insert t = fusiontables.table().insert(table);
 	    Table r = t.execute();
 	    // salvo l'id della tabella globale
-	    globalTableID =  r.getTableId();
+	    //globalTableID =  r.getTableId();
 	    return r.getTableId();   
 	}
 	
@@ -185,17 +199,20 @@ public class FusionTablesManager {
 				System.out.println("Nodo_"+ id +": La tabella esiste già!");
 			}
 		}
-		// creo la tabella globale se non esiste
-		if(!globalTableExists()){
-			try {
-				String s = createGlobalTable();          
-    			System.out.println("Creata \"Global Table\" con id = " +s);
-			} catch (IOException exception) {
-				// TODO Auto-generated catch block
-    			exception.printStackTrace();
-    		}
-		} else {
-			System.out.println("La \"Global Table\" esiste già!");
+		// creo le tabelle globali se non esistono
+		LinkedList <String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
+		for (String name : globalCapabilitiesSet) {
+			if(!globalTableExists(name)){
+				try {
+					String s = createGlobalTable(name);          
+	    			System.out.println("Creata \"Global Table\" con id = " +s);
+				} catch (IOException exception) {
+					// TODO Auto-generated catch block
+	    			exception.printStackTrace();
+	    		}
+			} else {
+				System.out.println("La \"Global Table\" chiamata "+name+" esiste già!");
+			}
 		}
 	}
 	
@@ -213,13 +230,13 @@ public class FusionTablesManager {
 	    return toRet;
 	}
 	
-	private static boolean globalTableExists (){
+	private static boolean globalTableExists (String name){
 		boolean toRet = false;
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
-	    		if(table.getName().equals("Global_Table")){
+	    		if(table.getName().equals(name)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
-	    			globalTableID = table.getTableId();
+	    			globalTableID.put(name, table.getTableId());
 	    			toRet = true;
 	    			break;
 	    		}
@@ -239,13 +256,24 @@ public class FusionTablesManager {
 	    }
 	    return tableID;
 	}
+	
+	private static String getTableID(String name){
+	    String tableID = null;
+	    for (Table table : tableList.getItems()) {
+	    	if(table.getName().equals(name)){
+	    		tableID = table.getTableId();
+	    		globalTableID.put(name, tableID);          
+	    		break;
+	    	}         
+	    }
+	    return tableID;
+	}
 	public static void insertData(LastPeriodNodeRecord nodeRecord) throws IOException {
 		short nodeID = nodeRecord.getNodeID();
 		String tableID = tablesID.get(nodeID);
-		if(tableID == null)
-	    {
-	      tableID = getTableID(nodeID);
-	      tablesID.put(nodeID, tableID);
+		if(tableID == null){
+			tableID = getTableID(nodeID);
+			tablesID.put(nodeID, tableID);
 	    }
 		
 		LinkedList<CapabilityInstance> capListToStore = nodeRecord.getDataListToStore();
@@ -254,28 +282,37 @@ public class FusionTablesManager {
 		try {
 			sql.execute();
 			
-		    } catch (IllegalArgumentException e) {
-		    	System.out.print("ERROR TABLE NODE NR ="+nodeID + e.toString());
-		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
-		      // been thrown.
-		      // Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
-		      // http://code.google.com/p/google-api-java-client/issues/detail?id=545
-		    }
+	    } catch (IllegalArgumentException e) {
+	    	System.out.print("ERROR TABLE NODE NR ="+nodeID + e.toString());
+	    	// For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
+	    	// been thrown.
+	    	// Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
+	    	// http://code.google.com/p/google-api-java-client/issues/detail?id=545
+	    }
 	}
 
-	public static void insertData(LinkedList<CapabilityInstance> globalValuesToStore) throws IOException {
-		Sql sql = fusiontables.query().sql(getQueryInsert(globalTableID, globalValuesToStore));
-		System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(globalTableID, globalValuesToStore));
-		try {
-			sql.execute();
-			
-			
-		    } catch (IllegalArgumentException e) {
-		      // For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
-		      // been thrown.
-		      // Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
-		      // http://code.google.com/p/google-api-java-client/issues/detail?id=545
+	public static void insertData(LastPeriodGlobalRecord globalRecord) throws IOException {
+		LinkedList<CapabilityInstance> globalValuesToStore = globalRecord.getDataListToStore(); 
+		for (CapabilityInstance cI : globalValuesToStore) {
+			String gTableID = globalTableID.get(cI.getName());
+			if(gTableID == null){	
+				gTableID = getTableID(cI.getName());
+				globalTableID.put(cI.getName(), gTableID);
 		    }
+			
+			Sql sql = fusiontables.query().sql(getQueryInsert(gTableID, cI));
+			
+			//Debug
+			System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(gTableID, cI));
+			try {
+				sql.execute();
+			}catch (IllegalArgumentException e) {
+				// For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
+				// been thrown.
+				// Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
+				// http://code.google.com/p/google-api-java-client/issues/detail?id=545
+			}
+		}
 	}
 	
 	
@@ -301,8 +338,10 @@ public class FusionTablesManager {
 	    //System.out.println(queryHead.concat(queryTail));    
 	    return queryHead.concat(queryTail).replaceAll(" {2,}", " ");
 	} 
-	  
 	
-	
-	
+	private static String getQueryInsert(String tableID, CapabilityInstance gCI){
+	    java.text.DecimalFormat format = new java.text.DecimalFormat("0.00");
+	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    return "INSERT INTO "+ tableID +" (" + gCI.getName()+", Date) VALUES ('"+ format.format(gCI.getValue())+"', '" + dateFormat.format(new Date())+"') ";
+	} 	
 }

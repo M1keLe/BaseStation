@@ -27,8 +27,7 @@ public class FileReader extends Thread {
 	public FileReader() {	
 		super ("File Reader");
 	}
-	
-	
+		
 	@Override
 	public void run(){
 		while(true){		
@@ -41,9 +40,9 @@ public class FileReader extends Thread {
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							//Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
 							// Thread.sleep(1000*5);
-							Thread.sleep(0);
+							// Thread.sleep(100);
 						}
 						//reset();
 					}
@@ -60,9 +59,9 @@ public class FileReader extends Thread {
 					else if(line.contains(">Counter:")){
 						// da definire meglio!!!
 						this.counter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
-						CapabilityInstance dc = Configurator.getCapabilityInstance("Counter");
-						dc.setValue(counter);
-						this.capInstanceList.add(dc);
+						CapabilityInstance cI = Configurator.getCapabilityInstance("Counter");
+						cI.setValue(counter);
+						this.capInstanceList.add(cI);
 					}
 					else if(line.contains(">route:")){
 						this.route = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
@@ -70,8 +69,6 @@ public class FileReader extends Thread {
 					else if (line.contains(">") && line.contains(":") && !line.contains("<")){
 						String name = line.substring(line.indexOf('>')+1, line.indexOf(':'));
 						CapabilityInstance c = Configurator.getCapabilityInstance(name);
-						
-						//System.out.println("SENSOR ID PARSATO: " +sensorID);
 						
 						if(c != null && capabilitiesSet.contains(c.getName())){
 							c.setValue(Double.parseDouble(line.substring(line.indexOf(':')+1).trim()));

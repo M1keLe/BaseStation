@@ -3,14 +3,14 @@ package it.basestation.cmdline;
 public class CapabilityInstance extends Capability {
 	private double value = 0.00;
 	
-	public CapabilityInstance(String name){
+/*	public CapabilityInstance(String name){
 		super(name);
 	}
 	
 	public CapabilityInstance(String name, String localOperator, String globalOperator){
 		super(name, localOperator, globalOperator);
 	}
-	
+*/	
 	public CapabilityInstance(String name, String localOperator, String globalOperator, Double minValue, Double maxValue){
 		super(name, localOperator, globalOperator, minValue, maxValue);
 	}
@@ -20,7 +20,6 @@ public class CapabilityInstance extends Capability {
 
 	}
 	
-
 	public double getValue(){
 		return this.value;
 	}

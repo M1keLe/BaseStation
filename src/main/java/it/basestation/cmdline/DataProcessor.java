@@ -10,10 +10,10 @@ public class DataProcessor extends Thread {
 	
 	
 	//private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-	//private Hashtable<String, LastPeriodGlobalRecord> lastPeriodGlobalRecord = new Hashtable<String, LastPeriodGlobalRecord>();
+	//private LastPeriodGlobalRecord lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
 	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
-	
-	// costruttore che inizializza le hashtables?
+	private LastPeriodGlobalRecord lastGlobalRecord = null;
+		
 	public DataProcessor(){
 		super("Data Processor");
 	}
@@ -51,9 +51,9 @@ public class DataProcessor extends Thread {
 						short nodeID = e.nextElement();
 						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
 						// DEBUG
-						System.out.println(recordToStore);
+						//System.out.println(recordToStore);
 						
-/*						try {
+						try {
 							
 							FusionTablesManager.insertData(recordToStore);
 							
@@ -62,13 +62,38 @@ public class DataProcessor extends Thread {
 							e1.printStackTrace();
 						}
  						
-*/					}
-					// calcolo le medie globali
-					Hashtable<String, LastPeriodGlobalRecord> newGlobalRecords = new Hashtable<String, LastPeriodGlobalRecord>();
-					LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
-					for (String name : globalCapabilitiesSet) {
-						newGlobalRecords.put(name, new LastPeriodGlobalRecord(name));
 					}
+					// calcolo le medie globali
+					
+					LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
+					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
+					for (String name : globalCapabilitiesSet) {
+						// prendo i dati dai vari node records
+						Enumeration<Short> nodeID = newNodesRecord.keys();
+						while (nodeID.hasMoreElements()) {
+							CapabilityInstance cI = newNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(name);
+							if(cI != null && (cI.globalOperator().contains("avg") || 
+									cI.globalOperator().contains("sum") || 
+									cI.globalOperator().contains("last"))) {
+								
+								newGlobalRecord.addCapabilityInstance(cI);
+							}
+						}
+					}
+					
+					// Store capabilities Globali
+					// update global stats
+					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastGlobalRecord);
+					
+					//System.out.println(newGlobalRecord);
+					try {
+						FusionTablesManager.insertData(newGlobalRecord);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+					this.lastGlobalRecord = newGlobalRecord;
 					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
@@ -79,6 +104,25 @@ public class DataProcessor extends Thread {
 				e.printStackTrace();
 			}			
 		}	
+	}	
+
+	private LastPeriodGlobalRecord updateGlobalRecord(LastPeriodGlobalRecord newGlobalRecord, LastPeriodGlobalRecord lastGlobalRecord) {
+		if(lastGlobalRecord != null){
+			LinkedList<CapabilityInstance> lastGlobalValues = lastGlobalRecord.getDataListToStore();
+			for (CapabilityInstance cI : lastGlobalValues) {
+				if(cI.globalOperator().contains("avg") || cI.globalOperator().contains("sum") || cI.globalOperator().contains("last")){ 
+				//if(cI.getName().equals("PeopleIn")|| cI.getName().equals("PeopleOut")){
+					newGlobalRecord.addCapabilityInstance(cI);
+				}
+			}
+		//}else{
+		//	for (CapabilityInstance cI : newGlobalRecord.getDataListToStore()) {
+		//		if(cI.getName().contains("People")){
+		//			cI.setValue(0);
+		//		}
+		//	}
+		}
+		return newGlobalRecord;
 	}
 }
 				// ***************************************************************************************************

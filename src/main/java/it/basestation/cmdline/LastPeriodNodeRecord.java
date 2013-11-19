@@ -6,8 +6,9 @@ import java.util.LinkedList;
 import java.util.Stack;
 
 public class LastPeriodNodeRecord {
-	
+	// lista debug
 	private Hashtable<String, LinkedList<CapabilityInstance>> capabilityInstancesList = new Hashtable<String, LinkedList<CapabilityInstance>>();
+
 	private Hashtable<String, CapabilityInstance> dataToStore = new Hashtable<String, CapabilityInstance>();
 	private Hashtable<String, Integer> counters = new Hashtable<String, Integer>();
 	private short nodeID;
@@ -19,7 +20,9 @@ public class LastPeriodNodeRecord {
 		for (String s : capabilitiesSet) {
 			CapabilityInstance c = Configurator.getCapabilityInstance(s);
 			this.dataToStore.put(s, c);
-			this.counters.put(s, 0);
+			if(c.localOperator().equals("avg")){
+				this.counters.put(s, 0);
+			}
 		}
 	}
 	
@@ -30,13 +33,20 @@ public class LastPeriodNodeRecord {
 			if(!this.capabilityInstancesList.containsKey(cI.getName())){
 				this.capabilityInstancesList.put(cI.getName(), new LinkedList<CapabilityInstance>());
 			}
+			// test delta
+			//if(cI.getName().contains("People")){
+			// 	LocalStatsManager.elabDelta(nodeID, cI);
+			//}			
+			// end test delta
+			
+			// store su lista debug
 			this.capabilityInstancesList.get(cI.getName()).add(cI);
-			// end store su lista debug
+			// store su lista debug
 			
 			// controllo se il valore è da mediare
-			if(cI.localOperator().contains("avg") && cI.getMinValue()< cI.getValue() && cI.getValue() < cI.getMaxValue() ){
+			if(cI.localOperator().equals("avg") && cI.getMinValue()< cI.getValue() && cI.getValue() < cI.getMaxValue() ){
 				int lastCounter = this.counters.get(cI.getName()).intValue();
-				int newCounter = lastCounter +1 ;
+				int newCounter = lastCounter + 1;
 				double lastAvg = this.dataToStore.get(cI.getName()).getValue();
 				double temp = lastAvg * lastCounter;
 				temp += cI.getValue();
@@ -45,9 +55,15 @@ public class LastPeriodNodeRecord {
 				this.counters.put(cI.getName(), newCounter);
 				this.dataToStore.get(cI.getName()).setValue(neWAvg);
 				
-			}else if(cI.localOperator().contains("last")){
+			}else if(cI.localOperator().equals("last")){
 				// salvo l'ultimo valore
 				this.dataToStore.put(cI.getName(), cI);
+				
+			}else if(cI.localOperator().equals("sum")){
+				// lo sommo ai valori precedenti
+				double lastValue = this.dataToStore.get(cI.getName()).getValue();
+				double sum = lastValue + cI.getValue();
+				this.dataToStore.get(cI.getName()).setValue(sum);
 			}
 			
 			// aggiorno dati derivati
@@ -56,14 +72,13 @@ public class LastPeriodNodeRecord {
 			while(e.hasMoreElements()){
 				String name = e.nextElement();
 				//controllo se è un valore derivato
-				if(!this.dataToStore.get(name).localOperator().contains("avg") &&
-						!this.dataToStore.get(name).localOperator().contains("last")){
+				if(!this.dataToStore.get(name).localOperator().equals("avg") &&
+						!this.dataToStore.get(name).localOperator().equals("last")&&
+						!this.dataToStore.get(name).localOperator().equals("sum")){
 					this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));
 					
 				}
-			}
-			
-			
+			}						
 		}
 	}
 	
@@ -79,6 +94,10 @@ public class LastPeriodNodeRecord {
 	
 	public short getNodeID(){
 		return this.nodeID;
+	}
+	
+	public CapabilityInstance getCapabilityInstance(String name){
+		return this.dataToStore.get(name);
 	}
 	
 	
@@ -119,8 +138,7 @@ public class LastPeriodNodeRecord {
 		        vals.push(v);
 		    }
         	
-        	else{
-        		
+        	else{        		
         		vals.push(Double.parseDouble(s));
         	}
         }

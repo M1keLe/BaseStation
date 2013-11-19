@@ -11,13 +11,12 @@ public class Main
     {
     	if(Configurator.loadConfigFile()){
     		
-    		// passare la lista di nodi al local stats container
+    		// passare la lista di nodi al local stats manager
     		LocalStatsManager.setNodeList();
     		
     		// controllare e creare tabelle
     		FusionTablesManager.connect();
     		FusionTablesManager.setupTables(Configurator.getNodeList());
-    		LocalStatsManager.setNodeList(Configurator.getNodeList());
     		/*
     		 * - lanciare serial reader
     		 * 
@@ -26,23 +25,17 @@ public class Main
     		// avvio data Processor e reader
     		//new DataProcessor().start();
     		FileReader fr = new FileReader();
-    		DataProcessor dp = new DataProcessor();
     		fr.start();
-    		dp.start();
-    		
-    		
-    		
-    		//Test
-    		//PacketGenerator pg = new PacketGenerator();
-    		//pg.start();
+    		DataProcessor dp = new DataProcessor();
+    		dp.start();   
     		
     		// se specificato nel file di configurazione avvio il thread resetter
     		if(Configurator.getResetTime() != null){
     			Timer resetter = new Timer("resetter");
     			resetter.schedule(new Resetter(), Configurator.getResetTime(), DAY);
-    			Printer.println("Primo Reset: " + Configurator.getResetTime());
+    			System.out.println("Primo Reset: " + Configurator.getResetTime());
     		}else{
-    			Printer.println("Le statistiche non verranno mai resettate");
+    			System.out.println("Le statistiche non verranno mai resettate");
     		}
     	}
     }

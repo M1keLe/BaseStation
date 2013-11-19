@@ -8,7 +8,7 @@ public class Capability {
 	private Double minValue = Double.NEGATIVE_INFINITY;
 	private Double maxValue = Double.POSITIVE_INFINITY;
 
-	public Capability(String name){
+/*	public Capability(String name){
 		this.name = name;
 	}
 	
@@ -17,7 +17,7 @@ public class Capability {
 		this.localOperator = localOperator;
 		this.globalOperator = globalOperator;
 	}
-	
+*/	
 	public Capability(String name, String localOperator, String globalOperator, Double minValue, Double maxValue) {
 		this.name = name;
 		this.localOperator = localOperator;
@@ -26,7 +26,7 @@ public class Capability {
 		this.maxValue = maxValue;
 	}
 
-	public void setMinValue(Double minValue) {
+/*	public void setMinValue(Double minValue) {
 		this.minValue = minValue;
 	}
 
@@ -41,7 +41,7 @@ public class Capability {
 	public void setGlobalOperator(String global) {
 		this.globalOperator=global;
 	}
-
+*/
 	// get
 
 	public String getName() {

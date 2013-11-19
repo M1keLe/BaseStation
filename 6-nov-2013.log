@@ -190,7 +190,7 @@ contikimac: data (34)
    >Pressure: 950
    >Light: 0
 </packet>
--
+-------------------------------------------------------------------------
 contikimac: data (34)
 <packet> 1383692650424
    >time: 1741765820
@@ -384,7 +384,7 @@ contikimac: data (34)
    >Pressure: 0
    >Light: 0
 </packet>
--
+------------------------------------------------------------------------
 Drop duplicate ContikiMAC layer packet n159 - 4
 -
 contikimac: data (34)

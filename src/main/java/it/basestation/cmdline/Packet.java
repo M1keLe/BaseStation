@@ -3,6 +3,7 @@ package it.basestation.cmdline;
 import java.util.LinkedList;
 
 public class Packet {
+
 	private long time;
 	private short lastRouter;
 	private short sender;
@@ -10,7 +11,6 @@ public class Packet {
 	private short route;
 	
 	private  LinkedList<CapabilityInstance> dataList;
-	
 	
 	public Packet(long time,
 			short lastRouter, 
@@ -26,7 +26,6 @@ public class Packet {
 		this.route = route;
 		dataList = new LinkedList<CapabilityInstance>();
 		this.dataList = data;
-		
 	}
 	
 	public long getTime(){
