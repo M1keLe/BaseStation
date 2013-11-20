@@ -17,8 +17,11 @@ public class LastPeriodGlobalRecord {
 		LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
 		for (String s : globalCapabilitiesSet) {
 			CapabilityInstance c = Configurator.getCapabilityInstance(s);
+			// lista debug
 			this.globalCapabilityInstancesList.put(s, new LinkedList<CapabilityInstance>());
+			// capabilities globali
 			this.globalDataToStore.put(s, c);
+			// contatore per calcolo media
 			if(c.globalOperator().equals("avg")){
 				this.counters.put(s, 0);
 			}			
@@ -30,6 +33,7 @@ public class LastPeriodGlobalRecord {
 	public void addCapabilityInstance(CapabilityInstance cI){
 		// aggiorno lista debug
 		this.globalCapabilityInstancesList.get(cI.getName()).add(cI);
+		
 		// controllo se il valore è da mediare
 		if(cI.globalOperator().equals("avg") && cI.getMinValue()< cI.getValue() && cI.getValue() < cI.getMaxValue() ){
 			int lastCounter = this.counters.get(cI.getName()).intValue();
@@ -41,15 +45,19 @@ public class LastPeriodGlobalRecord {
 			// aggiornamento valori
 			this.counters.put(cI.getName(), newCounter);
 			this.globalDataToStore.get(cI.getName()).setValue(neWAvg);
-						
+			
+		// controllo se il valore è da sommare
 		}else if(cI.globalOperator().equals("sum")){
 			// faccio la somma dei valori
 			double lastValue = this.globalDataToStore.get(cI.getName()).getValue();
 			double newValue = lastValue + cI.getValue();
 			this.globalDataToStore.get(cI.getName()).setValue(newValue);
+			
+		// controllo se devo prendere l'ultimo valore
 		}else if(cI.globalOperator().equals("last")){
 			this.globalDataToStore.get(cI.getName()).setValue(cI.getValue());
 		}
+		
 		// aggiorno dati derivati
 		Enumeration<String> e = this.globalDataToStore.keys();
 		while(e.hasMoreElements()){
@@ -74,6 +82,7 @@ public class LastPeriodGlobalRecord {
         // sostituisco il nome della capability con il valore
         
         for (int i = 0; i < tokens.length; i++) {
+        	// se il token restituisce null non è una capability ma una parentesi o un simbolo (/,*,-,+)
         	if(this.globalDataToStore.get(tokens[i]) != null){
         		Double value = this.globalDataToStore.get(tokens[i]).getValue();
         		tokens[i] = value.toString();

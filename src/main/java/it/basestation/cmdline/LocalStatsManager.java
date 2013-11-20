@@ -11,7 +11,7 @@ public class LocalStatsManager {
 	// oppure
 	// private static Hashtable<Short, Node> nodeList = Configurator.getNodeList();
 	
-	private static Hashtable<Short, DeltaCounter> deltaCounters = new Hashtable<Short, DeltaCounter>();
+	private static Hashtable<Short, PeopleCounter> peopleCounters = new Hashtable<Short, PeopleCounter>();
 	
 	// lista pacchetti
 	private static LinkedList<Packet> packetsList = new LinkedList<Packet>();
@@ -135,11 +135,11 @@ public class LocalStatsManager {
 		}
 	}
 	
-	public static void elabDelta(Short nodeID, CapabilityInstance cI){
-		if(!deltaCounters.containsKey(nodeID)){
-			deltaCounters.put(nodeID, new DeltaCounter(nodeID));
+	public static void countPeople(Short nodeID, CapabilityInstance cI){
+		if(!peopleCounters.containsKey(nodeID)){
+			peopleCounters.put(nodeID, new PeopleCounter());
 		}
-		deltaCounters.get(nodeID).elabDelta(cI);
+		peopleCounters.get(nodeID).elabCapabilityInstance(cI);
 	}
 	
 	// metodo invocato dal thread Resetter

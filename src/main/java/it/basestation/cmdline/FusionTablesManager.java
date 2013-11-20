@@ -42,8 +42,6 @@ public class FusionTablesManager {
 	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	
 	private static Fusiontables fusiontables;
-	
-	//private static Hashtable <Short,Node> nodeList = new Hashtable <Short,Node>();
 	  
 	private static TableList tableList = null;
 	  
@@ -53,7 +51,6 @@ public class FusionTablesManager {
 	
 	private static Credential authorize() throws Exception {
 	    // load client secrets
-		
 	    GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
 	        JSON_FACTORY, new InputStreamReader(
 	            FusionTablesManager.class.getResourceAsStream("/client_secrets.json")));
@@ -104,11 +101,12 @@ public class FusionTablesManager {
 	    return tableList;
 	  }
 	
+	// metodo che crea la tabella di un nodo
 	private static String createTable(Node n)throws IOException{
 	    Table table = new Table();
 	    table.setName("Nodo_"+n.getMyID());
 	    table.setIsExportable(false);
-	    table.setDescription("Recorded data from Node #" +n.getMyID());
+	    table.setDescription("Table of Node number " +n.getMyID());
 	
 	    LinkedList <Column> columns = new LinkedList<Column>();
 	    LinkedList <String> capability = n.getCapabilitiesSet();
@@ -128,6 +126,7 @@ public class FusionTablesManager {
 	    return r.getTableId();   
 	}
 	
+	// metodo che crea una tabella globale
 	private static String createGlobalTable(String name)throws IOException{
 	    Table table = new Table();
 	    table.setName(name);
@@ -144,7 +143,8 @@ public class FusionTablesManager {
 	    globalTableID.put(name, r.getTableId());
 	    return r.getTableId();   
 	}
-	// vecchio metodo da eliminare
+	
+	// vecchio metodo non utilizzato
 	private static String createGlobalTable()throws IOException{
 	    Table table = new Table();
 	    table.setName("Global_Table");
@@ -167,16 +167,19 @@ public class FusionTablesManager {
 	    return r.getTableId();   
 	}
 	
-	
-	public static void deleteTable(String tableId) throws IOException {
+	// cancella una tabella
+	private static void deleteTable(String tableId) throws IOException {
 	    // Deletes a table
 	    Delete delete = fusiontables.table().delete(tableId);
 	    delete.execute();
 	}
 	
-	
-	public static void setupTables(Hashtable<Short, Node> nList){
+	// effettua il controllo sulle fusion tables crea le tabelle se non sono già presenti
+	public static void setupTables(){
 		//nodeList = nList;
+		Hashtable<Short, Node> nList = Configurator.getNodeList();
+		
+		// effetto il dl della lista di tabelle presenti
 		try {
 			tableList = listTables();
 		} catch (IOException exception) {
@@ -187,6 +190,7 @@ public class FusionTablesManager {
 		Enumeration<Short> e = nList.keys();
 		while(e.hasMoreElements()){
 			short id = e.nextElement();
+			// se non esiste creo la tabella
 			if(!tableExists(id)){
 				try {
 					String s = createTable(nList.get(id));          
@@ -245,6 +249,7 @@ public class FusionTablesManager {
 	    return toRet;
 	}
 	
+	// get id tabella nodo
 	private static String getTableID(short nodeID){
 	    String tableID = null;
 	    for (Table table : tableList.getItems()) {
@@ -257,6 +262,7 @@ public class FusionTablesManager {
 	    return tableID;
 	}
 	
+	// get id tabella globale
 	private static String getTableID(String name){
 	    String tableID = null;
 	    for (Table table : tableList.getItems()) {
@@ -268,6 +274,9 @@ public class FusionTablesManager {
 	    }
 	    return tableID;
 	}
+	
+	
+	// insert su tabella di un nodo
 	public static void insertData(LastPeriodNodeRecord nodeRecord) throws IOException {
 		short nodeID = nodeRecord.getNodeID();
 		String tableID = tablesID.get(nodeID);
@@ -291,6 +300,7 @@ public class FusionTablesManager {
 	    }
 	}
 
+	// insert su tutte le tabelle globali
 	public static void insertData(LastPeriodGlobalRecord globalRecord) throws IOException {
 		LinkedList<CapabilityInstance> globalValuesToStore = globalRecord.getDataListToStore(); 
 		for (CapabilityInstance cI : globalValuesToStore) {
@@ -315,7 +325,7 @@ public class FusionTablesManager {
 		}
 	}
 	
-	
+	// genera la query relativa ad un nodo
 	private static String getQueryInsert(String tableID, LinkedList<CapabilityInstance> capListToStore){
 	    java.text.DecimalFormat format = new java.text.DecimalFormat("0.00");
 	    
@@ -339,6 +349,7 @@ public class FusionTablesManager {
 	    return queryHead.concat(queryTail).replaceAll(" {2,}", " ");
 	} 
 	
+	// genera la query relativa ad una tabella globale
 	private static String getQueryInsert(String tableID, CapabilityInstance gCI){
 	    java.text.DecimalFormat format = new java.text.DecimalFormat("0.00");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
