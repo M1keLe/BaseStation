@@ -15,8 +15,8 @@ public class Main
     		LocalStatsManager.setNodeList();
     		
     		// controllare e creare tabelle
-    		FusionTablesManager.connect();
-    		FusionTablesManager.setupTables();
+    		//FusionTablesManager.connect();
+    		//FusionTablesManager.setupTables();
     		/*
     		 * - lanciare serial reader
     		 * 

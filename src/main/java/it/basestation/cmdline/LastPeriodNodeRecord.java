@@ -34,53 +34,58 @@ public class LastPeriodNodeRecord {
 			if(!this.capabilityInstancesList.containsKey(cI.getName())){
 				this.capabilityInstancesList.put(cI.getName(), new LinkedList<CapabilityInstance>());
 			}
-			// test delta
-			if(cI.getName().contains("People")){
-			 	LocalStatsManager.countPeople(nodeID, cI);
-			}			
-			// end test delta
 			
-			// store su lista debug
-			this.capabilityInstancesList.get(cI.getName()).add(cI);
-			
-			// controllo se il valore è da mediare
-			if(cI.localOperator().equals("avg") && cI.getMinValue() < cI.getValue() && cI.getValue() < cI.getMaxValue() ){
-				int lastCounter = this.counters.get(cI.getName()).intValue();
-				int newCounter = lastCounter + 1;
-				double lastAvg = this.dataToStore.get(cI.getName()).getValue();
-				double temp = lastAvg * lastCounter;
-				temp += cI.getValue();
-				double neWAvg = temp / newCounter;
-				// aggiornamento valori
-				this.counters.put(cI.getName(), newCounter);
-				this.dataToStore.get(cI.getName()).setValue(neWAvg);
-			
-			// controllo se il valore da prendere è l'ultimo	
-			}else if(cI.localOperator().equals("last")){
-				// salvo l'ultimo valore
-				this.dataToStore.put(cI.getName(), cI);
+			// controllo su min e max value
+			if(cI.getMinValue() <= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
 				
-			// controllo se il valore ' da sommare	
-			}else if(cI.localOperator().equals("sum")){
-				// lo sommo ai valori precedenti
-				double lastValue = this.dataToStore.get(cI.getName()).getValue();
-				double sum = lastValue + cI.getValue();
-				this.dataToStore.get(cI.getName()).setValue(sum);
-			}
-			
-			// aggiorno dati derivati			
-			Enumeration<String> e = this.dataToStore.keys();
-			while(e.hasMoreElements()){
-				String name = e.nextElement();
-				//controllo se è un valore derivato
-				if(!this.dataToStore.get(name).localOperator().equals("avg") &&
-						!this.dataToStore.get(name).localOperator().equals("last")&&
-						!this.dataToStore.get(name).localOperator().equals("sum")){
-					this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
+				// test delta
+				if(cI.getName().contains("People")){
+				 	LocalStatsManager.countPeople(nodeID, cI);
+				}			
+				// end test delta
+				
+				// store su lista debug
+				this.capabilityInstancesList.get(cI.getName()).add(cI);
+				
+				// controllo se il valore è da mediare
+				if(cI.localOperator().equals("avg")){
+					int lastCounter = this.counters.get(cI.getName()).intValue();
+					int newCounter = lastCounter + 1;
+					double lastAvg = this.dataToStore.get(cI.getName()).getValue();
+					double temp = lastAvg * lastCounter;
+					temp += cI.getValue();
+					double neWAvg = temp / newCounter;
+					// aggiornamento valori
+					this.counters.put(cI.getName(), newCounter);
+					this.dataToStore.get(cI.getName()).setValue(neWAvg);
+				
+				// controllo se il valore da prendere è l'ultimo	
+				}else if(cI.localOperator().equals("last")){
+					// salvo l'ultimo valore
+					this.dataToStore.put(cI.getName(), cI);
+					
+				// controllo se il valore ' da sommare	
+				}else if(cI.localOperator().equals("sum")){
+					// lo sommo ai valori precedenti
+					double lastValue = this.dataToStore.get(cI.getName()).getValue();
+					double sum = lastValue + cI.getValue();
+					this.dataToStore.get(cI.getName()).setValue(sum);
 				}
-			}						
-		}
-	}
+				
+				// aggiorno dati derivati			
+				Enumeration<String> e = this.dataToStore.keys();
+				while(e.hasMoreElements()){
+					String name = e.nextElement();
+					//controllo se è un valore derivato
+					if(!this.dataToStore.get(name).localOperator().equals("avg") &&
+							!this.dataToStore.get(name).localOperator().equals("last")&&
+							!this.dataToStore.get(name).localOperator().equals("sum")){
+						this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
+					}
+				}
+			} // end if min max value				
+		} // end for su lista capability instances
+	} // end addPacket
 	
 	// lista capability da salvare
 	public LinkedList<CapabilityInstance> getDataListToStore(){
@@ -164,7 +169,9 @@ public class LastPeriodNodeRecord {
 			for (CapabilityInstance c : this.capabilityInstancesList.get(name)) {
 				toRet+= " " +c.getValue() + ",";
 			}
-			toRet = toRet.substring(0, toRet.length() -1);
+			if(toRet.lastIndexOf(',') == toRet.length() -1){
+				toRet = toRet.substring(0, toRet.length() -1);
+			}
 			toRet+= "]\n";
 		}
 		

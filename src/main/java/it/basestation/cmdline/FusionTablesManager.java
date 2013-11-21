@@ -47,7 +47,7 @@ public class FusionTablesManager {
 	  
 	private static Hashtable <Short, String> tablesID = new Hashtable <Short, String>();
 	
-	private static Hashtable <String, String> globalTableID = new Hashtable <String, String>();
+	private static Hashtable <String, String> globalTablesID = new Hashtable <String, String>();
 	
 	private static Credential authorize() throws Exception {
 	    // load client secrets
@@ -58,7 +58,7 @@ public class FusionTablesManager {
 	        || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
 	      System.out.println(
 	          "Enter Client ID and Secret from https://code.google.com/apis/console/?api=fusiontables "
-	          + "into fusiontables-cmdline-sample/src/main/resources/client_secrets.json");
+	          + "into VirtualSenseBaseStation/src/main/resources/client_secrets.json");
 	      System.exit(1);
 	    }
 	    // set up authorization code flow
@@ -140,7 +140,7 @@ public class FusionTablesManager {
 	    Fusiontables.Table.Insert t = fusiontables.table().insert(table);
 	    Table r = t.execute();
 	    // salvo l'id della tabella globale
-	    globalTableID.put(name, r.getTableId());
+	    globalTablesID.put(name, r.getTableId());
 	    return r.getTableId();   
 	}
 	
@@ -208,8 +208,8 @@ public class FusionTablesManager {
 		for (String name : globalCapabilitiesSet) {
 			if(!globalTableExists(name)){
 				try {
-					String s = createGlobalTable(name);          
-	    			System.out.println("Creata \"Global Table\" con id = " +s);
+					String globalTableID = createGlobalTable(name);          
+	    			System.out.println("Creata \"Global Table\" con id = " +globalTableID);
 				} catch (IOException exception) {
 					// TODO Auto-generated catch block
 	    			exception.printStackTrace();
@@ -240,7 +240,7 @@ public class FusionTablesManager {
 	    	for (Table table : tableList.getItems()){
 	    		if(table.getName().equals(name)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
-	    			globalTableID.put(name, table.getTableId());
+	    			globalTablesID.put(name, table.getTableId());
 	    			toRet = true;
 	    			break;
 	    		}
@@ -268,7 +268,7 @@ public class FusionTablesManager {
 	    for (Table table : tableList.getItems()) {
 	    	if(table.getName().equals(name)){
 	    		tableID = table.getTableId();
-	    		globalTableID.put(name, tableID);          
+	    		globalTablesID.put(name, tableID);          
 	    		break;
 	    	}         
 	    }
@@ -304,10 +304,10 @@ public class FusionTablesManager {
 	public static void insertData(LastPeriodGlobalRecord globalRecord) throws IOException {
 		LinkedList<CapabilityInstance> globalValuesToStore = globalRecord.getDataListToStore(); 
 		for (CapabilityInstance cI : globalValuesToStore) {
-			String gTableID = globalTableID.get(cI.getName());
+			String gTableID = globalTablesID.get(cI.getName());
 			if(gTableID == null){	
 				gTableID = getTableID(cI.getName());
-				globalTableID.put(cI.getName(), gTableID);
+				globalTablesID.put(cI.getName(), gTableID);
 		    }
 			
 			Sql sql = fusiontables.query().sql(getQueryInsert(gTableID, cI));

@@ -34,42 +34,45 @@ public class LastPeriodGlobalRecord {
 		// aggiorno lista debug
 		this.globalCapabilityInstancesList.get(cI.getName()).add(cI);
 		
-		// controllo se il valore è da mediare
-		if(cI.globalOperator().equals("avg") && cI.getMinValue()< cI.getValue() && cI.getValue() < cI.getMaxValue() ){
-			int lastCounter = this.counters.get(cI.getName()).intValue();
-			int newCounter = lastCounter +1 ;
-			double lastAvg = this.globalDataToStore.get(cI.getName()).getValue();
-			double temp = lastAvg * lastCounter;
-			temp += cI.getValue();
-			double neWAvg = temp / newCounter;
-			// aggiornamento valori
-			this.counters.put(cI.getName(), newCounter);
-			this.globalDataToStore.get(cI.getName()).setValue(neWAvg);
-			
-		// controllo se il valore è da sommare
-		}else if(cI.globalOperator().equals("sum")){
-			// faccio la somma dei valori
-			double lastValue = this.globalDataToStore.get(cI.getName()).getValue();
-			double newValue = lastValue + cI.getValue();
-			this.globalDataToStore.get(cI.getName()).setValue(newValue);
-			
-		// controllo se devo prendere l'ultimo valore
-		}else if(cI.globalOperator().equals("last")){
-			this.globalDataToStore.get(cI.getName()).setValue(cI.getValue());
-		}
-		
-		// aggiorno dati derivati
-		Enumeration<String> e = this.globalDataToStore.keys();
-		while(e.hasMoreElements()){
-			String name = e.nextElement();
-			//controllo se è un valore derivato
-			if(!this.globalDataToStore.get(name).globalOperator().equals("avg") &&
-					!this.globalDataToStore.get(name).globalOperator().equals("sum") &&
-					!this.globalDataToStore.get(name).globalOperator().equals("last")){
-					
-				this.globalDataToStore.get(name).setValue(this.getDerivedMeasure(this.globalDataToStore.get(name)));
+		// controllo su min e max value
+		if(cI.getMinValue()<= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
+			// controllo se il valore è da mediare
+			if(cI.globalOperator().equals("avg")){
+				int lastCounter = this.counters.get(cI.getName()).intValue();
+				int newCounter = lastCounter +1 ;
+				double lastAvg = this.globalDataToStore.get(cI.getName()).getValue();
+				double temp = lastAvg * lastCounter;
+				temp += cI.getValue();
+				double neWAvg = temp / newCounter;
+				// aggiornamento valori
+				this.counters.put(cI.getName(), newCounter);
+				this.globalDataToStore.get(cI.getName()).setValue(neWAvg);
+				
+			// controllo se il valore è da sommare
+			}else if(cI.globalOperator().equals("sum")){
+				// faccio la somma dei valori
+				double lastValue = this.globalDataToStore.get(cI.getName()).getValue();
+				double newValue = lastValue + cI.getValue();
+				this.globalDataToStore.get(cI.getName()).setValue(newValue);
+				
+			// controllo se devo prendere l'ultimo valore
+			}else if(cI.globalOperator().equals("last")){
+				this.globalDataToStore.get(cI.getName()).setValue(cI.getValue());
 			}
-		}
+			
+			// aggiorno dati derivati
+			Enumeration<String> e = this.globalDataToStore.keys();
+			while(e.hasMoreElements()){
+				String name = e.nextElement();
+				//controllo se è un valore derivato
+				if(!this.globalDataToStore.get(name).globalOperator().equals("avg") &&
+						!this.globalDataToStore.get(name).globalOperator().equals("sum") &&
+						!this.globalDataToStore.get(name).globalOperator().equals("last")){
+						
+					this.globalDataToStore.get(name).setValue(this.getDerivedMeasure(this.globalDataToStore.get(name)));
+				}
+			}
+		} // end if min max value
 	}
 	
 	
@@ -134,6 +137,7 @@ public class LastPeriodGlobalRecord {
 		return toRet;
 	}
 	
+	@Override
 	public String toString(){		
 		String toRet = "";
 		toRet += "\n =====[GLOBAL_RECORD] \n";
@@ -144,7 +148,9 @@ public class LastPeriodGlobalRecord {
 			for (CapabilityInstance c : this.globalCapabilityInstancesList.get(name)) {
 				toRet+= " " +c.getValue() + ",";
 			}
-			toRet = toRet.substring(0, toRet.length() -1);
+			if(toRet.lastIndexOf(',') == toRet.length() -1){
+				toRet = toRet.substring(0, toRet.length() -1);
+			}
 			toRet+= "]\n";
 		}
 		

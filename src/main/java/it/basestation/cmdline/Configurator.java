@@ -196,8 +196,7 @@ public class Configurator {
 			toRet = false;
 		} finally {
 			try {
-				if (bReader != null)
-					bReader.close();
+				bReader.close();
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}

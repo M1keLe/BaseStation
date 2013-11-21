@@ -6,9 +6,6 @@ public class PeopleCounter {
 	private Hashtable<String, Double> lastRecordedValues = new Hashtable<String, Double>();
 	private Hashtable<String, Double> delta = new Hashtable<String, Double>();
 
-	public PeopleCounter() {
-		
-	}
 	
 	public void elabCapabilityInstance(CapabilityInstance cI){
 		if(!this.lastRecordedValues.containsKey(cI.getName())){

@@ -78,7 +78,9 @@ public class FileReader extends Thread {
 					if(line.contains("</packet>")){
 						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.capInstanceList);
 						LocalStatsManager.addNewPacket(p);
-						//System.out.println(p);
+						// debug
+						System.out.println(p);
+						// TestWriter.write(p);
 						reset();
 					}
 				}
@@ -93,14 +95,13 @@ public class FileReader extends Thread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} finally {
-				try {
-					if (bReader != null)
-						bReader.close();
+				try {	
+					bReader.close();
 				} catch (IOException ex) {
 					ex.printStackTrace();
 				}
 			}
-			
+			// sleep quando tutto il file viene letto...
 			try {
 				Thread.sleep(1000*60*15); // 15minuti
 			} catch (InterruptedException e) {

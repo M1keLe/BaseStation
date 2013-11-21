@@ -12,7 +12,7 @@ public class DataProcessor extends Thread {
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 	//private LastPeriodGlobalRecord lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
 	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
-	//private LastPeriodGlobalRecord lastGlobalRecord = null;
+	
 		
 	public DataProcessor(){
 		super("Data Processor");
@@ -47,31 +47,25 @@ public class DataProcessor extends Thread {
 						newNodesRecord.get(nodeID).addPacket(p); 	
 					}					
 					
-					// store dei dati locali sulle fusion tables solo per i nuovi dati reccolti 
+					// store dei dati locali sulle fusion tables solo per i nuovi dati raccolti 
 					Enumeration<Short> e = newNodesRecord.keys();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
-						LastPeriodNodeRecord recordToStore = newNodesRecord.get(nodeID);
+
 						// DEBUG
-						//System.out.println(recordToStore);
-						
-						try {
+						System.out.println(newNodesRecord.get(nodeID));
+						//TestWriter.write(newNodesRecord.get(nodeID));
+/*						try {
 							
-							FusionTablesManager.insertData(recordToStore);
+							FusionTablesManager.insertData(newNodesRecord.get(nodeID));
 							
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
- 						
+						// aggiorno record nodi
+*/						this.lastPeriodNodesRecord.put(nodeID, newNodesRecord.get(nodeID));
 					}
-					// aggiorno record nodi
-					Enumeration<Short> nodesID = newNodesRecord.keys();
-					while (nodesID.hasMoreElements()) {
-						Short nodeID = (Short) nodesID.nextElement();
-						this.lastPeriodNodesRecord.put(nodeID, newNodesRecord.get(nodeID));
-					}
-					
 					
 					// calcolo le medie globali
 					
@@ -94,15 +88,16 @@ public class DataProcessor extends Thread {
 					}
 					
 					// Store capabilities Globali
-					
-					//System.out.println(newGlobalRecord);
-					try {
+					// debug
+					System.out.println(newGlobalRecord);
+					// TestWriter.write(newGlobalRecord);
+/*					try {
 						FusionTablesManager.insertData(newGlobalRecord);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					
+*/					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
 				}
