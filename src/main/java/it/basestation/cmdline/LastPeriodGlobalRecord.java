@@ -7,7 +7,7 @@ import java.util.Stack;
 
 public class LastPeriodGlobalRecord {
 	
-	// lista debug
+	
 	private Hashtable<String, LinkedList<CapabilityInstance>> globalCapabilityInstancesList = new Hashtable<String, LinkedList<CapabilityInstance>>();
 	
 	private Hashtable<String, CapabilityInstance> globalDataToStore = new Hashtable<String, CapabilityInstance>();
@@ -31,9 +31,9 @@ public class LastPeriodGlobalRecord {
 	
 	
 	public void addCapabilityInstance(CapabilityInstance cI){
-		// aggiorno lista debug
-		this.globalCapabilityInstancesList.get(cI.getName()).add(cI);
-		
+		if(cI.getValue()>0){
+			this.globalCapabilityInstancesList.get(cI.getName()).add(cI);
+		}
 		// controllo su min e max value
 		if(cI.getMinValue()<= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
 			// controllo se il valore è da mediare
@@ -137,6 +137,24 @@ public class LastPeriodGlobalRecord {
 		return toRet;
 	}
 	
+	public double getStandardDeviation(String name) {
+		double variance = 0.00;
+		// media
+		Double avg = this.globalDataToStore.get(name).getValue();
+		// lista campioni
+		LinkedList<CapabilityInstance> samples = this.globalCapabilityInstancesList.get(name);
+		
+		if(samples != null && avg != null){
+			double temp = 0.00;
+			for (CapabilityInstance cI : samples) {
+				temp += (cI.getValue() - avg)*(cI.getValue() - avg); 
+			}
+			variance = temp/samples.size();
+		}
+		
+		return Math.sqrt(variance);
+	}
+	
 	@Override
 	public String toString(){		
 		String toRet = "";
@@ -164,4 +182,5 @@ public class LastPeriodGlobalRecord {
 		
 		return toRet;
 	}
+
 }

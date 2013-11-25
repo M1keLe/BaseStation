@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 
 public class FileReader extends Thread {
-	private final String FILE_NAME = "6-nov-2013.log"; 
+	private final String FILE_NAME = "22-nov-2013.log"; 
 	private BufferedReader bReader = null;
 	
 	// attributi pacchetto
@@ -40,7 +40,7 @@ public class FileReader extends Thread {
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
 							// Thread.sleep(1000*5);
 							// Thread.sleep(100);
 						}
@@ -79,7 +79,7 @@ public class FileReader extends Thread {
 						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.capInstanceList);
 						LocalStatsManager.addNewPacket(p);
 						// debug
-						System.out.println(p);
+						//System.out.println(p);
 						// TestWriter.write(p);
 						reset();
 					}

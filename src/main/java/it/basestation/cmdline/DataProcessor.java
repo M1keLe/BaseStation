@@ -10,7 +10,7 @@ public class DataProcessor extends Thread {
 	
 	
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-	//private LastPeriodGlobalRecord lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
+	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null;
 	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
 	
 		
@@ -20,17 +20,29 @@ public class DataProcessor extends Thread {
 	
 	@Override
 	public void run(){
-
+		Date updateTime;
 		while (true) {
 			
 			// nuovi record da elaborare
 			Hashtable<Short, LastPeriodNodeRecord> newNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-			
+			// update time
+			updateTime = new Date();
 			try {
 				System.out.println("Data Processor in esecuzione " + new Date());
 				
 				// imposto la frequenza di update
 				Thread.sleep(Configurator.getFreqDataProcessor());
+
+				// inizializzo il global record
+				if(this.lastPeriodGlobalRecord == null){
+					try {
+						this.lastPeriodGlobalRecord = FusionTablesManager.initGlobalRecord();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
 				
 				// Prendo la lista di nodi da elaborare
 				this.packetsList = LocalStatsManager.getLastPeriodPacketsList();
@@ -55,16 +67,16 @@ public class DataProcessor extends Thread {
 						// DEBUG
 						System.out.println(newNodesRecord.get(nodeID));
 						//TestWriter.write(newNodesRecord.get(nodeID));
-/*						try {
+						try {
 							
-							FusionTablesManager.insertData(newNodesRecord.get(nodeID));
+							FusionTablesManager.insertData(newNodesRecord.get(nodeID), updateTime);
 							
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						// aggiorno record nodi
-*/						this.lastPeriodNodesRecord.put(nodeID, newNodesRecord.get(nodeID));
+						this.lastPeriodNodesRecord.put(nodeID, newNodesRecord.get(nodeID));
 					}
 					
 					// calcolo le medie globali
@@ -87,17 +99,23 @@ public class DataProcessor extends Thread {
 						}
 					}
 					
+					// aggiornamento people
+					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastPeriodGlobalRecord);
+					
 					// Store capabilities Globali
 					// debug
 					System.out.println(newGlobalRecord);
 					// TestWriter.write(newGlobalRecord);
-/*					try {
-						FusionTablesManager.insertData(newGlobalRecord);
+					try {
+						FusionTablesManager.insertData(newGlobalRecord, updateTime);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-*/					
+					
+					
+					this.lastPeriodGlobalRecord = newGlobalRecord;
+					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
 				}
@@ -109,22 +127,15 @@ public class DataProcessor extends Thread {
 		}	
 	}	
 
-	// metodo non utilizzato
+
 	private LastPeriodGlobalRecord updateGlobalRecord(LastPeriodGlobalRecord newGlobalRecord, LastPeriodGlobalRecord lastGlobalRecord) {
-		if(lastGlobalRecord != null){
-			LinkedList<CapabilityInstance> lastGlobalValues = lastGlobalRecord.getDataListToStore();
-			for (CapabilityInstance cI : lastGlobalValues) {
-				if(cI.globalOperator().contains("avg") || cI.globalOperator().contains("sum") || cI.globalOperator().contains("last")){ 
-				//if(cI.getName().equals("PeopleIn")|| cI.getName().equals("PeopleOut")){
-					newGlobalRecord.addCapabilityInstance(cI);
-				}
+		
+		LinkedList<CapabilityInstance> lastGlobalValues = lastGlobalRecord.getDataListToStore();
+		for (CapabilityInstance cI : lastGlobalValues) {
+			//if(cI.globalOperator().contains("avg") || cI.globalOperator().contains("sum") || cI.globalOperator().contains("last")){ 
+			if(cI.getName().equals("PeopleIn")|| cI.getName().equals("PeopleOut")){
+				newGlobalRecord.addCapabilityInstance(cI);
 			}
-		//}else{
-		//	for (CapabilityInstance cI : newGlobalRecord.getDataListToStore()) {
-		//		if(cI.getName().contains("People")){
-		//			cI.setValue(0);
-		//		}
-		//	}
 		}
 		return newGlobalRecord;
 	}

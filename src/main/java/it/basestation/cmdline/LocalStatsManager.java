@@ -12,7 +12,7 @@ public class LocalStatsManager {
 	// private static Hashtable<Short, Node> nodeList = Configurator.getNodeList();
 	
 	private static Hashtable<Short, PeopleCounter> peopleCounters = new Hashtable<Short, PeopleCounter>();
-	
+	private static Hashtable<Short, DeltaCounter> deltaCounters = new Hashtable<Short, DeltaCounter>();
 	// lista pacchetti
 	private static LinkedList<Packet> packetsList = new LinkedList<Packet>();
 	
@@ -122,8 +122,8 @@ public class LocalStatsManager {
 			pullPacketList = pushPacketList;
 			pushPacketList = new LinkedList<Packet>();
 			//Debug
-			//System.out.println("DEBUG: DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
-			TestWriter.write("DEBUG: DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
+			System.out.println("DEBUG: DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
+			// TestWriter.write("DEBUG: DATAPROCESSOR HA PRESO "+pullPacketList.size()+" pacchetti da gestire");
 /*			for (Packet p : pullPacketList) {
 				System.out.println("");
 				System.out.println(p);
@@ -143,6 +143,15 @@ public class LocalStatsManager {
 		}
 		peopleCounters.get(nodeID).elabCapabilityInstance(cI);
 	}
+	
+	public static void elabDelta(Short nodeID, CapabilityInstance cI){
+		if(!deltaCounters.containsKey(nodeID)){
+			deltaCounters.put(nodeID, new DeltaCounter());
+		}
+		deltaCounters.get(nodeID).elabDelta(cI);
+	}
+	
+	
 	
 	// metodo invocato dal thread Resetter
 	

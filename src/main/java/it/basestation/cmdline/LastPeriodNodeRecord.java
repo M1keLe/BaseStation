@@ -40,7 +40,7 @@ public class LastPeriodNodeRecord {
 				
 				// test delta
 				if(cI.getName().contains("People")){
-				 	LocalStatsManager.countPeople(nodeID, cI);
+				 	LocalStatsManager.elabDelta(nodeID, cI);
 				}			
 				// end test delta
 				
