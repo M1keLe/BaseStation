@@ -38,11 +38,17 @@ public class LastPeriodNodeRecord {
 			// controllo su min e max value
 			if(cI.getMinValue() <= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
 				
-				// test delta
+/*				// test delta
 				if(cI.getName().contains("People")){
 				 	LocalStatsManager.elabDelta(nodeID, cI);
 				}			
 				// end test delta
+*/				
+				// test people
+				if(cI.getName().contains("People")){
+				 	LocalStatsManager.countPeople(nodeID, cI);
+				}			
+				// end test peole
 				
 				// store su lista debug
 				this.capabilityInstancesList.get(cI.getName()).add(cI);

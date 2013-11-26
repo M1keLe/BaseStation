@@ -44,12 +44,12 @@ ResetTime: 23:59:59
 	</Light>
 	
 	<PeopleIn[0,*]>
-		local:sum
+		local:last
 		global:sum
 	</PeopleIn>
 	
 	<PeopleOut[0,*]>
-		local:sum
+		local:last
 		global:sum
 	</PeopleOut>
 	

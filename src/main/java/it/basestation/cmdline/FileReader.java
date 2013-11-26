@@ -19,6 +19,7 @@ public class FileReader extends Thread {
 	private short route;
 	private LinkedList<CapabilityInstance> capInstanceList = new LinkedList<CapabilityInstance>();
 	private LinkedList<String> capabilitiesSet = new LinkedList<String>();
+	private boolean insidePacket = false;
 	
 	// timestamp arrivo pacchetto simulo tempo tra arrivo di un pacchetto ed un altro
 	private long lastTimeStamp = 0;
@@ -36,37 +37,46 @@ public class FileReader extends Thread {
 				bReader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE_NAME)));
 				String line = "";
 				while((line = bReader.readLine()) != null){
-					if(line.contains("<packet>")){
+					if(line.contains("<packet>")&& !this.insidePacket){
+						this.insidePacket = true;
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/200);
 							// Thread.sleep(1000*5);
 							// Thread.sleep(100);
 						}
 						//reset();
 					}
-					else if(line.contains(">time:")){
+					else if(line.contains(">time:")&& this.insidePacket){
 						this.time = Long.parseLong(line.substring(line.indexOf(":")+1 ).trim()); 
 					}
-					else if(line.contains(">router:")){
+					else if(line.contains(">router:")&& this.insidePacket){
 						this.lastRouter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 					}
-					else if(line.contains(">sender:")){
+					else if(line.contains(">sender:")&& this.insidePacket){
 						this.sender = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
-						this.capabilitiesSet = Configurator.getNode(this.sender).getCapabilitiesSet();
+						Node n = Configurator.getNode(this.sender);
+						if(n == null){
+							System.err.println("Sender id: " + this.sender);
+							System.err.println("Il pacchetto non proviene da un nodo conosciuto");
+							System.err.println("Controllare il file di configurazione");
+							reset();
+						}else{
+							this.capabilitiesSet = n.getCapabilitiesSet();
+						}
 					}
-					else if(line.contains(">Counter:")){
+					else if(line.contains(">Counter:")&& this.insidePacket){
 						// da definire meglio!!!
 						this.counter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 						CapabilityInstance cI = Configurator.getCapabilityInstance("Counter");
 						cI.setValue(counter);
 						this.capInstanceList.add(cI);
 					}
-					else if(line.contains(">route:")){
+					else if(line.contains(">route:")&& this.insidePacket){
 						this.route = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());
 					}
-					else if (line.contains(">") && line.contains(":") && !line.contains("<")){
+					else if (line.contains(">") && line.contains(":") && !line.contains("<")&& this.insidePacket){
 						String name = line.substring(line.indexOf('>')+1, line.indexOf(':'));
 						CapabilityInstance c = Configurator.getCapabilityInstance(name);
 						
@@ -75,11 +85,11 @@ public class FileReader extends Thread {
 							this.capInstanceList.add(c);		
 						}
 					}
-					if(line.contains("</packet>")){
+					else if(line.contains("</packet>")&& this.insidePacket){
 						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.capInstanceList);
 						LocalStatsManager.addNewPacket(p);
 						// debug
-						//System.out.println(p);
+						System.out.println(p);
 						// TestWriter.write(p);
 						reset();
 					}
@@ -119,6 +129,7 @@ public class FileReader extends Thread {
 		this.route = -1;
 		this.capInstanceList = new LinkedList<CapabilityInstance>();
 		this.capabilitiesSet = new LinkedList<String>();
+		this.insidePacket = false;
 	}
 
 }

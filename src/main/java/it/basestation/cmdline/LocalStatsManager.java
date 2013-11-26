@@ -158,10 +158,11 @@ public class LocalStatsManager {
 	public static void resetAllStats(){
 		lock.lock();
 		try{
-			nodeList = Configurator.getNodeList();
-			packetsList.clear();
-			pushPacketList.clear();
-			pullPacketList.clear();
+			
+			packetsList = new LinkedList<Packet>();
+			peopleCounters = new Hashtable<Short, PeopleCounter>();
+			deltaCounters = new Hashtable<Short, DeltaCounter>();
+			
 			System.out.println("Statistiche resettate");
 		}finally{
 			lock.unlock();
@@ -176,17 +177,7 @@ public class LocalStatsManager {
 			lock.unlock();
 		}		
 	}
-	
-	public static void setNodeList(Hashtable<Short, Node> listOfNodes){
-		lock.lock();
-		try{
-			nodeList = listOfNodes;
-		}finally{
-			lock.unlock();
-		}
 		
-	}
-	
 	// ------------------------- metodi privati
 	
 	

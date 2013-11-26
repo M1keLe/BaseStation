@@ -10,7 +10,7 @@ public class DataProcessor extends Thread {
 	
 	
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null;
+	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null; // per aggiornare people in caso di riavvio basestation
 	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
 	
 		
@@ -31,7 +31,7 @@ public class DataProcessor extends Thread {
 				System.out.println("Data Processor in esecuzione " + new Date());
 				
 				// imposto la frequenza di update
-				Thread.sleep(Configurator.getFreqDataProcessor());
+				Thread.sleep(Configurator.getFreqDataProcessor()/20);
 
 				// inizializzo il global record
 				if(this.lastPeriodGlobalRecord == null){
@@ -65,9 +65,9 @@ public class DataProcessor extends Thread {
 						short nodeID = e.nextElement();
 
 						// DEBUG
-						System.out.println(newNodesRecord.get(nodeID));
+						// System.out.println(newNodesRecord.get(nodeID));
 						//TestWriter.write(newNodesRecord.get(nodeID));
-						try {
+/*						try {
 							
 							FusionTablesManager.insertData(newNodesRecord.get(nodeID), updateTime);
 							
@@ -75,7 +75,7 @@ public class DataProcessor extends Thread {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-						// aggiorno record nodi
+*/						// aggiorno record nodi
 						this.lastPeriodNodesRecord.put(nodeID, newNodesRecord.get(nodeID));
 					}
 					
@@ -105,16 +105,22 @@ public class DataProcessor extends Thread {
 					// Store capabilities Globali
 					// debug
 					System.out.println(newGlobalRecord);
+					for (String string : globalCapabilitiesSet) {
+						if(Configurator.getCapabilityInstance(string).globalOperator().equals("avg")){
+							System.out.println("Sigma_"+string+": " + newGlobalRecord.getStandardDeviation(string));
+						}
+					}
+					
 					// TestWriter.write(newGlobalRecord);
-					try {
+/*					try {
 						FusionTablesManager.insertData(newGlobalRecord, updateTime);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+*/					
 					
-					
-					this.lastPeriodGlobalRecord = newGlobalRecord;
+					//this.lastPeriodGlobalRecord = newGlobalRecord;
 					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
