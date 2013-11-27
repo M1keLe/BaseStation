@@ -1,5 +1,10 @@
 package it.basestation.cmdline;
 
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.UnsupportedCommOperationException;
+
+import java.io.IOException;
 import java.util.Timer;
 
 
@@ -21,8 +26,17 @@ public class Main
     		 * - lanciare serial reader
     		 * 
     		 */
+/*    		try {
+				SerialCommunication.createCommunication();
+			} catch (NoSuchPortException | PortInUseException
+					| UnsupportedCommOperationException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     		
-    		// avvio data Processor e reader
+    		SerialReader sR = new SerialReader(SerialCommunication.getInputStream());
+    		sR.start();
+ */   		// avvio data Processor e reader
     		//new DataProcessor().start();
     		FileReader fr = new FileReader();
     		fr.start();

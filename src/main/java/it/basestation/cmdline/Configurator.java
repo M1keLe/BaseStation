@@ -18,7 +18,7 @@ public class Configurator {
 	
 	private static int freqDataProcessor = MINUTE * 10;
 	private static String usbPort = "/dev/ttyUSB0";
-	private static String speedUsbPort = "57600";
+	private static int speedUsbPort = 57600;
 	private static Calendar resetTime = null;
 	
 	// Stringa che contiene eventuali errori nel file di configurazione
@@ -71,8 +71,14 @@ public class Configurator {
 						System.out.println("La usbport è: ->"+usbPort);						
 					}
 					else if(line.indexOf("USBSpeedPort") != -1){
-						speedUsbPort = line.substring(line.indexOf(':')+1).trim();
-						System.out.println("Speed usbport ->"+speedUsbPort);
+						if(tryParseInt(line.substring(line.indexOf(':')+1).trim())){
+							speedUsbPort = Integer.parseInt(line.substring(line.indexOf(':')+1).trim());
+							System.out.println("Speed usbport ->"+speedUsbPort);
+						}else{
+							log += "[Line: "+lineCounter+"] Speed Usb Port ERROR: Controllare il file di configurazione\n";
+							toRet = false;
+						}
+						
 					}
 					else if(line.indexOf("ResetTime") != -1){
 						StringTokenizer tokTimer = new StringTokenizer(line.substring(line.indexOf(':')+1).trim(), ":");
@@ -225,6 +231,10 @@ public class Configurator {
 	
 	public static String getUSBPort(){
 		return usbPort;
+	}
+	
+	public static int getSpeedUsbPort(){
+		return speedUsbPort;
 	}
 	
 	public static int getFreqDataProcessor(){

@@ -1,8 +1,8 @@
 # frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor: 1
+FreqDataProcessor: 5
 
 # porta USB default = /dev/ttyUSB0
-USBPort: /dev/ttyUSB0 
+USBPort: /dev/ttyUSB0
 
 # Speed USB port default = Baud Rate 57600
 USBSpeedPort: 57600

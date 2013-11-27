@@ -42,7 +42,7 @@ public class FileReader extends Thread {
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/200);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
 							// Thread.sleep(1000*5);
 							// Thread.sleep(100);
 						}
@@ -89,7 +89,7 @@ public class FileReader extends Thread {
 						Packet p = new Packet(this.time, this.lastRouter, this.sender, this.counter, this.route, this.capInstanceList);
 						LocalStatsManager.addNewPacket(p);
 						// debug
-						System.out.println(p);
+						// System.out.println(p);
 						// TestWriter.write(p);
 						reset();
 					}
@@ -113,7 +113,7 @@ public class FileReader extends Thread {
 			}
 			// sleep quando tutto il file viene letto...
 			try {
-				Thread.sleep(1000*60*15); // 15minuti
+				Thread.sleep(1000*60*60*24); // 15minuti
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -31,7 +31,7 @@ public class DataProcessor extends Thread {
 				System.out.println("Data Processor in esecuzione " + new Date());
 				
 				// imposto la frequenza di update
-				Thread.sleep(Configurator.getFreqDataProcessor()/20);
+				Thread.sleep(Configurator.getFreqDataProcessor()/10);
 
 				// inizializzo il global record
 				if(this.lastPeriodGlobalRecord == null){
@@ -67,7 +67,7 @@ public class DataProcessor extends Thread {
 						// DEBUG
 						// System.out.println(newNodesRecord.get(nodeID));
 						//TestWriter.write(newNodesRecord.get(nodeID));
-/*						try {
+						try {
 							
 							FusionTablesManager.insertData(newNodesRecord.get(nodeID), updateTime);
 							
@@ -75,7 +75,7 @@ public class DataProcessor extends Thread {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-*/						// aggiorno record nodi
+						// aggiorno record nodi
 						this.lastPeriodNodesRecord.put(nodeID, newNodesRecord.get(nodeID));
 					}
 					
@@ -112,13 +112,13 @@ public class DataProcessor extends Thread {
 					}
 					
 					// TestWriter.write(newGlobalRecord);
-/*					try {
+					try {
 						FusionTablesManager.insertData(newGlobalRecord, updateTime);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-*/					
+					
 					
 					//this.lastPeriodGlobalRecord = newGlobalRecord;
 					

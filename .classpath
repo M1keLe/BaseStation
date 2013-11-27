@@ -32,5 +32,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/home/mike/.m2/repository/org/mortbay/jetty/servlet-api/2.5-20081211/servlet-api-2.5-20081211.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/RXTXcomm.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
