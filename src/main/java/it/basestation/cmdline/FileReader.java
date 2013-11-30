@@ -37,18 +37,29 @@ public class FileReader extends Thread {
 				bReader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE_NAME)));
 				String line = "";
 				while((line = bReader.readLine()) != null){
+					
 					if(line.contains("<packet>")&& !this.insidePacket){
 						this.insidePacket = true;
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
+						
+						//reset();
+					}
+
+					// print file di log
+					Logger.log(line);
+					TextParser.parseText(line);
+					if(line.contains("</packet>")&& this.insidePacket){
+						this.insidePacket = false;
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp));
 							// Thread.sleep(1000*5);
 							// Thread.sleep(100);
 						}
-						//reset();
 					}
-					else if(line.contains(">time:")&& this.insidePacket){
+					
+					
+/*					else if(line.contains(">time:")&& this.insidePacket){
 						this.time = Long.parseLong(line.substring(line.indexOf(":")+1 ).trim()); 
 					}
 					else if(line.contains(">router:")&& this.insidePacket){
@@ -93,7 +104,7 @@ public class FileReader extends Thread {
 						// TestWriter.write(p);
 						reset();
 					}
-				}
+*/				}
 					
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block

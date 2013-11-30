@@ -23,8 +23,8 @@ public class SerialReader extends Thread{
 			
 			while(running){
 				readed = reader.readLine();
-				// TextParser.parseText(readed);
-				// BaseStationLogger.log(readed);
+				TextParser.parseText(readed);
+				Logger.log(readed);
 			}
 			System.out.println("Debug: serialReader shut down");	
 		} catch (IOException e) {
@@ -35,6 +35,11 @@ public class SerialReader extends Thread{
 			System.out.println("For input string: " +readed);
 		}
 		
+	}
+	
+	public void stopReading(){
+		this.running = false;
+		this.interrupt();
 	}
 
 }

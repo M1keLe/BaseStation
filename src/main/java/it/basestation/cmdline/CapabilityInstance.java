@@ -17,7 +17,6 @@ public class CapabilityInstance extends Capability {
 	
 	public void setValue(double value){
 			this.value = value;
-
 	}
 	
 	public double getValue(){

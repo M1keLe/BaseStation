@@ -1,7 +1,7 @@
 package it.basestation.cmdline;
 
 import java.util.Hashtable;
-
+// non utilizzata
 public class DeltaCounter {
 	private Hashtable<String, Double> lastRecordedValues = new Hashtable<String, Double>();
 

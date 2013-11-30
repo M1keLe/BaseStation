@@ -147,7 +147,7 @@ public class LastPeriodGlobalRecord {
 		// lista campioni
 		LinkedList<CapabilityInstance> samples = this.globalCapabilityInstancesList.get(name);
 		
-		if(samples != null && avg != null){
+		if(samples != null && avg != null && samples.size()>0){
 			double temp = 0.00;
 			for (CapabilityInstance cI : samples) {
 				temp += (cI.getValue() - avg)*(cI.getValue() - avg); 

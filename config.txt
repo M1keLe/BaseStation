@@ -9,6 +9,7 @@ USBSpeedPort: 57600
 
 # Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
 ResetTime: 23:59:59
+#ResetTime: 20:33:00
 
 # Capabilities
 

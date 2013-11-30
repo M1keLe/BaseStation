@@ -5,34 +5,55 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DataProcessor extends Thread {
 	
+	private static final long DAY = 1000*60*60*24;
 	
+	private int freqUpdate;
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null; // per aggiornare people in caso di riavvio basestation
-	private LinkedList <Packet> packetsList = new LinkedList<Packet>();
+	
+	private Hashtable<Short, PeopleCounter> peopleCounters = new Hashtable<Short, PeopleCounter>();
+	
+	private ReentrantLock lock = new ReentrantLock();
 	
 		
 	public DataProcessor(){
 		super("Data Processor");
+		this.freqUpdate = Configurator.getFreqDataProcessor();
 	}
 	
 	@Override
 	public void run(){
-		Date updateTime;
+		Date updateTime;		
+		// se specificato nel file di configurazione avvio il thread resetter
+		if(Configurator.getResetTime() != null){
+			Timer resetter = new Timer("Resetter");
+			resetter.schedule(new Resetter(), Configurator.getResetTime(), DAY);
+			System.out.println("Primo Reset: " + Configurator.getResetTime());
+		}else{
+			System.out.println("Le statistiche non verranno mai resettate");
+		}
+		
 		while (true) {
-			
-			// nuovi record da elaborare
-			Hashtable<Short, LastPeriodNodeRecord> newNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-			// update time
-			updateTime = new Date();
+			// imposto la frequenza di update
 			try {
-				System.out.println("Data Processor in esecuzione " + new Date());
-				
-				// imposto la frequenza di update
-				Thread.sleep(Configurator.getFreqDataProcessor()/10);
-
+				Thread.sleep(this.freqUpdate);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			// lock			
+			this.lock.lock();
+			try {
+				// update time
+				updateTime = new Date();
+				System.out.println("Data Processor in esecuzione " + updateTime);
 				// inizializzo il global record
 				if(this.lastPeriodGlobalRecord == null){
 					try {
@@ -42,33 +63,53 @@ public class DataProcessor extends Thread {
 						e.printStackTrace();
 					}
 				}
-
-				
 				// Prendo la lista di nodi da elaborare
-				this.packetsList = LocalStatsManager.getLastPeriodPacketsList();
+				LinkedList <Packet> packetsList = LocalStatsManager.getLastPeriodPacketsList();
 				
 				// se la lista non è vuota
-				if(!this.packetsList.isEmpty()){
-					for (Packet p : this.packetsList) {
+				if(!packetsList.isEmpty()){
+					// nuovi record da elaborare
+					Hashtable<Short, LastPeriodNodeRecord> newNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
+					for (Packet p : packetsList) {
 						short nodeID = p.getSenderID();
 						//System.out.println("DATA_PROCESSOR STA GESTENDO UN PACCHETTO SPEDITO DAL NODO N° " +nodeID);
 						if(!newNodesRecord.containsKey(nodeID)){
 							newNodesRecord.put(nodeID, new LastPeriodNodeRecord(nodeID));
 						}
+						
+// metodo add capability						
+						// ciclo for su capabilities
+						LinkedList<CapabilityInstance> cList = p.getDataList();
+						for (CapabilityInstance cI : cList) {
+							// controllo su min e max value
+							if(cI.getMinValue() <= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
+								//controllo su people
+								if(cI.getName().contains("People")){
+									if(!this.peopleCounters.containsKey(nodeID)){
+										this.peopleCounters.put(nodeID, new PeopleCounter());
+									}
+									// aggiorno contatore people
+									this.peopleCounters.get(nodeID).elabCapabilityInstance(cI);									
+								}
+								// inserisco capability nel node record
+								newNodesRecord.get(nodeID).addCapabilityInstance(cI);	
+							}
+						}
+						
+// end metodo add capability
+						
+						// metodo addPacket()
 						// inserisco il pacchetto da gestire nel node record
-						newNodesRecord.get(nodeID).addPacket(p); 	
+						// newNodesRecord.get(nodeID).addPacket(p); 	
 					}					
 					
 					// store dei dati locali sulle fusion tables solo per i nuovi dati raccolti 
 					Enumeration<Short> e = newNodesRecord.keys();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
-
 						// DEBUG
 						// System.out.println(newNodesRecord.get(nodeID));
-						//TestWriter.write(newNodesRecord.get(nodeID));
-						try {
-							
+						try {							
 							FusionTablesManager.insertData(newNodesRecord.get(nodeID), updateTime);
 							
 						} catch (IOException e1) {
@@ -100,8 +141,7 @@ public class DataProcessor extends Thread {
 					}
 					
 					// aggiornamento people
-					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastPeriodGlobalRecord);
-					
+					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastPeriodGlobalRecord);					
 					// Store capabilities Globali
 					// debug
 					System.out.println(newGlobalRecord);
@@ -111,39 +151,62 @@ public class DataProcessor extends Thread {
 						}
 					}
 					
-					// TestWriter.write(newGlobalRecord);
+					
 					try {
 						FusionTablesManager.insertData(newGlobalRecord, updateTime);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					
-					
+										
 					//this.lastPeriodGlobalRecord = newGlobalRecord;
 					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
 				}
 				
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
+			}finally{
+				this.lock.unlock();
+			}
 		}	
-	}	
+	}
+	
+	// metodo invocato dal resetter
+	private void resetStats(){
+		this.lock.lock();
+		try{
+			this.lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
+			this.lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
+			this.peopleCounters = new Hashtable<Short, PeopleCounter>();
+			System.out.println("Data Processor: statistiche resettate!");
+		}finally{
+			this.lock.unlock();
+		}
+		
+	}
 
 
 	private LastPeriodGlobalRecord updateGlobalRecord(LastPeriodGlobalRecord newGlobalRecord, LastPeriodGlobalRecord lastGlobalRecord) {
 		
 		LinkedList<CapabilityInstance> lastGlobalValues = lastGlobalRecord.getDataListToStore();
 		for (CapabilityInstance cI : lastGlobalValues) {
-			//if(cI.globalOperator().contains("avg") || cI.globalOperator().contains("sum") || cI.globalOperator().contains("last")){ 
+			 
 			if(cI.getName().equals("PeopleIn")|| cI.getName().equals("PeopleOut")){
 				newGlobalRecord.addCapabilityInstance(cI);
 			}
 		}
 		return newGlobalRecord;
+	}
+	
+	// thread resetter
+	private class Resetter extends TimerTask{
+		
+		@Override
+		public void run(){
+			System.out.println("Resetter in esecuzione");
+			LocalStatsManager.resetAllStats();
+			resetStats();	
+		}
 	}
 }
 				// ***************************************************************************************************

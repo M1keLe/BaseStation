@@ -20,7 +20,7 @@ public class Node {
 		this.capabilities = capabilities;
 	}
 	
-	// alcuni metodi sono da eliminare ------------------------ NOTA -----------------------
+	// alcuni metodi non sono utilizzati ------------------------ NOTA -----------------------
 	
 	public boolean hasCapability(String c){
 		return this.capabilities.contains(c);
@@ -55,6 +55,11 @@ public class Node {
 		return this.lastPacketTimeStamp;
 	}
 	
+	public void resetStats(){
+		this.myPackets = new LinkedList<Packet>();
+		this.lastPacketTimeStamp = 0;
+		this.routedPackets = 0;
+	}
 	
 	@Override
 	public String toString(){
@@ -78,5 +83,4 @@ public class Node {
 				"\nPacchetti generati: "+ this.myPackets.size() +
 				"\n******************  END Node ******************\n";
 	}
-
 }
