@@ -58,7 +58,7 @@ public class TextParser {
 			Packet p = new Packet(time, lastRouter, sender, counter, route, capInstanceList);
 			LocalStatsManager.addNewPacket(p);
 			// debug
-			System.out.println(p);
+			// System.out.println(p);
 			reset();
 		}
 	}

@@ -52,7 +52,7 @@ public class FileReader extends Thread {
 					if(line.contains("</packet>")&& this.insidePacket){
 						this.insidePacket = false;
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp));
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
 							// Thread.sleep(1000*5);
 							// Thread.sleep(100);
 						}

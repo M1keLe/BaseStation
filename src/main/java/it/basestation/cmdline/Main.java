@@ -5,7 +5,6 @@ import gnu.io.PortInUseException;
 import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
-import java.util.Timer;
 
 
 public class Main 
@@ -21,11 +20,9 @@ public class Main
     		// controllare e creare tabelle
     		FusionTablesManager.connect();
     		FusionTablesManager.setupTables();
-    		/*
-    		 * - lanciare serial reader
-    		 * 
-    		 */
-/*    		try {
+    		
+    		// serial reader
+    		try {
 				SerialComunication.createComunication();
 			} catch (NoSuchPortException | PortInUseException
 					| UnsupportedCommOperationException | IOException e) {
@@ -35,12 +32,14 @@ public class Main
     		
     		SerialReader sR = new SerialReader(SerialComunication.getInputStream());
     		sR.start();
- */   		// avvio data Processor e reader
-    		FileReader fr = new FileReader();
-    		fr.start();
-    		DataProcessor dp = new DataProcessor();
-    		dp.start();   
+   		
     		
+    		// avvio file reader
+    		// FileReader fr = new FileReader();
+    		// fr.start();
+    		// avvio data processor
+    		DataProcessor dp = new DataProcessor();
+    		dp.start();     		
     	}
     }
 }

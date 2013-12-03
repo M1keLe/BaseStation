@@ -11,8 +11,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DataProcessor extends Thread {
 	
+	// frequenza resetter
 	private static final long DAY = 1000*60*60*24;
 	
+	// frequenza data processor
 	private int freqUpdate;
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null; // per aggiornare people in caso di riavvio basestation
@@ -24,7 +26,7 @@ public class DataProcessor extends Thread {
 		
 	public DataProcessor(){
 		super("Data Processor");
-		this.freqUpdate = Configurator.getFreqDataProcessor();
+		this.freqUpdate = Configurator.getFreqDataProcessor()/100;
 	}
 	
 	@Override
@@ -124,7 +126,7 @@ public class DataProcessor extends Thread {
 					
 					LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
 					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
-					// per ogni capability "globale" prendo i dati da trattare da i vari node record
+					// per ogni capability "globale" prendo i dati da trattare dai vari node record
 					for (String name : globalCapabilitiesSet) {
 						// prendo i dati dai vari node records
 						Enumeration<Short> nodeID = this.lastPeriodNodesRecord.keys();

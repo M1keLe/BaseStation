@@ -59,7 +59,7 @@ public class LocalStatsManager {
 			pullPacketsList = pushPacketsList;
 			pushPacketsList = new LinkedList<Packet>();
 			//Debug
-			System.out.println("DEBUG: DATAPROCESSOR HA PRESO "+pullPacketsList.size()+" pacchetti da gestire");
+			System.out.println("DEBUG: DATAPROCESSOR HA  "+pullPacketsList.size()+" pacchetti da gestire");
 /*			for (Packet p : pullPacketList) {
 				System.out.println("");
 				System.out.println(p);

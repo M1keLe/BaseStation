@@ -31,9 +31,7 @@ public class LastPeriodGlobalRecord {
 	
 	
 	public void addCapabilityInstance(CapabilityInstance cI){
-		//if(cI.getValue()>0){
-		//	this.globalCapabilityInstancesList.get(cI.getName()).add(cI);
-		//}
+		
 		// controllo su min e max value
 		if(cI.getMinValue()<= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
 			

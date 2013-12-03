@@ -210,8 +210,9 @@ public class FusionTablesManager {
 		boolean toRet = false;
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
-	    		if(table.getName().equals("Nodo_"+(int) nodeID)){
+	    		if(table.getName().equals("Nodo_"+ nodeID)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
+	    			tablesID.put(nodeID, table.getTableId());
 	    			toRet = true;
 	    			break;
 	    		}
@@ -321,7 +322,7 @@ public class FusionTablesManager {
 	
 	// genera la query relativa ad un nodo
 	private static String getQueryInsert(String tableID, LinkedList<CapabilityInstance> capListToStore, Date d){
-	    java.text.DecimalFormat format = new java.text.DecimalFormat("0.00");
+	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    
 	    String queryHead = new String();
 	    
@@ -332,7 +333,11 @@ public class FusionTablesManager {
 	    
 	    for (CapabilityInstance c : capListToStore) {
 			queryHead = queryHead.concat(c.getName()+", ");
-			queryTail = queryTail.concat(" '" +format.format(c.getValue())+"', ");
+			// controllo range
+			if(c.getValue() < c.getMinValue() || c.getValue() > c.getMaxValue()){
+				c.setValue(0);
+			}
+			queryTail = queryTail.concat(" '" +decimalFormat.format(c.getValue())+"', ");
 		}
 	    
 	    queryHead = queryHead.concat("Date) ");
@@ -347,6 +352,10 @@ public class FusionTablesManager {
 	private static String getQueryInsert(String tableID, CapabilityInstance gCI, Date d){
 	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	    // controllo range
+		if(gCI.getValue() < gCI.getMinValue() || gCI.getValue() > gCI.getMaxValue()){
+			gCI.setValue(0);
+		}
 	    return "INSERT INTO "+ tableID +" (" + gCI.getName()+", Date) VALUES ('"+ decimalFormat.format(gCI.getValue())+"', '"+dateFormat.format(d)+"')";
 	}
 	
@@ -354,6 +363,11 @@ public class FusionTablesManager {
 	private static String getQueryInsert(String tableID, CapabilityInstance gCI, double standardDeviation , Date d){
 	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	    // controllo range
+	 	if(gCI.getValue() < gCI.getMinValue() || gCI.getValue() > gCI.getMaxValue()){
+			gCI.setValue(0);
+ 		}
+	    
 	    return "INSERT INTO "+ tableID +" ("+ gCI.getName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ dateFormat.format(d)+"')";
 	}
 

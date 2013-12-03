@@ -14,7 +14,7 @@ public class Logger {
 		try {
 			Date now = new Date();
 			// nome file
-			String name = "log/"+new SimpleDateFormat("dd-MMM-yyyy", Locale.ITALY).format(now) + ".log";
+			String name = "log/" + new SimpleDateFormat("dd-MMM-yyyy", Locale.ITALY).format(now) + ".log";
 			// String name = df.format(startTime).replace('/','-').replace(' ','_').trim()+".log";
 			FileOutputStream out = new FileOutputStream(name, true);
 			PrintStream p = new PrintStream(out);
@@ -22,7 +22,7 @@ public class Logger {
 			if(text.indexOf("<packet>") != -1){
 				// text = text.substring(0, text.indexOf('>')+ 1).trim(); decommentare se si usa il file di log
 				//text += " "+ System.currentTimeMillis(); // to add  timestamp to the received packet
-				text += " " + new SimpleDateFormat("HH:mm:ss.S", Locale.ITALY).format(now);
+				text += " " + new SimpleDateFormat("HH:mm:ss.SSS", Locale.ITALY).format(now);
 			}
 			p.println(text);
 			out.flush();
