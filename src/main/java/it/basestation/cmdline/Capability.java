@@ -1,7 +1,7 @@
 package it.basestation.cmdline;
 
 public class Capability {
-
+    
 	private String name = "";
 	private String localOperator = "";
 	private String globalOperator = "";
@@ -42,8 +42,8 @@ public class Capability {
 		this.globalOperator=global;
 	}
 */
+	
 	// get
-
 	public String getName() {
 		return this.name;
 	}
