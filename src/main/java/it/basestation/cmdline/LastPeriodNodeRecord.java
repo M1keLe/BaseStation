@@ -10,6 +10,7 @@ public class LastPeriodNodeRecord {
 	private Hashtable<String, LinkedList<CapabilityInstance>> capabilityInstancesList = new Hashtable<String, LinkedList<CapabilityInstance>>();
 
 	private Hashtable<String, CapabilityInstance> dataToStore = new Hashtable<String, CapabilityInstance>();
+	private LinkedList<CapabilityInstance> mMListToStore = new LinkedList<CapabilityInstance>();
 	private Hashtable<String, Integer> counters = new Hashtable<String, Integer>();
 	private short nodeID;
 	public LastPeriodNodeRecord(short nodeID){
@@ -17,12 +18,14 @@ public class LastPeriodNodeRecord {
 		this.nodeID = nodeID;
 		LinkedList<String> capabilitiesSet = Configurator.getNode(this.nodeID).getCapabilitiesSet();
 		//System.out.println("DEBUG: NodeRecord_"+this.nodeID+" capabilitiesSet = "+capabilitiesSet);
-		for (String s : capabilitiesSet) {
-			CapabilityInstance c = Configurator.getCapabilityInstance(s);
-			this.dataToStore.put(s, c);
-			// se li valore è da mediare inizializzo il contatore
-			if(c.localOperator().equals("avg")){
-				this.counters.put(s, 0);
+		for (String name : capabilitiesSet) {
+			LinkedList<CapabilityInstance> cList = Configurator.getCapabilityInstanceList(name, "local", false);
+			for (CapabilityInstance cI : cList) {
+				this.dataToStore.put(cI.getName(), cI);
+				// se li valore è da mediare inizializzo il contatore
+				if(cI.localOperator().equals("avg")){
+					this.counters.put(cI.getName(), 0);
+				}
 			}
 		}
 	}
@@ -45,7 +48,7 @@ public class LastPeriodNodeRecord {
 				// end test delta
 */				
 				// test people
-				if(cI.getName().contains("People")){
+				if(cI.localOperator().contains("People")){
 				 	LocalStatsManager.countPeople(nodeID, cI);
 				}			
 				// end test peole
@@ -95,7 +98,7 @@ public class LastPeriodNodeRecord {
 	
 	public void addCapabilityInstance(CapabilityInstance cI){
 		// store su lista debug
-		if(!this.capabilityInstancesList.containsKey(cI.getName())){
+		if (!this.capabilityInstancesList.containsKey(cI.getName())){
 			this.capabilityInstancesList.put(cI.getName(), new LinkedList<CapabilityInstance>());
 		}
 		this.capabilityInstancesList.get(cI.getName()).add(cI);
@@ -117,7 +120,7 @@ public class LastPeriodNodeRecord {
 			// salvo l'ultimo valore
 			this.dataToStore.put(cI.getName(), cI);
 			
-		// controllo se il valore ' da sommare	
+		// controllo se il valore è da sommare	
 		}else if(cI.localOperator().equals("sum")){
 			// lo sommo ai valori precedenti
 			double lastValue = this.dataToStore.get(cI.getName()).getValue();
@@ -157,6 +160,16 @@ public class LastPeriodNodeRecord {
 	public CapabilityInstance getCapabilityInstance(String name){
 		return this.dataToStore.get(name);
 	}
+	
+	// set medie mobili
+	public void setMMListToStore(LinkedList<CapabilityInstance> mMListToStore){
+		this.mMListToStore = mMListToStore;
+	}
+	
+	public LinkedList<CapabilityInstance> getMMListToStore(){
+		return this.mMListToStore;
+	}
+	
 	
 	// metodo privato per calcolare misure derivate
 	private double getDerivedMeasure(CapabilityInstance cI) {

@@ -21,6 +21,16 @@ public class Configurator {
 	private static int speedUsbPort = 57600;
 	private static Calendar resetTime = null;
 	
+	// attributi capability
+	private static String name = "";
+	private static String localOperator = "";
+	private static String globalOperator = "";
+	private static String min = "";
+	private static String max = "";
+	private static Double minValue = Double.NEGATIVE_INFINITY;
+	private static Double maxValue = Double.POSITIVE_INFINITY;
+	private static int avgWindow = 0;
+	
 	// Stringa che contiene eventuali errori nel file di configurazione
 	private static String log = "";
 	private static int lineCounter = 0;
@@ -41,13 +51,6 @@ public class Configurator {
 		try {
 			bReader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE_NAME)));
 			String line;
-			String name = "";
-			String localOperator = "";
-			String globalOperator = "";
-			String min = "";
-			String max = "";
-			Double minValue = Double.NEGATIVE_INFINITY;
-			Double maxValue = Double.POSITIVE_INFINITY;
 		
 			while((line = bReader.readLine()) != null){
 				++lineCounter;
@@ -101,15 +104,8 @@ public class Configurator {
 						name = line.substring(line.indexOf('<')+1, line.indexOf('[')).trim();
 						min = line.substring(line.indexOf('[')+1, line.indexOf(',')).trim();
 						max = line.substring(line.indexOf(',')+1, line.indexOf(']')).trim();
-					}
-					else if(line.contains("local")){
-						localOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
-					}
-					else if(line.contains("global")){
-						globalOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
-					}
-					else if(line.contains("</"+name+">")){
-		
+						
+						// parsing min e max values
 						if(!min.equals("*")){
 							if(tryParseDouble(min)){
 								minValue = Double.parseDouble(min);
@@ -127,26 +123,71 @@ public class Configurator {
 								log += "[Line: "+lineCounter+"] Errore impostazione maxValue Capability chiamata: " +name +"\n";
 							}
 						}
-						capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue));
+					}
+					else if(line.contains("local")){
+						localOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
+						if(localOperator.contains("MM")){
+							if(tryParseInt(localOperator.substring(localOperator.indexOf('[')+1, localOperator.indexOf(']')))){
+								avgWindow = Integer.parseInt(localOperator.substring(localOperator.indexOf('[')+1, localOperator.indexOf(']')));
+								localOperator = "MM";
+							}else{
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore impostazione AVG Window Capability chiamata: " +name+"\n";
+							}
+						}
+						capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue, avgWindow));
+						
+						// Debug
 						System.out.println("*********** New Capability ***********");
 						System.out.println("Name: " +name);
 						System.out.println("Local Operator: " +localOperator);
 						System.out.println("Global Operator: " +globalOperator);
 						System.out.println("Min Value: " +minValue);
 						System.out.println("Max Value: " +maxValue);
+						System.out.println("Avg Window: " +avgWindow);
 						System.out.println("********* End New Capability *********\n");
+						
+						// reset variabili
+						localOperator = "";
+						avgWindow = 0;
+					}
+					else if(line.contains("global")){
+						globalOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
+						if(globalOperator.contains("MM")){
+							if(tryParseInt(globalOperator.substring(globalOperator.indexOf('[')+1, globalOperator.indexOf(']')))){
+								avgWindow = Integer.parseInt(globalOperator.substring(globalOperator.indexOf('[')+1, globalOperator.indexOf(']')));
+								globalOperator = "MM";
+							}else{
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore impostazione AVG Window Capability chiamata: " +name+"\n";
+							}
+						}
+						capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue, avgWindow));
+						
+						// Debug
+						System.out.println("*********** New Capability ***********");
+						System.out.println("Name: " +name);
+						System.out.println("Local Operator: " +localOperator);
+						System.out.println("Global Operator: " +globalOperator);
+						System.out.println("Min Value: " +minValue);
+						System.out.println("Max Value: " +maxValue);
+						System.out.println("Avg Window: " +avgWindow);
+						System.out.println("********* End New Capability *********\n");
+						
+						// reset variabili
+						globalOperator = "";
+						avgWindow = 0;
+					}
+					else if(line.contains("</"+name+">")){
+						// capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue));
+						
 						if(!globalOperator.isEmpty()){
 							globalCapabilitiesSet.add(name);
 							System.out.println("Aggiunta Capability set globale ->"+globalOperator+"<-");
 						}
 						
-						name = "";
-						localOperator = "";
-						globalOperator = "";
-						min = "";
-						max = "";
-						minValue = Double.NEGATIVE_INFINITY;
-						maxValue = Double.POSITIVE_INFINITY;
+						// reset variabili capabilities
+						resetCapabilitiesVariables();
 					
 					}
 					else if(line.indexOf("Node") != -1){
@@ -241,6 +282,103 @@ public class Configurator {
 		return freqDataProcessor;
 	}
 	
+	public static LinkedList<Capability> getCapabilitiesList(String name, String type, boolean mm){
+		LinkedList<Capability> toRet = new LinkedList<Capability>();
+		for (Capability c : capabilities) {
+			// controllo sul nome
+			if(c.getName().equals(name)){
+				// per tabelle locali
+				if(type.equals("local")&& !c.localOperator().isEmpty()){
+	
+					if(!mm){
+						if(c.getAvgWindow() == 0){
+							toRet.add(c);
+						}						
+					}else{
+						toRet.add(c);
+					}
+	
+				// per tabelle globali	
+				}else if(type.equals("global") && !c.globalOperator().isEmpty()){
+					
+					if(!mm){
+						if(c.getAvgWindow() == 0){
+							toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+						}						
+					}else{
+						toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+					}				
+				}
+			} // end foreach
+		} // end if su name
+		return toRet;
+	}
+	
+	public static LinkedList<CapabilityInstance> getCapabilityInstanceList(String name, String type, boolean mm){
+		LinkedList<CapabilityInstance> toRet = new LinkedList<CapabilityInstance>();
+		for (Capability c : capabilities) {
+			// controllo sul nome
+			if(c.getName().equals(name)){
+				// per tabelle locali
+				if(type.equals("local")&& !c.localOperator().isEmpty()){
+	
+					if(!mm){
+						if(c.getAvgWindow() == 0){
+							toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+						}						
+					}else{
+						toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+					}
+	
+				// per tabelle globali	
+				}else if(type.equals("global") && !c.globalOperator().isEmpty()){
+					
+					if(!mm){
+						if(c.getAvgWindow() == 0){
+							toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+						}						
+					}else{
+						toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+					}				
+				}
+			} // end foreach
+		} // end if su name
+		return toRet;
+	}
+	
+	public static LinkedList<Capability> getMMCapabilityList(String type){
+		LinkedList<Capability> toRet = new LinkedList<Capability>();
+		for (Capability c : capabilities) {
+			if(type.equals("local") && !c.localOperator().isEmpty()){
+				if(c.getAvgWindow() > 0){
+					toRet.add(c);
+				}
+			}else if(type.equals("global") && !c.globalOperator().isEmpty()){
+				if(c.getAvgWindow() > 0){
+					toRet.add(c);
+				}
+			}
+		}
+		return toRet;
+	}
+	
+	public static LinkedList<CapabilityInstance> getMMCapabilityInstancesList(String type){
+		LinkedList<CapabilityInstance> toRet = new LinkedList<CapabilityInstance>();
+		for (Capability c : capabilities) {
+			if(type.equals("local") && !c.localOperator().isEmpty()){
+				if(c.getAvgWindow() > 0){
+					toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+				}
+			}else if(type.equals("global") && !c.globalOperator().isEmpty()){
+				if(c.getAvgWindow() > 0){
+					toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+				}
+			}
+		}
+		return toRet;
+	}
+	
+	// non utilizzato
 	public static CapabilityInstance getCapabilityInstance(String name){
 		CapabilityInstance toRet = null;
 		for (Capability c : capabilities) {
@@ -252,6 +390,20 @@ public class Configurator {
 		return toRet;
 	}
 		
+	
+	public static LinkedList<Capability> getGlobalCapabilitiesList(boolean mm){
+		LinkedList<Capability> toRet = new LinkedList<Capability>(); 
+		for (Capability c : capabilities) {
+			if(!c.globalOperator().equals("")&& c.getAvgWindow() == 0){
+				toRet.add(c);
+			}
+			if(!c.globalOperator().equals("") && c.getAvgWindow() > 0 && mm){
+				toRet.add(c);
+			}
+		}
+		return toRet;
+	}
+	
 	public static LinkedList<String> getGlobalCapabilitiesSet(){
 		return globalCapabilitiesSet;
 	}
@@ -271,6 +423,17 @@ public class Configurator {
 		return toRet;
 	}
 	
+	// reset variabili capabilities
+	private static void resetCapabilitiesVariables(){
+		name = "";
+		localOperator = "";
+		globalOperator = "";
+		min = "";
+		max = "";
+		minValue = Double.NEGATIVE_INFINITY;
+		maxValue = Double.POSITIVE_INFINITY;
+		avgWindow = 0;
+	}
 
 	
 	// controllo sul parsing di dati

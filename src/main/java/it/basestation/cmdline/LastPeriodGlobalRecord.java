@@ -11,22 +11,21 @@ public class LastPeriodGlobalRecord {
 	private Hashtable<String, LinkedList<CapabilityInstance>> globalCapabilityInstancesList = new Hashtable<String, LinkedList<CapabilityInstance>>();
 	
 	private Hashtable<String, CapabilityInstance> globalDataToStore = new Hashtable<String, CapabilityInstance>();
+	private LinkedList<CapabilityInstance> globalMMList = new LinkedList<CapabilityInstance>();
 	private Hashtable<String, Integer> counters = new Hashtable<String, Integer>();
 	
 	public LastPeriodGlobalRecord(){
-		LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
-		for (String s : globalCapabilitiesSet) {
-			CapabilityInstance c = Configurator.getCapabilityInstance(s);
+		LinkedList<Capability> globalCapabilitiesList = Configurator.getGlobalCapabilitiesList(false);
+		for (Capability c : globalCapabilitiesList) {
 			// lista debug
-			this.globalCapabilityInstancesList.put(s, new LinkedList<CapabilityInstance>());
+			this.globalCapabilityInstancesList.put(c.getName(), new LinkedList<CapabilityInstance>());
 			// capabilities globali
-			this.globalDataToStore.put(s, c);
+			this.globalDataToStore.put(c.getName(), new CapabilityInstance(c.getName(),c.localOperator(),c.globalOperator(),c.getMinValue(),c.getMaxValue(),c.getAvgWindow()));
 			// contatore per calcolo media
 			if(c.globalOperator().equals("avg")){
-				this.counters.put(s, 0);
+				this.counters.put(c.getName(), 0);
 			}			
-		}
-		
+		}		
 	}
 	
 	
@@ -156,6 +155,13 @@ public class LastPeriodGlobalRecord {
 		return Math.sqrt(variance);
 	}
 	
+	public void setMMListToStore(LinkedList<CapabilityInstance> mmListToStore) {
+		this.globalMMList = mmListToStore; 
+		
+	}
+
+	
+	
 	@Override
 	public String toString(){		
 		String toRet = "";
@@ -183,5 +189,4 @@ public class LastPeriodGlobalRecord {
 		
 		return toRet;
 	}
-
 }

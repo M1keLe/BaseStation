@@ -52,9 +52,9 @@ public class FileReader extends Thread {
 					if(line.contains("</packet>")&& this.insidePacket){
 						this.insidePacket = false;
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
+							// Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
 							// Thread.sleep(1000*5);
-							// Thread.sleep(100);
+							Thread.sleep(1000);
 						}
 					}
 					
@@ -124,7 +124,7 @@ public class FileReader extends Thread {
 			}
 			// sleep quando tutto il file viene letto...
 			try {
-				Thread.sleep(1000*60*60*24); // 15minuti
+				Thread.sleep(1000*60*2); // 2minuti
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

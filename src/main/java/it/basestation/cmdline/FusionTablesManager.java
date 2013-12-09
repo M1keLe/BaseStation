@@ -114,13 +114,13 @@ public class FusionTablesManager {
 	
 	    LinkedList <Column> columns = new LinkedList<Column>();
 	    LinkedList <String> capability = n.getCapabilitiesSet();
-	    for (String c : capability) {
-	    	columns.add(new Column().setName(c).setType("NUMBER"));
-		}
-	   
+	    for (String name : capability) {
+	    	for (Capability c : Configurator.getCapabilitiesList(name, "local", true)) {
+	    		columns.add(new Column().setName(c.getColumnName()).setType("NUMBER"));
+			}
+		}	   
 	    // aggiungo il campo data
 	    columns.add(new Column().setName("Date").setType("DATETIME"));
-	    
 	    
 	    table.setColumns(columns);
 	    Fusiontables.Table.Insert t = fusiontables.table().insert(table);
@@ -136,13 +136,15 @@ public class FusionTablesManager {
 	    table.setName(name);
 	    table.setIsExportable(false);
 	    LinkedList <Column> columns = new LinkedList<Column>();
-	    // aggiungo la colonna
-	    columns.add(new Column().setName(name).setType("NUMBER"));
+	    // aggiungo le colonne
+	    for (Capability c : Configurator.getCapabilitiesList(name, "global", true)) {
+    		columns.add(new Column().setName(c.getColumnName()).setType("NUMBER"));
+    		// se da mediare aggiungo colonna Deviazione Standard
+    	    if(c.globalOperator().equals("avg")){
+    	    	columns.add(new Column().setName("StandardDeviation").setType("NUMBER"));
+    	    }
+		}
 	    
-	    // se da mediare aggiungo colonna Deviazione Standard
-	    if(Configurator.getCapabilityInstance(name).globalOperator().equals("avg")){
-	    	columns.add(new Column().setName("StandardDeviation").setType("NUMBER"));
-	    }
 	    // aggiungo il campo data
 	    columns.add(new Column().setName("Date").setType("DATETIME"));
 	    table.setColumns(columns);
@@ -190,18 +192,20 @@ public class FusionTablesManager {
 			}
 		}
 		// creo le tabelle globali se non esistono
-		LinkedList <String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
-		for (String name : globalCapabilitiesSet) {
-			if(!globalTableExists(name)){
+		
+		//LinkedList <String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
+		LinkedList <Capability> globalCapabilitiesList = Configurator.getGlobalCapabilitiesList(false);
+		for (Capability c : globalCapabilitiesList) {
+			if(!globalTableExists(c.getName())){
 				try {
-					String globalTableID = createGlobalTable(name);          
-	    			System.out.println("Creata \"Global Table\" "+name+" con id = " +globalTableID);
+					String globalTableID = createGlobalTable(c.getName());          
+	    			System.out.println("Creata \"Global Table\" "+c.getName()+" con id = " +globalTableID);
 				} catch (IOException exception) {
 					// TODO Auto-generated catch block
 	    			exception.printStackTrace();
 	    		}
 			} else {
-				System.out.println("La \"Global Table\" "+name+" esiste già!");
+				System.out.println("La \"Global Table\" "+c.getName()+" esiste già!");
 			}
 		}
 	}
@@ -273,6 +277,7 @@ public class FusionTablesManager {
 	    }
 		
 		LinkedList<CapabilityInstance> capListToStore = nodeRecord.getDataListToStore();
+		capListToStore.addAll(nodeRecord.getMMListToStore());
 		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore, d));
 		System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati:\nQuery generata: " + getQueryInsert(tableID, capListToStore, d));
 		try {
@@ -332,7 +337,8 @@ public class FusionTablesManager {
 	    queryTail = queryTail.concat(" VALUES (");
 	    
 	    for (CapabilityInstance c : capListToStore) {
-			queryHead = queryHead.concat(c.getName()+", ");
+			//queryHead = queryHead.concat(c.getName()+", ");
+	    	queryHead = queryHead.concat(c.getColumnName()+", ");
 			// controllo range
 			if(c.getValue() < c.getMinValue() || c.getValue() > c.getMaxValue()){
 				c.setValue(0);
@@ -343,6 +349,7 @@ public class FusionTablesManager {
 	    queryHead = queryHead.concat("Date) ");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	    //queryTail.concat(" '" +format.format(new Date(System.currentTimeMillis()))+"') ");
+	    //queryTail = queryTail.concat(" '" + new DateTime(d)+"') ");
 	    queryTail = queryTail.concat(" '" + dateFormat.format(d)+"') ");
 	    //System.out.println(queryHead.concat(queryTail));    
 	    return queryHead.concat(queryTail).replaceAll(" {2,}", " ");
@@ -356,7 +363,9 @@ public class FusionTablesManager {
 		if(gCI.getValue() < gCI.getMinValue() || gCI.getValue() > gCI.getMaxValue()){
 			gCI.setValue(0);
 		}
-	    return "INSERT INTO "+ tableID +" (" + gCI.getName()+", Date) VALUES ('"+ decimalFormat.format(gCI.getValue())+"', '"+dateFormat.format(d)+"')";
+		//return "INSERT INTO "+ tableID +" (" + gCI.getName()+", Date) VALUES ('"+ decimalFormat.format(gCI.getValue())+"', '"+dateFormat.format(d)+"')";
+		return "INSERT INTO "+ tableID +" (" + gCI.getColumnName()+", Date) VALUES ('"+ decimalFormat.format(gCI.getValue())+"', '"+dateFormat.format(d)+"')";
+		//return "INSERT INTO "+ tableID +" (" + gCI.getName()+", Date) VALUES ('"+ decimalFormat.format(gCI.getValue())+"', '"+new DateTime(d)+"')";
 	}
 	
 	// genera la query relativa ad una tabella globale con Deviazione Standard
@@ -367,8 +376,9 @@ public class FusionTablesManager {
 	 	if(gCI.getValue() < gCI.getMinValue() || gCI.getValue() > gCI.getMaxValue()){
 			gCI.setValue(0);
  		}
-	    
-	    return "INSERT INTO "+ tableID +" ("+ gCI.getName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ dateFormat.format(d)+"')";
+	 	return "INSERT INTO "+ tableID +" ("+ gCI.getColumnName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ dateFormat.format(d)+"')";
+	 	//return "INSERT INTO "+ tableID +" ("+ gCI.getName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ dateFormat.format(d)+"')";
+	    //return "INSERT INTO "+ tableID +" ("+ gCI.getName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ new DateTime(d)+"')";
 	}
 
 	// init global record
@@ -380,7 +390,7 @@ public class FusionTablesManager {
 		//now.set(Calendar.SECOND, 0);
 		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		Sql sql = fusiontables.query().sql("SELECT PeopleIn, Date FROM "+ globalTablesID.get("PeopleIn") + " WHERE Date > '" + dateFormat.format(now.getTime())+"' ORDER BY Date DESC" );
+		Sql sql = fusiontables.query().sql("SELECT PeopleIn_sum, Date FROM "+ globalTablesID.get("PeopleIn") + " WHERE Date > '" + dateFormat.format(now.getTime())+"' ORDER BY Date DESC" );
 		Sqlresponse r = sql.execute();
 		
 		// people in
@@ -400,7 +410,7 @@ public class FusionTablesManager {
 		}
 		
 		// people out
-		sql = fusiontables.query().sql("SELECT PeopleOut, Date FROM "+ globalTablesID.get("PeopleOut") + " WHERE Date > '" + dateFormat.format(now.getTime())+"' ORDER BY Date DESC" );
+		sql = fusiontables.query().sql("SELECT PeopleOut_sum, Date FROM "+ globalTablesID.get("PeopleOut") + " WHERE Date > '" + dateFormat.format(now.getTime())+"' ORDER BY Date DESC" );
 		r = sql.execute();
 		if(r != null){
 			System.out.println("Query people out not null");

@@ -10,9 +10,13 @@ public class CapabilityInstance extends Capability {
 	public CapabilityInstance(String name, String localOperator, String globalOperator){
 		super(name, localOperator, globalOperator);
 	}
-*/	
+*/		
 	public CapabilityInstance(String name, String localOperator, String globalOperator, Double minValue, Double maxValue){
 		super(name, localOperator, globalOperator, minValue, maxValue);
+	}
+	
+	public CapabilityInstance(String name, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow){
+		super(name, localOperator, globalOperator, minValue, maxValue, avgWindow);
 	}
 	
 	public void setValue(double value){
@@ -31,6 +35,7 @@ public class CapabilityInstance extends Capability {
 		toRet += "Global: " + globalOperator() + "\n";
 		toRet += "Min Value: " + getMinValue() + "\n";
 		toRet += "Max Value: " + getMaxValue() + "\n";
+		toRet += "AVG Window: " + getAvgWindow() + "\n";
 		toRet += "Value: " + this.value + "\n";
 		toRet += "********* End DataContainer *********\n";
 		

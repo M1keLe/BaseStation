@@ -20,13 +20,15 @@ public class DataProcessor extends Thread {
 	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null; // per aggiornare people in caso di riavvio basestation
 	
 	private Hashtable<Short, PeopleCounter> peopleCounters = new Hashtable<Short, PeopleCounter>();
+	private Hashtable<Short, LocalMMCalculator> localMMCalculators = new Hashtable<Short, LocalMMCalculator>();
+	private GlobalMMCalculator GlobalMMCalculator = new GlobalMMCalculator();
 	
 	private ReentrantLock lock = new ReentrantLock();
 	
 		
 	public DataProcessor(){
 		super("Data Processor");
-		this.freqUpdate = Configurator.getFreqDataProcessor()/100;
+		this.freqUpdate = Configurator.getFreqDataProcessor()/5;
 	}
 	
 	@Override
@@ -103,12 +105,17 @@ public class DataProcessor extends Thread {
 						// metodo addPacket()
 						// inserisco il pacchetto da gestire nel node record
 						// newNodesRecord.get(nodeID).addPacket(p); 	
-					}					
+					}
 					
+					// calcolo delle medie mobili e
 					// store dei dati locali sulle fusion tables solo per i nuovi dati raccolti 
 					Enumeration<Short> e = newNodesRecord.keys();
 					while(e.hasMoreElements()){
 						short nodeID = e.nextElement();
+						if(!this.localMMCalculators.containsKey(nodeID))
+							this.localMMCalculators.put(nodeID, new LocalMMCalculator(nodeID));
+						this.localMMCalculators.get(nodeID).setListToCalculate(newNodesRecord.get(nodeID).getDataListToStore());
+						newNodesRecord.get(nodeID).setMMListToStore(this.localMMCalculators.get(nodeID).getMMListToStore());
 						// DEBUG
 						// System.out.println(newNodesRecord.get(nodeID));
 						try {							
@@ -124,35 +131,36 @@ public class DataProcessor extends Thread {
 					
 					// calcolo le medie globali
 					
-					LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
+					// LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
+					LinkedList<Capability> globalCapabilitieslist = Configurator.getGlobalCapabilitiesList(false);
+					
 					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
 					// per ogni capability "globale" prendo i dati da trattare dai vari node record
-					for (String name : globalCapabilitiesSet) {
+					for (Capability c : globalCapabilitieslist) {						
 						// prendo i dati dai vari node records
 						Enumeration<Short> nodeID = this.lastPeriodNodesRecord.keys();
 						while (nodeID.hasMoreElements()) {
-							CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(name);
+							CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getName());
+
 							// se cI == null il nodo non ha la capability globale
-							if(cI != null && (cI.globalOperator().contains("avg") || 
-									cI.globalOperator().contains("sum") || 
-									cI.globalOperator().contains("last"))) {
-								
-								newGlobalRecord.addCapabilityInstance(cI);
+							if(cI != null){
+								CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
+								gCI.setValue(cI.getValue());
+								newGlobalRecord.addCapabilityInstance(gCI);
 							}
 						}
 					}
 					
 					// aggiornamento people
-					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastPeriodGlobalRecord);					
+					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastPeriodGlobalRecord);
+					
+					// calcolo medie mobili
+					this.GlobalMMCalculator.setListToCalculate(newGlobalRecord.getDataListToStore());
+					newGlobalRecord.setMMListToStore(this.GlobalMMCalculator.getMMListToStore());
+					
 					// Store capabilities Globali
 					// debug
-					System.out.println(newGlobalRecord);
-					for (String string : globalCapabilitiesSet) {
-						if(Configurator.getCapabilityInstance(string).globalOperator().equals("avg")){
-							System.out.println("Sigma_"+string+": " + newGlobalRecord.getStandardDeviation(string));
-						}
-					}
-					
+					System.out.println(newGlobalRecord);					
 					
 					try {
 						FusionTablesManager.insertData(newGlobalRecord, updateTime);
@@ -180,13 +188,13 @@ public class DataProcessor extends Thread {
 			this.lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
 			this.lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 			this.peopleCounters = new Hashtable<Short, PeopleCounter>();
+			this.localMMCalculators = new Hashtable<Short, LocalMMCalculator>();
 			System.out.println("Data Processor: statistiche resettate!");
 		}finally{
 			this.lock.unlock();
 		}
 		
 	}
-
 
 	private LastPeriodGlobalRecord updateGlobalRecord(LastPeriodGlobalRecord newGlobalRecord, LastPeriodGlobalRecord lastGlobalRecord) {
 		
@@ -196,7 +204,7 @@ public class DataProcessor extends Thread {
 			if(cI.getName().equals("PeopleIn")|| cI.getName().equals("PeopleOut")){
 				newGlobalRecord.addCapabilityInstance(cI);
 			}
-		}
+		}	
 		return newGlobalRecord;
 	}
 	
@@ -211,12 +219,3 @@ public class DataProcessor extends Thread {
 		}
 	}
 }
-				// ***************************************************************************************************
-				
-				/* 	 COMPITI DEL THREAD:
-				 * - scrivere log su file
-				 * - fare medie su ultimo periodo locali
-				 * - calcolare grandezze globali
-				 * - aggiornare le fusion talbles
-				 */
-				

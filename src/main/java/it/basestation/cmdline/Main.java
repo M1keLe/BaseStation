@@ -22,7 +22,7 @@ public class Main
     		FusionTablesManager.setupTables();
     		
     		// serial reader
-    		try {
+/*    		try {
 				SerialComunication.createComunication();
 			} catch (NoSuchPortException | PortInUseException
 					| UnsupportedCommOperationException | IOException e) {
@@ -32,11 +32,11 @@ public class Main
     		
     		SerialReader sR = new SerialReader(SerialComunication.getInputStream());
     		sR.start();
-   		
+*/   		
     		
     		// avvio file reader
-    		// FileReader fr = new FileReader();
-    		// fr.start();
+    		FileReader fr = new FileReader();
+    		fr.start();
     		// avvio data processor
     		DataProcessor dp = new DataProcessor();
     		dp.start();     		
