@@ -10,6 +10,10 @@ import java.io.IOException;
 public class Main 
 {
 	
+	public static boolean debug = false; 
+			// true; 
+			// false;
+	
     public static void main( String[] args )
     {
     	if(Configurator.loadConfigFile()){
@@ -21,22 +25,21 @@ public class Main
     		FusionTablesManager.connect();
     		FusionTablesManager.setupTables();
     		
-    		// serial reader
-/*    		try {
-				SerialComunication.createComunication();
-			} catch (NoSuchPortException | PortInUseException
-					| UnsupportedCommOperationException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    		
-    		SerialReader sR = new SerialReader(SerialComunication.getInputStream());
-    		sR.start();
-*/   		
-    		
-    		// avvio file reader
-    		FileReader fr = new FileReader();
-    		fr.start();
+    		if(debug){
+    			// avvio file reader inserire file da analizzare nel costruttore
+        		FileReader fr = new FileReader("06-dic-2013.log");
+        		fr.start();
+    		}else{
+    			// serial reader
+		  		try {
+		  			SerialComunication.createComunication();	
+		  		} catch (NoSuchPortException | PortInUseException
+							| UnsupportedCommOperationException | IOException e) {
+					e.printStackTrace();
+		  		}  		
+	    		SerialReader sR = new SerialReader(SerialComunication.getInputStream());
+	    		sR.start();
+    		} 		
     		// avvio data processor
     		DataProcessor dp = new DataProcessor();
     		dp.start();     		

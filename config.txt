@@ -8,8 +8,8 @@ USBPort: /dev/ttyUSB0
 USBSpeedPort: 57600
 
 # Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
-#ResetTime: 23:59:59
-#ResetTime: 17:55:00
+ResetTime: 23:59:59
+#ResetTime: 21:51:00
 
 # Capabilities
 

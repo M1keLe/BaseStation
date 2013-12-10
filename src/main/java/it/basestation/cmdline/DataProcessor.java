@@ -31,7 +31,7 @@ public class DataProcessor extends Thread {
 		
 	public DataProcessor(){
 		super("Data Processor");
-		this.freqUpdate = Configurator.getFreqDataProcessor()/6;
+		this.freqUpdate = Configurator.getFreqDataProcessor();
 	}
 	
 	@Override
@@ -157,7 +157,7 @@ public class DataProcessor extends Thread {
 					// aggiornamento people
 					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.debugGlobalRecord);
 					
-					// calcolo medie mobili
+					// calcolo medie mobili (per ora non funziona)
 					this.GlobalMMCalculator.setListToCalculate(newGlobalRecord.getDataListToStore());
 					newGlobalRecord.setMMListToStore(this.GlobalMMCalculator.getMMListToStore());
 					
@@ -212,7 +212,7 @@ public class DataProcessor extends Thread {
 		// se people inside < 0
 		double peopleInside = newGlobalRecord.getPeopleInsideValue();
 		if(peopleInside < 0){
-			System.out.println("==========================================================================People Inside < 0!!!!-> " + peopleInside );
+			//System.out.println("DEBUG: ============= People Inside < 0!!!! " + peopleInside );
 			CapabilityInstance peopleIn = new CapabilityInstance("PeopleIn","","sum",0.00,Double.POSITIVE_INFINITY,0);
 			peopleIn.setValue(Math.abs(peopleInside));
 			newGlobalRecord.addCapabilityInstance(peopleIn);
@@ -228,7 +228,7 @@ public class DataProcessor extends Thread {
 		@Override
 		public void run(){
 			System.out.println("Resetter in esecuzione");
-			//LocalStatsManager.printNodesLog();
+			LocalStatsManager.printNodesLog();
 			LocalStatsManager.resetAllStats();
 			resetStats();	
 		}

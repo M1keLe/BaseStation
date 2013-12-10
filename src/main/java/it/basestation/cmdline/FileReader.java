@@ -10,9 +10,8 @@ import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 public class FileReader extends Thread {
-	private final String FILE_NAME = "06-dic-2013.log_debug"; 
-			//"22-nov-2013.log"; 
-			//"06-dic-2013.log"; 
+	private String fileName = ""; 
+			
 	private BufferedReader bReader = null;
 	
 	// attributi pacchetto
@@ -31,8 +30,9 @@ public class FileReader extends Thread {
 	
 	private Calendar now;
 
-	public FileReader() {	
+	public FileReader(String fileName) {	
 		super ("File Reader");
+		this.fileName = fileName;
 	}
 		
 	@Override
@@ -40,7 +40,7 @@ public class FileReader extends Thread {
 		while(true){		
 			
 			try {
-				bReader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE_NAME)));
+				bReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.fileName)));
 				String line = "";
 				while((line = bReader.readLine()) != null){
 					
@@ -85,8 +85,9 @@ public class FileReader extends Thread {
 					if(line.contains("</packet>")&& this.insidePacket){
 						this.insidePacket = false;
 						if(this.lastTimeStamp != 0){
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/5);
-							// Thread.sleep(1000*5);
+							
+							// tempo di sleep tra un pacchetto ed un altro
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp));
 							// Thread.sleep(000);
 						}
 					}

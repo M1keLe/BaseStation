@@ -1,1 +1,95 @@
 
+-----------------------------
+|	Stats del 10-dic-2013	|
+-----------------------------
+
+Node_13_____________________
+
+	> Reboots: 2
+	> Sent Packets: 531
+	> Routed Packets: 0
+___________________________
+
+Node_12_____________________
+
+	> Reboots: 7
+	> Sent Packets: 536
+	> Routed Packets: 0
+___________________________
+
+Node_11_____________________
+
+	> Reboots: 15
+	> Sent Packets: 541
+	> Routed Packets: 0
+___________________________
+
+Node_10_____________________
+
+	> Reboots: 3
+	> Sent Packets: 253
+	> Routed Packets: 0
+___________________________
+
+Node_9_____________________
+
+	> Reboots: 3
+	> Sent Packets: 557
+	> Routed Packets: 536
+___________________________
+
+Node_8_____________________
+
+	> Reboots: 2
+	> Sent Packets: 606
+	> Routed Packets: 1093
+___________________________
+
+Node_7_____________________
+
+	> Reboots: 3
+	> Sent Packets: 568
+	> Routed Packets: 0
+___________________________
+
+Node_6_____________________
+
+	> Reboots: 4
+	> Sent Packets: 459
+	> Routed Packets: 0
+___________________________
+
+Node_5_____________________
+
+	> Reboots: 0
+	> Sent Packets: 994
+	> Routed Packets: 0
+___________________________
+
+Node_4_____________________
+
+	> Reboots: 18
+	> Sent Packets: 1178
+	> Routed Packets: 3867
+___________________________
+
+Node_3_____________________
+
+	> Reboots: 1
+	> Sent Packets: 806
+	> Routed Packets: 531
+___________________________
+
+Node_2_____________________
+
+	> Reboots: 6
+	> Sent Packets: 742
+	> Routed Packets: 1590
+___________________________
+
+============================
+| Tot Packets received: 7771|
+-----------------------------
+|	END: 10-dic-2013		|
+-----------------------------
+
