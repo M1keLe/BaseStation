@@ -11,6 +11,8 @@ public class Node {
 	private LinkedList<Packet> myPackets = new LinkedList<Packet>();
 	private long lastPacketTimeStamp = 0;
 	private short routedPackets = 0;
+	private short lastCounter = 0;
+	private short reboots = 0;
 	
 
 	public Node(short nodeID, int xValue, int yValue, LinkedList<String> capabilities) {
@@ -41,10 +43,22 @@ public class Node {
 	public void addMyPacket(Packet p){
 		this.myPackets.add(p);
 		this.lastPacketTimeStamp = p.getTime();
+		if(this.lastCounter > p.getCounter()){
+			this.reboots++;
+		}
+		this.lastCounter = p.getCounter();
 	}
 	
 	public void increaseRoutedPackets(){
 		this.routedPackets++;
+	}
+	
+	public int getTotPacketsSent(){
+		return this.myPackets.size();
+	}
+	
+	public short getReboots(){
+		return this.reboots;
 	}
 	
 	public short getRoutedPackets(){

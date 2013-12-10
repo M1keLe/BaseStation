@@ -402,10 +402,10 @@ public class FusionTablesManager {
 				System.out.println("List people in not null");
 				Iterator<Object> i = list.get(0).iterator();
 				double peopleIn = Double.parseDouble(i.next().toString());
-				CapabilityInstance cI = Configurator.getCapabilityInstance("PeopleIn");
+				CapabilityInstance pIn = new CapabilityInstance("PeopleIn", "", "sum", 0.00, Double.POSITIVE_INFINITY);
 				System.out.println("Last people in value found: " + peopleIn);
-				cI.setValue(peopleIn);
-				toRet.addCapabilityInstance(cI);
+				pIn.setValue(peopleIn);
+				toRet.addCapabilityInstance(pIn);
 			}
 		}
 		
@@ -419,10 +419,10 @@ public class FusionTablesManager {
 				System.out.println("List people out not null");
 				Iterator<Object> i = list.get(0).iterator();
 				double peopleOut = Double.parseDouble(i.next().toString());
-				CapabilityInstance cI = Configurator.getCapabilityInstance("PeopleOut");
+				CapabilityInstance pOut = new CapabilityInstance("PeopleOut", "", "sum", 0.00, Double.POSITIVE_INFINITY);
 				System.out.println("Last people out value found: " + peopleOut);
-				cI.setValue(peopleOut);
-				toRet.addCapabilityInstance(cI);
+				pOut.setValue(peopleOut);
+				toRet.addCapabilityInstance(pOut);
 			}
 		}		
 		return toRet;

@@ -160,6 +160,15 @@ public class LastPeriodGlobalRecord {
 		
 	}
 
+	// try to fix peopleInside 
+	public double getPeopleInsideValue() {
+		double toRet = 0;
+		CapabilityInstance peopleInside = this.globalDataToStore.get("PeopleInside");
+		if(peopleInside != null){
+			toRet = peopleInside.getValue();
+		}
+		return toRet;
+	}
 	
 	
 	@Override

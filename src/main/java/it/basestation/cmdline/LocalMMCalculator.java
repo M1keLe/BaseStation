@@ -33,7 +33,7 @@ public class LocalMMCalculator {
 				Double[] avgWindow = new Double[this.avgWindows.get(cI.getName()).length];
 				avgWindow = this.avgWindows.get(cI.getName());
 				// debug
-				System.out.print("Scorro la lista avgWindow: "+nodeID+": ");
+				System.out.print("Scorro la lista avgWindow: NodeID "+nodeID+" Cap. "+ cI.getName());
 				for (Double value : avgWindow) {
 					System.out.print(" "+value);
 				}

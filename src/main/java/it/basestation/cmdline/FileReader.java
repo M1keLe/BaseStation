@@ -5,10 +5,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
 
 public class FileReader extends Thread {
-	private final String FILE_NAME = "22-nov-2013.log"; 
+	private final String FILE_NAME = "06-dic-2013.log_debug"; 
+			//"22-nov-2013.log"; 
+			//"06-dic-2013.log"; 
 	private BufferedReader bReader = null;
 	
 	// attributi pacchetto
@@ -24,6 +28,8 @@ public class FileReader extends Thread {
 	// timestamp arrivo pacchetto simulo tempo tra arrivo di un pacchetto ed un altro
 	private long lastTimeStamp = 0;
 	private long newTimeStamp = 0;
+	
+	private Calendar now;
 
 	public FileReader() {	
 		super ("File Reader");
@@ -39,9 +45,36 @@ public class FileReader extends Thread {
 				while((line = bReader.readLine()) != null){
 					
 					if(line.contains("<packet>")&& !this.insidePacket){
+						
 						this.insidePacket = true;
+/*						// old log
 						this.lastTimeStamp = newTimeStamp;
 						this.newTimeStamp = Long.parseLong(line.substring(line.indexOf('>') +1).trim());
+*/						// end old log
+						
+						// new log
+						now = Calendar.getInstance();
+						String time = line.substring(line.indexOf('>') +1).trim();
+						int h; 		// ora
+						int m; 		// minuti
+						int s; 		// secondi
+						int mils; 	// millisecondi
+						mils = Integer.parseInt(time.substring(time.indexOf('.')+1));
+						time = time.substring(0, time.lastIndexOf('.'));
+						StringTokenizer token = new StringTokenizer(time, ":");
+						h = Integer.parseInt(token.nextToken());
+						m = Integer.parseInt(token.nextToken());
+						s = Integer.parseInt(token.nextToken());
+						now.set(Calendar.HOUR_OF_DAY, h);
+						now.set(Calendar.MINUTE, m);
+						now.set(Calendar.SECOND, s);
+						now.set(Calendar.MILLISECOND, mils);
+						this.lastTimeStamp = this.newTimeStamp;
+						this.newTimeStamp = now.getTimeInMillis();
+						// end new log
+						
+						line = line.substring(0, line.indexOf('>')+1);
+						
 						
 						//reset();
 					}
@@ -52,9 +85,9 @@ public class FileReader extends Thread {
 					if(line.contains("</packet>")&& this.insidePacket){
 						this.insidePacket = false;
 						if(this.lastTimeStamp != 0){
-							// Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/100);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/5);
 							// Thread.sleep(1000*5);
-							Thread.sleep(1000);
+							// Thread.sleep(000);
 						}
 					}
 					
@@ -124,7 +157,7 @@ public class FileReader extends Thread {
 			}
 			// sleep quando tutto il file viene letto...
 			try {
-				Thread.sleep(1000*60*2); // 2minuti
+				Thread.sleep(1000*60*10); // 10minuti
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

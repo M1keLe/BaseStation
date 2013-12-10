@@ -17,10 +17,13 @@ public class DataProcessor extends Thread {
 	// frequenza data processor
 	private int freqUpdate;
 	private Hashtable<Short, LastPeriodNodeRecord> lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
-	private LastPeriodGlobalRecord lastPeriodGlobalRecord = null; // per aggiornare people in caso di riavvio basestation
+	
+	// per aggiornare people in caso di riavvio basestation e people inside < 0
+	private LastPeriodGlobalRecord debugGlobalRecord = null;
 	
 	private Hashtable<Short, PeopleCounter> peopleCounters = new Hashtable<Short, PeopleCounter>();
 	private Hashtable<Short, LocalMMCalculator> localMMCalculators = new Hashtable<Short, LocalMMCalculator>();
+	// non utilizzato
 	private GlobalMMCalculator GlobalMMCalculator = new GlobalMMCalculator();
 	
 	private ReentrantLock lock = new ReentrantLock();
@@ -28,7 +31,7 @@ public class DataProcessor extends Thread {
 		
 	public DataProcessor(){
 		super("Data Processor");
-		this.freqUpdate = Configurator.getFreqDataProcessor()/5;
+		this.freqUpdate = Configurator.getFreqDataProcessor()/6;
 	}
 	
 	@Override
@@ -59,9 +62,9 @@ public class DataProcessor extends Thread {
 				updateTime = new Date();
 				System.out.println("Data Processor in esecuzione " + updateTime);
 				// inizializzo il global record
-				if(this.lastPeriodGlobalRecord == null){
+				if(this.debugGlobalRecord == null){
 					try {
-						this.lastPeriodGlobalRecord = FusionTablesManager.initGlobalRecord();
+						this.debugGlobalRecord = FusionTablesManager.initGlobalRecord();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -152,7 +155,7 @@ public class DataProcessor extends Thread {
 					}
 					
 					// aggiornamento people
-					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.lastPeriodGlobalRecord);
+					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.debugGlobalRecord);
 					
 					// calcolo medie mobili
 					this.GlobalMMCalculator.setListToCalculate(newGlobalRecord.getDataListToStore());
@@ -185,7 +188,7 @@ public class DataProcessor extends Thread {
 	private void resetStats(){
 		this.lock.lock();
 		try{
-			this.lastPeriodGlobalRecord = new LastPeriodGlobalRecord();
+			this.debugGlobalRecord = new LastPeriodGlobalRecord();
 			this.lastPeriodNodesRecord = new Hashtable<Short, LastPeriodNodeRecord>();
 			this.peopleCounters = new Hashtable<Short, PeopleCounter>();
 			this.localMMCalculators = new Hashtable<Short, LocalMMCalculator>();
@@ -204,7 +207,18 @@ public class DataProcessor extends Thread {
 			if(cI.getName().equals("PeopleIn")|| cI.getName().equals("PeopleOut")){
 				newGlobalRecord.addCapabilityInstance(cI);
 			}
-		}	
+		} // end foreach
+		
+		// se people inside < 0
+		double peopleInside = newGlobalRecord.getPeopleInsideValue();
+		if(peopleInside < 0){
+			System.out.println("==========================================================================People Inside < 0!!!!-> " + peopleInside );
+			CapabilityInstance peopleIn = new CapabilityInstance("PeopleIn","","sum",0.00,Double.POSITIVE_INFINITY,0);
+			peopleIn.setValue(Math.abs(peopleInside));
+			newGlobalRecord.addCapabilityInstance(peopleIn);
+			this.debugGlobalRecord.addCapabilityInstance(peopleIn);
+		}			
+
 		return newGlobalRecord;
 	}
 	
@@ -214,6 +228,7 @@ public class DataProcessor extends Thread {
 		@Override
 		public void run(){
 			System.out.println("Resetter in esecuzione");
+			//LocalStatsManager.printNodesLog();
 			LocalStatsManager.resetAllStats();
 			resetStats();	
 		}

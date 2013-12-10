@@ -1,8 +1,13 @@
 package it.basestation.cmdline;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -90,6 +95,47 @@ public class LocalStatsManager {
 		deltaCounters.get(nodeID).elabDelta(cI);
 	}	
 	
+	// metodo invocato dal thread Resetter (salva statistiche locali su file)
+	public static void printNodesLog(){
+		String fileName = "log/nodes.log";
+		try {
+			Date now = new Date();
+			FileOutputStream out = new FileOutputStream(fileName, true);
+			PrintStream p = new PrintStream(out);
+			String toPrint = "";
+			toPrint += "-----------------------------\n";
+			toPrint +=  "|\tStats del " + new SimpleDateFormat("dd-MMM-yyyy", Locale.ITALY).format(now) + "\t|\n";
+			toPrint += "-----------------------------\n\n";
+			lock.lock();
+			Enumeration<Short> e = nodeList.keys();
+			
+			while (e.hasMoreElements()) {
+				Short nodeID = (Short) e.nextElement();
+				toPrint += "Node_"+nodeID+"_____________________\n\n";
+				Node n = nodeList.get(nodeID);
+				toPrint += "\t> Reboots: " +n.getReboots()+"\n";
+				toPrint += "\t> Sent Packets: " +n.getTotPacketsSent()+"\n";
+				toPrint += "\t> Routed Packets: " +n.getRoutedPackets()+"\n";
+				toPrint += "___________________________\n\n";
+			}
+			toPrint += "============================\n";
+			toPrint += "| Tot Packets received: " + packetsList.size() + "|\n";
+			
+			toPrint += "-----------------------------\n";
+			toPrint +=  "|\tEND: " + new SimpleDateFormat("dd-MMM-yyyy", Locale.ITALY).format(now) + "\t\t|\n";
+			toPrint += "-----------------------------\n\n";
+			p.print(toPrint);
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+		} finally{
+			lock.unlock();
+		}
+		
+	}
+	
+	
 	// metodo invocato dal thread Resetter	
 	public static void resetAllStats(){
 		lock.lock();
@@ -127,17 +173,17 @@ public class LocalStatsManager {
 	
 	// aggiornamento contatore routedPacket
 	private static void updateRouterCounter(Packet packet){
-		lock.lock();
-		try{
+		//lock.lock();
+		//try{
 			LinkedList<Short> routers = packet.getHopsIndexes();
 			if(routers != null){
 				for (Short nodeID : routers) {
 					nodeList.get(nodeID).increaseRoutedPackets();
 				}
 			}
-		}finally{
-			lock.unlock();
-		}
+		//}finally{
+		//	lock.unlock();
+		//}
 	}
 
 }
