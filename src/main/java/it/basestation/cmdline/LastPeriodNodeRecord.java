@@ -21,15 +21,16 @@ public class LastPeriodNodeRecord {
 		for (String name : capabilitiesSet) {
 			LinkedList<CapabilityInstance> cList = Configurator.getCapabilityInstanceList(name, "local", false);
 			for (CapabilityInstance cI : cList) {
-				this.dataToStore.put(cI.getName(), cI);
+				this.dataToStore.put(cI.getName()+"_"+cI.localOperator(), cI);
 				// se li valore è da mediare inizializzo il contatore
 				if(cI.localOperator().equals("avg")){
-					this.counters.put(cI.getName(), 0);
+					this.counters.put(cI.getName()+"_"+cI.localOperator(), 0);
 				}
 			}
 		}
 	}
 	
+	// al mom non utilizzato // è da modificare!!
 	public void addPacket(Packet p){
 		LinkedList<CapabilityInstance> dataList = p.getDataList();
 		for (CapabilityInstance cI : dataList) {
@@ -98,44 +99,55 @@ public class LastPeriodNodeRecord {
 	
 	public void addCapabilityInstance(CapabilityInstance cI){
 		// store su lista debug
-		if (!this.capabilityInstancesList.containsKey(cI.getName())){
-			this.capabilityInstancesList.put(cI.getName(), new LinkedList<CapabilityInstance>());
+		if (!this.capabilityInstancesList.containsKey(cI.getName()+"_"+cI.localOperator())){
+			this.capabilityInstancesList.put(cI.getName()+"_"+cI.localOperator(), new LinkedList<CapabilityInstance>());
 		}
-		this.capabilityInstancesList.get(cI.getName()).add(cI);
+		this.capabilityInstancesList.get(cI.getName()+"_"+cI.localOperator()).add(cI);
 		
 		// controllo se il valore è da mediare
 		if(cI.localOperator().equals("avg")){
-			int lastCounter = this.counters.get(cI.getName()).intValue();
+			int lastCounter = this.counters.get(cI.getName()+"_"+cI.localOperator()).intValue();
 			int newCounter = lastCounter + 1;
-			double lastAvg = this.dataToStore.get(cI.getName()).getValue();
+			double lastAvg = this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).getValue();
 			double temp = lastAvg * lastCounter;
 			temp += cI.getValue();
 			double neWAvg = temp / newCounter;
 			// aggiornamento valori
-			this.counters.put(cI.getName(), newCounter);
-			this.dataToStore.get(cI.getName()).setValue(neWAvg);
+			this.counters.put(cI.getName()+"_"+cI.localOperator(), newCounter);
+			this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).setValue(neWAvg);
 		
 		// controllo se il valore da prendere è l'ultimo	
 		}else if(cI.localOperator().equals("last")){
 			// salvo l'ultimo valore
-			this.dataToStore.put(cI.getName(), cI);
+			this.dataToStore.put(cI.getName()+"_"+cI.localOperator(), cI);
 			
 		// controllo se il valore è da sommare	
 		}else if(cI.localOperator().equals("sum")){
 			// lo sommo ai valori precedenti
-			double lastValue = this.dataToStore.get(cI.getName()).getValue();
+			double lastValue = this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).getValue();
 			double sum = lastValue + cI.getValue();
-			this.dataToStore.get(cI.getName()).setValue(sum);
+			this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).setValue(sum);
 		}
 		
 		// aggiorno dati derivati			
 		Enumeration<String> e = this.dataToStore.keys();
+		
+		/*// debug 		
+		Enumeration<String> eDeb = this.dataToStore.keys();
+		while (eDeb.hasMoreElements()) {
+			String string = (String) eDeb.nextElement();
+			System.out.println("Stampa chiavi node record: " +string);
+		}
+		*/// end debug
+		
 		while(e.hasMoreElements()){
 			String name = e.nextElement();
 			//controllo se è un valore derivato
 			if(!this.dataToStore.get(name).localOperator().equals("avg") &&
 					!this.dataToStore.get(name).localOperator().equals("last")&&
 					!this.dataToStore.get(name).localOperator().equals("sum")){
+				
+				// seleziono la misura derivata
 				this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
 			}
 		}
@@ -157,8 +169,8 @@ public class LastPeriodNodeRecord {
 	}
 	
 	// invocato per inserire valori globali sul global record
-	public CapabilityInstance getCapabilityInstance(String name){
-		return this.dataToStore.get(name);
+	public CapabilityInstance getCapabilityInstance(String name, String index){
+		return this.dataToStore.get(name+"_"+index);
 	}
 	
 	// set medie mobili
@@ -173,6 +185,13 @@ public class LastPeriodNodeRecord {
 	
 	// metodo privato per calcolare misure derivate
 	private double getDerivedMeasure(CapabilityInstance cI) {
+		// Debug
+		
+		System.out.println("GetDerivedmeasure, capability da analizzare: ==============================");
+		System.out.println(cI);
+		
+		// end debug
+		
 		double result = 0.00;
 		String syntax = cI.localOperator();
 		// suddivido la stringa in vari tokens
@@ -181,8 +200,9 @@ public class LastPeriodNodeRecord {
         // sostituisco il nome della capability con il valore        
         for (int i = 0; i < tokens.length; i++) {
         	// se null il token è una parentesi oppure uno dei simboli op (/,*,-,+)
-        	if(this.dataToStore.get(tokens[i]) != null){
-        		Double value = this.dataToStore.get(tokens[i]).getValue();
+        	if(this.dataToStore.get(tokens[i]+"_"+cI.getIndex()) != null){
+        		System.out.println("Ricerca su: tokens[i]: " + tokens[i] + "cI.getIndex: " + cI.getIndex());
+        		Double value = this.dataToStore.get(tokens[i]+"_"+cI.getIndex()).getValue();
         		tokens[i] = value.toString();
         	}
 		}

@@ -48,13 +48,15 @@ public class TextParser {
 		}
 		else if (line.contains(">") && line.contains(":") && !line.contains("<")&& insidePacket){
 			String name = line.substring(line.indexOf('>')+1, line.indexOf(':'));
-			//CapabilityInstance c = Configurator.getCapabilityInstance(name);
+			
 			LinkedList<CapabilityInstance> cList = Configurator.getCapabilityInstanceList(name, "local", false);
-			//if(c != null && capabilitiesSet.contains(c.getName())){
+			
 			if(cList != null && capabilitiesSet.contains(name)){
 				for (CapabilityInstance cI : cList) {
-					cI.setValue(Double.parseDouble(line.substring(line.indexOf(':')+1).trim()));
-					capInstanceList.add(cI);
+					if(!cI.localOperator().contains("(") && !cI.localOperator().contains("(")){
+						cI.setValue(Double.parseDouble(line.substring(line.indexOf(':')+1).trim()));
+						capInstanceList.add(cI);
+					}
 				}		
 			}
 		}
@@ -62,7 +64,7 @@ public class TextParser {
 			Packet p = new Packet(time, lastRouter, sender, counter, route, capInstanceList);
 			LocalStatsManager.addNewPacket(p);
 			// debug
-			//System.out.println(p);
+			// System.out.println(p);
 			reset();
 		}
 	}

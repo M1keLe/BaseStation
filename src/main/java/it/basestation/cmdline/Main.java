@@ -10,7 +10,7 @@ import java.io.IOException;
 public class Main 
 {
 	
-	public static boolean debug = false; 
+	public static boolean debug = true; 
 			// true; 
 			// false;
 	
@@ -25,9 +25,19 @@ public class Main
     		FusionTablesManager.connect();
     		FusionTablesManager.setupTables();
     		
+    		/* // debug
+    		try {
+				FusionTablesManager.createT();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+    		
+    		*/ // enddebug
+    		
     		if(debug){
     			// avvio file reader inserire file da analizzare nel costruttore
-        		FileReader fr = new FileReader("06-dic-2013.log");
+        		FileReader fr = new FileReader("06-dic-2013.log_debug");
         		fr.start();
     		}else{
     			// serial reader

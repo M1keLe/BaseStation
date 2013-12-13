@@ -31,7 +31,7 @@ public class DataProcessor extends Thread {
 		
 	public DataProcessor(){
 		super("Data Processor");
-		this.freqUpdate = Configurator.getFreqDataProcessor();
+		this.freqUpdate = Configurator.getFreqDataProcessor()/10;
 	}
 	
 	@Override
@@ -120,7 +120,7 @@ public class DataProcessor extends Thread {
 						this.localMMCalculators.get(nodeID).setListToCalculate(newNodesRecord.get(nodeID).getDataListToStore());
 						newNodesRecord.get(nodeID).setMMListToStore(this.localMMCalculators.get(nodeID).getMMListToStore());
 						// DEBUG
-						// System.out.println(newNodesRecord.get(nodeID));
+						System.out.println(newNodesRecord.get(nodeID));
 						try {							
 							FusionTablesManager.insertData(newNodesRecord.get(nodeID), updateTime);
 							
@@ -143,11 +143,11 @@ public class DataProcessor extends Thread {
 						// prendo i dati dai vari node records
 						Enumeration<Short> nodeID = this.lastPeriodNodesRecord.keys();
 						while (nodeID.hasMoreElements()) {
-							CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getName());
+							CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getName(), c.getIndex());
 
 							// se cI == null il nodo non ha la capability globale
 							if(cI != null){
-								CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
+								CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.getColumnName(), c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
 								gCI.setValue(cI.getValue());
 								newGlobalRecord.addCapabilityInstance(gCI);
 							}
@@ -165,14 +165,13 @@ public class DataProcessor extends Thread {
 					// debug
 					System.out.println(newGlobalRecord);					
 					
-					try {
+/*					try {
 						FusionTablesManager.insertData(newGlobalRecord, updateTime);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-										
-					//this.lastPeriodGlobalRecord = newGlobalRecord;
+*/										
 					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");
@@ -213,7 +212,7 @@ public class DataProcessor extends Thread {
 		double peopleInside = newGlobalRecord.getPeopleInsideValue();
 		if(peopleInside < 0){
 			//System.out.println("DEBUG: ============= People Inside < 0!!!! " + peopleInside );
-			CapabilityInstance peopleIn = new CapabilityInstance("PeopleIn","","sum",0.00,Double.POSITIVE_INFINITY,0);
+			CapabilityInstance peopleIn = new CapabilityInstance("PeopleIn","PeopleIn_sum","last","","sum",0.00,Double.POSITIVE_INFINITY,0);
 			peopleIn.setValue(Math.abs(peopleInside));
 			newGlobalRecord.addCapabilityInstance(peopleIn);
 			this.debugGlobalRecord.addCapabilityInstance(peopleIn);

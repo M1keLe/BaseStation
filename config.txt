@@ -1,5 +1,5 @@
 # frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor: 1
+FreqDataProcessor: 5
 
 # porta USB default = /dev/ttyUSB0
 USBPort: /dev/ttyUSB0
@@ -21,52 +21,53 @@ ResetTime: 23:59:59
 	
 	<Temperature[0,10000]>
 		local:avg
-		local:MM[5]
-		global:avg
+		local:formula [Temperature_Celsius] = ( Temperature / 100 ) #avg
+		local:MM[5]Temperature_Celsius
+		global:avg#avg
 		#global:MM[8]
 	</Temperature>
 	
 	<Power[0,10000]>
 		local:avg
-		local:MM[6]
+		local:MM[6]Power_avg
 	</Power>
 	
 	<Pressure[700,1400]>
 		local:avg
-		local:MM[6]
-		global:avg
+		#local:MM[6]Pressure_avg
+		global:avg#avg
 	</Pressure>
 	
 	<CO2[100,*]>
 		local:avg
-		local:MM[7]
-		global:avg
+		#local:MM[7]CO2_avg
+		global:avg#avg
 	</CO2>
 	
 	<Noise[0,*]>
 		local:avg
-		local:MM[8]
-		global:avg
+		#local:MM[8]Noise_avg
+		global:avg#avg
 	</Noise>
 	
 	<Light[15,*]>
 		local:avg
-		local:MM[9]
-		global:avg
+		#local:MM[9]Noise_avg
+		global:avg#avg
 	</Light>
 	
 	<PeopleIn[0,*]>
 		local:last
-		global:sum
+		global:sum#last
 	</PeopleIn>
 	
 	<PeopleOut[0,*]>
 		local:last
-		global:sum
+		global:sum#last
 	</PeopleOut>
 	
 	<PeopleInside[0,*]>
-		global: ( PeopleIn - PeopleOut )
+		global:formula [Inside_Collegio_Raffaello] = ( PeopleIn - PeopleOut ) #sum
 	</PeopleInside>
 	
 </capabilities>
@@ -84,5 +85,4 @@ Node:9;249;235;Counter
 Node:10;607;514;Counter#PeopleIn#PeopleOut
 Node:11;410;573;Counter#PeopleIn#PeopleOut
 Node:12;256;152;Counter#PeopleIn#PeopleOut
-Node:13;256;152;Counter
-#Power
+Node:13;256;152;Counter#Power

@@ -2,11 +2,18 @@ package it.basestation.cmdline;
 
 public class Capability {
 
+	// nome capability
 	private String name = "";
+	// nome colonna fusion table
+	private String columnName = "";
 	private String localOperator = "";
 	private String globalOperator = "";
+	// indice su cui effettuare op local o global
+	private String index = "";
+	// range
 	private Double minValue = Double.NEGATIVE_INFINITY;
 	private Double maxValue = Double.POSITIVE_INFINITY;
+	// finestra media mobile
 	private int avgWindow = 0;
 
 /*	public Capability(String name){
@@ -18,7 +25,7 @@ public class Capability {
 		this.localOperator = localOperator;
 		this.globalOperator = globalOperator;
 	}
-*/	
+	
 	public Capability(String name, String localOperator, String globalOperator, Double minValue, Double maxValue) {
 		this.name = name;
 		this.localOperator = localOperator;
@@ -29,6 +36,17 @@ public class Capability {
 	
 	public Capability(String name, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow) {
 		this.name = name;
+		this.localOperator = localOperator;
+		this.globalOperator = globalOperator;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
+		this.avgWindow = avgWindow;
+	}
+*/	
+	public Capability(String name, String columnName, String index, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow) {
+		this.name = name;
+		this.columnName = columnName;
+		this.index = index;
 		this.localOperator = localOperator;
 		this.globalOperator = globalOperator;
 		this.minValue = minValue;
@@ -59,18 +77,19 @@ public class Capability {
 	}
 	
 	public String getColumnName(){
-		String toRet = this.name +"_";
-		if((this.localOperator + this.globalOperator).contains("(")){
-			toRet += "DM";
-		}else{
+		String toRet = this.columnName;
+		// quando non specificato nel file di configurazione
+		if(toRet.isEmpty()){
+			toRet = this.name +"_";
 			toRet += this.localOperator + this.globalOperator;
+			if(this.avgWindow > 0)
+				toRet += "_"+this.avgWindow;
 		}
-		if(this.avgWindow > 0)
-			toRet += "_"+this.avgWindow;
-			toRet = toRet.replace("( ", "_");
-			toRet = toRet.replace(" )", "_");
-			toRet = toRet.replace(" ", "");
 		return toRet;
+	}
+	
+	public String getIndex(){
+		return this.index;
 	}
 	
 	
@@ -98,6 +117,8 @@ public class Capability {
 	public String toString() {
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
+		toRet += "Column Name: " + getColumnName() + "\n";
+		toRet += "Index: " + this.index + "\n";
 		toRet += "Local: " + this.localOperator + "\n";
 		toRet += "Global: " + this.globalOperator + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";

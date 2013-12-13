@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -23,8 +24,10 @@ public class Configurator {
 	
 	// attributi capability
 	private static String name = "";
+	private static String columnName = "";
 	private static String localOperator = "";
 	private static String globalOperator = "";
+	private static String index = "";
 	private static String min = "";
 	private static String max = "";
 	private static Double minValue = Double.NEGATIVE_INFINITY;
@@ -42,7 +45,7 @@ public class Configurator {
 	private static Hashtable<Short,Node> nodes = new Hashtable<Short,Node>();
 	
 	// set capabilities globali
-	private static LinkedList <String> globalCapabilitiesSet = new LinkedList<String>();
+	//private static LinkedList <String> globalCapabilitiesSet = new LinkedList<String>();
 	
 	public static boolean loadConfigFile(){
 		boolean toRet = true;
@@ -129,66 +132,112 @@ public class Configurator {
 						if(localOperator.contains("MM")){
 							if(tryParseInt(localOperator.substring(localOperator.indexOf('[')+1, localOperator.indexOf(']')))){
 								avgWindow = Integer.parseInt(localOperator.substring(localOperator.indexOf('[')+1, localOperator.indexOf(']')));
+								index = localOperator.substring(localOperator.indexOf(']')+1).trim();
 								localOperator = "MM";
+								if(index.isEmpty()){
+									toRet = false;
+									log += "[Line: "+lineCounter+"] Errore non è stato impostato un undice su cui calcolare la media mobile Capability chiamata: " +name+"\n";
+								}
 							}else{
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione AVG Window Capability chiamata: " +name+"\n";
 							}
+						}else if(localOperator.contains("formula")){
+							columnName = localOperator.substring(localOperator.indexOf('[')+1, localOperator.indexOf(']'));
+							index = localOperator.substring(localOperator.lastIndexOf("#")+1).trim();
+							localOperator = localOperator.substring(localOperator.indexOf('('), localOperator.lastIndexOf(')')+1).trim();
+							if(!localOperator.startsWith("(") || !localOperator.endsWith(")")){
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore impostazione formula Capability chiamata: " +name+"\n";
+							}
+							if(index.isEmpty()){
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore non è stato impostato un undice su cui calcolare la formula Capability chiamata: " +name+"\n";
+							}
+							if(columnName.isEmpty()){
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore non è stato impostato il \"nome colonna\" Capability chiamata: " +name+"\n";
+							}
 						}
-						capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue, avgWindow));
 						
-						// Debug
+						capabilities.add(new Capability(name, columnName, index, localOperator, globalOperator, minValue, maxValue, avgWindow));
+						
+						/*// Debug
 						System.out.println("*********** New Capability ***********");
 						System.out.println("Name: " +name);
+						System.out.println("Column Name: " +columnName);
+						System.out.println("Index: " +index);
 						System.out.println("Local Operator: " +localOperator);
 						System.out.println("Global Operator: " +globalOperator);
 						System.out.println("Min Value: " +minValue);
 						System.out.println("Max Value: " +maxValue);
 						System.out.println("Avg Window: " +avgWindow);
 						System.out.println("********* End New Capability *********\n");
+						*/// end Debug
+						
 						
 						// reset variabili
 						localOperator = "";
+						columnName = "";
+						index = "";
 						avgWindow = 0;
 					}
 					else if(line.contains("global")){
-						globalOperator = line.substring(line.indexOf(':')+1).replaceAll(" {2,}", " ").trim();
+						globalOperator = line.substring(line.indexOf(':')+1, line.indexOf('#')).replaceAll(" {2,}", " ").trim();
+						index = line.substring(line.indexOf('#')+1).trim();
 						if(globalOperator.contains("MM")){
 							if(tryParseInt(globalOperator.substring(globalOperator.indexOf('[')+1, globalOperator.indexOf(']')))){
 								avgWindow = Integer.parseInt(globalOperator.substring(globalOperator.indexOf('[')+1, globalOperator.indexOf(']')));
+								index = globalOperator.substring(globalOperator.indexOf(']')+1).trim();
 								globalOperator = "MM";
+								if(index.isEmpty()){
+									toRet = false;
+									log += "[Line: "+lineCounter+"] Errore non è stato impostato un undice su cui calcolare la media mobile Capability chiamata: " +name+"\n";
+								}
 							}else{
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione AVG Window Capability chiamata: " +name+"\n";
 							}
+						}else if(globalOperator.contains("formula")){
+							columnName = globalOperator.substring(globalOperator.indexOf('[')+1, globalOperator.indexOf(']'));
+							globalOperator = globalOperator.substring(globalOperator.indexOf('('), globalOperator.lastIndexOf(')')+1).trim();
+							if(!globalOperator.startsWith("(") && !globalOperator.endsWith(")")){
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore impostazione formula Capability chiamata: " +name+"\n";
+							}
+							if(index.isEmpty()){
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore non è stato impostato un undice su cui calcolare la formula Capability chiamata: " +name+"\n";
+							}
+							if(columnName.isEmpty()){
+								toRet = false;
+								log += "[Line: "+lineCounter+"] Errore non è stato impostato il \"nome colonna\" Capability chiamata: " +name+"\n";
+							}
 						}
-						capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue, avgWindow));
+						capabilities.add(new Capability(name, columnName, index, localOperator, globalOperator, minValue, maxValue, avgWindow));
 						
-						// Debug
+						/*// Debug
 						System.out.println("*********** New Capability ***********");
 						System.out.println("Name: " +name);
+						System.out.println("Column Name: " +columnName);
+						System.out.println("Index: " +index);
 						System.out.println("Local Operator: " +localOperator);
 						System.out.println("Global Operator: " +globalOperator);
 						System.out.println("Min Value: " +minValue);
 						System.out.println("Max Value: " +maxValue);
 						System.out.println("Avg Window: " +avgWindow);
 						System.out.println("********* End New Capability *********\n");
+						*/// end Debug
 						
 						// reset variabili
 						globalOperator = "";
+						columnName = "";
+						index = "";
 						avgWindow = 0;
 					}
 					else if(line.contains("</"+name+">")){
-						// capabilities.add(new Capability(name, localOperator, globalOperator, minValue, maxValue));
-						
-						if(!globalOperator.isEmpty()){
-							globalCapabilitiesSet.add(name);
-							System.out.println("Aggiunta Capability set globale ->"+globalOperator+"<-");
-						}
-						
 						// reset variabili capabilities
 						resetCapabilitiesVariables();
-					
 					}
 					else if(line.indexOf("Node") != -1){
 						String nodeLine = line.substring(line.indexOf(':')+1).trim();
@@ -218,8 +267,6 @@ public class Configurator {
 	                            Node n = new Node(nodeID, xValue, yValue, capability);
 	                            
 	                            nodes.put(nodeID, n);
-	                            
-	                            System.out.println("\n" + nodes.get(nodeID) + "\n");
 	                    }else{
 	                            log += "[Line: "+lineCounter+"] Node ERROR controllare file di configurazione\n";
 	                            toRet = false;
@@ -227,6 +274,21 @@ public class Configurator {
 					}
 				}
 			}
+			
+			// Debug
+			
+			// Stampa lista nodi
+			Enumeration<Short> e = nodes.keys();
+			while (e.hasMoreElements()) {
+				System.out.println(nodes.get(e.nextElement()));
+			}
+			
+			// Stampa lista capabilities
+			for (Capability c : capabilities) {
+				System.out.println(c);
+			}
+			
+			// end debug
 			
 		} catch (FileNotFoundException e) {
 			log += e + "\n";
@@ -303,10 +365,10 @@ public class Configurator {
 					
 					if(!mm){
 						if(c.getAvgWindow() == 0){
-							toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+							toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 						}						
 					}else{
-						toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+						toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 					}				
 				}
 			} // end foreach
@@ -324,10 +386,10 @@ public class Configurator {
 	
 					if(!mm){
 						if(c.getAvgWindow() == 0){
-							toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+							toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 						}						
 					}else{
-						toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+						toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 					}
 	
 				// per tabelle globali	
@@ -335,10 +397,10 @@ public class Configurator {
 					
 					if(!mm){
 						if(c.getAvgWindow() == 0){
-							toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+							toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 						}						
 					}else{
-						toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+						toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 					}				
 				}
 			} // end foreach
@@ -367,11 +429,11 @@ public class Configurator {
 		for (Capability c : capabilities) {
 			if(type.equals("local") && !c.localOperator().isEmpty()){
 				if(c.getAvgWindow() > 0){
-					toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+					toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 				}
 			}else if(type.equals("global") && !c.globalOperator().isEmpty()){
 				if(c.getAvgWindow() > 0){
-					toRet.add(new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+					toRet.add(new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 				}
 			}
 		}
@@ -383,7 +445,7 @@ public class Configurator {
 		CapabilityInstance toRet = null;
 		for (Capability c : capabilities) {
 			if(name.equals(c.getName())){
-				toRet = new CapabilityInstance(c.getName(),  c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue());
+				toRet = new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
 				break;
 			}
 		}
@@ -404,10 +466,10 @@ public class Configurator {
 		return toRet;
 	}
 	
-	public static LinkedList<String> getGlobalCapabilitiesSet(){
+/*	public static LinkedList<String> getGlobalCapabilitiesSet(){
 		return globalCapabilitiesSet;
 	}
-	
+*/	
 	public static Hashtable<Short,Node> getNodeList(){
 		return nodes;
 	}
@@ -426,6 +488,8 @@ public class Configurator {
 	// reset variabili capabilities
 	private static void resetCapabilitiesVariables(){
 		name = "";
+		columnName = "";
+		index = "";
 		localOperator = "";
 		globalOperator = "";
 		min = "";

@@ -20,7 +20,7 @@ public class LastPeriodGlobalRecord {
 			// lista debug
 			this.globalCapabilityInstancesList.put(c.getName(), new LinkedList<CapabilityInstance>());
 			// capabilities globali
-			this.globalDataToStore.put(c.getName(), new CapabilityInstance(c.getName(),c.localOperator(),c.globalOperator(),c.getMinValue(),c.getMaxValue(),c.getAvgWindow()));
+			this.globalDataToStore.put(c.getName(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 			// contatore per calcolo media
 			if(c.globalOperator().equals("avg")){
 				this.counters.put(c.getName(), 0);

@@ -3,6 +3,7 @@ package it.basestation.cmdline;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -25,6 +26,7 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.fusiontables.Fusiontables;
 import com.google.api.services.fusiontables.Fusiontables.Query.Sql;
 import com.google.api.services.fusiontables.Fusiontables.Table.Delete;
+import com.google.api.services.fusiontables.Fusiontables.Table.Insert;
 import com.google.api.services.fusiontables.FusiontablesScopes;
 import com.google.api.services.fusiontables.model.Column;
 import com.google.api.services.fusiontables.model.Sqlresponse;
@@ -98,6 +100,21 @@ public class FusionTablesManager {
 	    Fusiontables.Table.List listTables = fusiontables.table().list();
 	    tableList = listTables.execute();
 
+	    /*// debug	    
+	    for (Table t : tableList.getItems()) {
+	    	if(t.getName().startsWith("Table_")){
+	    		//System.out.println(t);
+	    		System.out.println(t.toPrettyString());
+	    		System.out.println("FACTORY: "+ t.getFactory().toPrettyString(t));
+	    		for (Column c : t.getColumns()) {
+	    			System.out.println("KIND: "+ c.getKind());
+				}
+	    		
+	    	}
+		}	    
+	    */// endDebug
+	    
+
 	    if (tableList.getItems() == null || tableList.getItems().isEmpty()) {
 	      System.out.println("Nessuna Tabella Trovata");
 	      tableList = null;
@@ -105,13 +122,36 @@ public class FusionTablesManager {
 	    return tableList;
 	  }
 	
+	// debug	
+	public static String createT() throws IOException {
+	    // Create a new table
+	    Table table = new Table();
+	    table.setName("TestTable2");
+	    table.setIsExportable(true);
+	    table.setDescription("Sample Table");
+
+	    // Set columns for new table
+	    table.setColumns(Arrays.asList(new Column().setName("Counter_last").setType("NUMBER"),
+	        new Column().setName("PeopleIn_last").setType("NUMBER"),
+	        new Column().setName("PeopleOut_last").setType("NUMBER"),
+	        new Column().setName("Date").setType("DATETIME")));
+
+	    // Adds a new column to the table.
+	    Insert t = fusiontables.table().insert(table);
+	    Table r = t.execute();
+
+	    return r.getTableId();
+	  }
+	// endDebug
+	
+	
 	// metodo che crea la tabella di un nodo
 	private static String createTable(Node n)throws IOException{
 	    Table table = new Table();
 	    table.setName("Nodo_"+n.getMyID());
 	    table.setIsExportable(false);
 	    table.setDescription("Table of Node number " +n.getMyID());
-	
+	    
 	    LinkedList <Column> columns = new LinkedList<Column>();
 	    LinkedList <String> capability = n.getCapabilitiesSet();
 	    for (String name : capability) {
@@ -120,10 +160,11 @@ public class FusionTablesManager {
 			}
 		}	   
 	    // aggiungo il campo data
-	    columns.add(new Column().setName("Date").setType("DATETIME"));
+	    //columns.add(new Column().setName("Date").setType("DATETIME"));
+	    columns.add(new Column().setName("Date").set("type", "DATETIME").setKind("fusiontables#columnn"));
 	    
 	    table.setColumns(columns);
-	    Fusiontables.Table.Insert t = fusiontables.table().insert(table);
+	    Insert t = fusiontables.table().insert(table);
 	    Table r = t.execute();
 	    // salvo l'id della tabella nella mia lista localmente
 	    tablesID.put(n.getMyID(), r.getTableId());
@@ -402,7 +443,7 @@ public class FusionTablesManager {
 				System.out.println("List people in not null");
 				Iterator<Object> i = list.get(0).iterator();
 				double peopleIn = Double.parseDouble(i.next().toString());
-				CapabilityInstance pIn = new CapabilityInstance("PeopleIn", "", "sum", 0.00, Double.POSITIVE_INFINITY);
+				CapabilityInstance pIn = new CapabilityInstance("PeopleIn","PeopleIn_sum","last","","sum",0.00,Double.POSITIVE_INFINITY,0);
 				System.out.println("Last people in value found: " + peopleIn);
 				pIn.setValue(peopleIn);
 				toRet.addCapabilityInstance(pIn);
@@ -419,7 +460,7 @@ public class FusionTablesManager {
 				System.out.println("List people out not null");
 				Iterator<Object> i = list.get(0).iterator();
 				double peopleOut = Double.parseDouble(i.next().toString());
-				CapabilityInstance pOut = new CapabilityInstance("PeopleOut", "", "sum", 0.00, Double.POSITIVE_INFINITY);
+				CapabilityInstance pOut = new CapabilityInstance("PeopleOut","PeopleOut_sum","last","","sum",0.00,Double.POSITIVE_INFINITY,0);
 				System.out.println("Last people out value found: " + peopleOut);
 				pOut.setValue(peopleOut);
 				toRet.addCapabilityInstance(pOut);

@@ -18,7 +18,7 @@ public class GlobalMMCalculator {
 			}
 			this.avgWindows.put(c.getName(), avgWindow);
 			this.avgIndexes.put(c.getName(), 0);
-			this.mobileAvgs.put(c.getName(), new CapabilityInstance(c.getName(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+			this.mobileAvgs.put(c.getName(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 			
 		}
 	}
