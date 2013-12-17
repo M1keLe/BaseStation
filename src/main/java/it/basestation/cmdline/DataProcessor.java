@@ -31,7 +31,7 @@ public class DataProcessor extends Thread {
 		
 	public DataProcessor(){
 		super("Data Processor");
-		this.freqUpdate = Configurator.getFreqDataProcessor()/10;
+		this.freqUpdate = Configurator.getFreqDataProcessor();
 	}
 	
 	@Override
@@ -139,17 +139,18 @@ public class DataProcessor extends Thread {
 					
 					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
 					// per ogni capability "globale" prendo i dati da trattare dai vari node record
-					for (Capability c : globalCapabilitieslist) {						
-						// prendo i dati dai vari node records
-						Enumeration<Short> nodeID = this.lastPeriodNodesRecord.keys();
-						while (nodeID.hasMoreElements()) {
-							CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getName(), c.getIndex());
-
-							// se cI == null il nodo non ha la capability globale
-							if(cI != null){
-								CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.getColumnName(), c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
-								gCI.setValue(cI.getValue());
-								newGlobalRecord.addCapabilityInstance(gCI);
+					for (Capability c : globalCapabilitieslist) {
+						if(!c.getIndex().equals("formula")){
+							// prendo i dati dai vari node records
+							Enumeration<Short> nodeID = this.lastPeriodNodesRecord.keys();
+							while (nodeID.hasMoreElements()) {
+								CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getName(), c.getIndex());
+								// se cI == null il nodo non ha la capability globale
+								if(cI != null){
+									CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.getColumnName(), c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
+									gCI.setValue(cI.getValue());
+									newGlobalRecord.addCapabilityInstance(gCI);
+								}
 							}
 						}
 					}
@@ -165,13 +166,13 @@ public class DataProcessor extends Thread {
 					// debug
 					System.out.println(newGlobalRecord);					
 					
-/*					try {
+					try {
 						FusionTablesManager.insertData(newGlobalRecord, updateTime);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-*/										
+										
 					
 				}else{
 					System.out.println("Nessun pacchetto da gestire");

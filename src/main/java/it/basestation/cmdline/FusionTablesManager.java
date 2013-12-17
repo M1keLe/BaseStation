@@ -149,7 +149,7 @@ public class FusionTablesManager {
 	private static String createTable(Node n)throws IOException{
 	    Table table = new Table();
 	    table.setName("Nodo_"+n.getMyID());
-	    table.setIsExportable(false);
+	    table.setIsExportable(true);
 	    table.setDescription("Table of Node number " +n.getMyID());
 	    
 	    LinkedList <Column> columns = new LinkedList<Column>();
@@ -175,15 +175,11 @@ public class FusionTablesManager {
 	private static String createGlobalTable(String name)throws IOException{
 	    Table table = new Table();
 	    table.setName(name);
-	    table.setIsExportable(false);
+	    table.setIsExportable(true);
 	    LinkedList <Column> columns = new LinkedList<Column>();
 	    // aggiungo le colonne
 	    for (Capability c : Configurator.getCapabilitiesList(name, "global", true)) {
     		columns.add(new Column().setName(c.getColumnName()).setType("NUMBER"));
-    		// se da mediare aggiungo colonna Deviazione Standard
-    	    if(c.globalOperator().equals("avg")){
-    	    	columns.add(new Column().setName("StandardDeviation").setType("NUMBER"));
-    	    }
 		}
 	    
 	    // aggiungo il campo data
@@ -234,7 +230,22 @@ public class FusionTablesManager {
 		}
 		// creo le tabelle globali se non esistono
 		
-		//LinkedList <String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
+		LinkedList <String> globalTablesSet = Configurator.getGlobalTablesSet();
+		for (String tableName : globalTablesSet) {
+			if(!globalTableExists(tableName)){
+				try {
+					String globalTableID = createGlobalTable(tableName);          
+	    			System.out.println("Creata \"Global Table\" "+tableName+" con id = " +globalTableID);
+				} catch (IOException exception) {
+					// TODO Auto-generated catch block
+	    			exception.printStackTrace();
+	    		}
+			} else {
+				System.out.println("La \"Global Table\" "+tableName+" esiste già!");
+			}
+		}
+		
+/*		// metodo con lista
 		LinkedList <Capability> globalCapabilitiesList = Configurator.getGlobalCapabilitiesList(false);
 		for (Capability c : globalCapabilitiesList) {
 			if(!globalTableExists(c.getName())){
@@ -249,6 +260,7 @@ public class FusionTablesManager {
 				System.out.println("La \"Global Table\" "+c.getName()+" esiste già!");
 			}
 		}
+*/		// end metodo con lista
 	}
 	
 	private static boolean tableExists(short nodeID){
@@ -319,8 +331,8 @@ public class FusionTablesManager {
 		
 		LinkedList<CapabilityInstance> capListToStore = nodeRecord.getDataListToStore();
 		capListToStore.addAll(nodeRecord.getMMListToStore());
-		Sql sql = fusiontables.query().sql(getQueryInsert(tableID, capListToStore, d));
-		System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati:\nQuery generata: " + getQueryInsert(tableID, capListToStore, d));
+		Sql sql = fusiontables.query().sql(buildInsertQuery(tableID, capListToStore, d));
+		System.out.println("Debug: NODE TABLE N° "+ nodeID +" - Sto inserendo i seguenti dati:\nQuery generata: " + buildInsertQuery(tableID, capListToStore, d));
 		try {
 			sql.execute();
 			
@@ -335,6 +347,30 @@ public class FusionTablesManager {
 
 	// insert su tutte le tabelle globali
 	public static void insertData(LastPeriodGlobalRecord globalRecord, Date d) throws IOException {
+		Hashtable<String, LinkedList<CapabilityInstance>> globalValuesToStore = globalRecord.getHashTableToStore();
+		Enumeration<String> e = globalValuesToStore.keys();
+		while (e.hasMoreElements()) {
+			String gTableName = (String) e.nextElement();
+			String gTableID = globalTablesID.get(gTableName);
+			if(gTableID == null){	
+				gTableID = getTableID(gTableName);
+				globalTablesID.put(gTableName, gTableID);
+		    }
+			Sql sql = fusiontables.query().sql(buildInsertQuery(gTableID, globalValuesToStore.get(gTableName), d)); 
+			System.out.println("Global Table: "+ gTableName + "\nQuery: " + sql.toString());
+			
+			try {
+				sql.execute();
+			}catch (IllegalArgumentException ex) {
+				// For google-api-services-fusiontables-v1-rev1-1.7.2-beta this exception will always
+				// been thrown.
+				// Please see issue 545: JSON response could not be deserialized to Sqlresponse.class
+				// http://code.google.com/p/google-api-java-client/issues/detail?id=545
+			}
+		}
+	}
+
+/*	public static void insertDataOld(LastPeriodGlobalRecord globalRecord, Date d) throws IOException {
 		LinkedList<CapabilityInstance> globalValuesToStore = globalRecord.getDataListToStore(); 
 		for (CapabilityInstance cI : globalValuesToStore) {
 			String gTableID = globalTablesID.get(cI.getName());
@@ -346,13 +382,13 @@ public class FusionTablesManager {
 			Sql sql;
 			// controllo su Deviazione Standard
 			if(cI.globalOperator().equals("avg")){
-				sql = fusiontables.query().sql(getQueryInsert(gTableID, cI, globalRecord.getStandardDeviation(cI.getName()), d));
+				sql = fusiontables.query().sql(buildInsertQuery(gTableID, cI, globalRecord.getStandardDeviation(cI.getName()), d));
 				//Debug
-				System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(gTableID, cI, globalRecord.getStandardDeviation(cI.getName()), d));
+				System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + buildInsertQuery(gTableID, cI, globalRecord.getStandardDeviation(cI.getName()), d));
 			}else{
-				sql = fusiontables.query().sql(getQueryInsert(gTableID, cI, d));
+				sql = fusiontables.query().sql(buildInsertQuery(gTableID, cI, d));
 				//Debug
-				System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + getQueryInsert(gTableID, cI, d));
+				System.out.println("Debug: GLOBAL TABLE Sto inserendo i seguenti dati: " + buildInsertQuery(gTableID, cI, d));
 			}
 			
 			try {
@@ -365,9 +401,9 @@ public class FusionTablesManager {
 			}
 		}
 	}
-	
+*/	
 	// genera la query relativa ad un nodo
-	private static String getQueryInsert(String tableID, LinkedList<CapabilityInstance> capListToStore, Date d){
+	private static String buildInsertQuery(String tableID, LinkedList<CapabilityInstance> capListToStore, Date d){
 	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    
 	    String queryHead = new String();
@@ -380,10 +416,12 @@ public class FusionTablesManager {
 	    for (CapabilityInstance c : capListToStore) {
 			//queryHead = queryHead.concat(c.getName()+", ");
 	    	queryHead = queryHead.concat(c.getColumnName()+", ");
-			// controllo range
-			if(c.getValue() < c.getMinValue() || c.getValue() > c.getMaxValue()){
-				c.setValue(0);
-			}
+			// controllo range se non è la devstd
+	    	if(!c.globalOperator().contains("stddev")){
+				if(c.getValue() < c.getMinValue() || c.getValue() > c.getMaxValue()){
+					c.setValue(0);
+				}
+	    	}
 			queryTail = queryTail.concat(" '" +decimalFormat.format(c.getValue())+"', ");
 		}
 	    
@@ -396,8 +434,8 @@ public class FusionTablesManager {
 	    return queryHead.concat(queryTail).replaceAll(" {2,}", " ");
 	} 
 	
-	// genera la query relativa ad una tabella globale senza Deviazione Standard
-	private static String getQueryInsert(String tableID, CapabilityInstance gCI, Date d){
+/*	// genera la query relativa ad una tabella globale senza Deviazione Standard
+	private static String buildInsertQuery(String tableID, CapabilityInstance gCI, Date d){
 	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	    // controllo range
@@ -410,7 +448,7 @@ public class FusionTablesManager {
 	}
 	
 	// genera la query relativa ad una tabella globale con Deviazione Standard
-	private static String getQueryInsert(String tableID, CapabilityInstance gCI, double standardDeviation , Date d){
+	private static String buildInsertQuery(String tableID, CapabilityInstance gCI, double standardDeviation , Date d){
 	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	    // controllo range
@@ -421,7 +459,7 @@ public class FusionTablesManager {
 	 	//return "INSERT INTO "+ tableID +" ("+ gCI.getName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ dateFormat.format(d)+"')";
 	    //return "INSERT INTO "+ tableID +" ("+ gCI.getName()+", StandardDeviation, Date) VALUES ('"+decimalFormat.format(gCI.getValue())+"', '"+decimalFormat.format(standardDeviation)+"', '"+ new DateTime(d)+"')";
 	}
-
+*/
 	// init global record
 	public static LastPeriodGlobalRecord initGlobalRecord() throws IOException {
 		LastPeriodGlobalRecord toRet = new LastPeriodGlobalRecord();

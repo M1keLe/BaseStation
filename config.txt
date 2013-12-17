@@ -1,3 +1,23 @@
+	
+#	ALCUNE NOTE:  
+#
+# 1 - inserire il simbolo '#' alla fine di ogni formula global (devo sistemare meglio il configurator)
+#
+# 2 - il nome assengnato alla formula People Inside (Ultima Capability) deve coincidere con la 
+#	  stringa data alla funzione getPeopleInside("PeopleInside_C_Raffaello")
+# 	  V. LastPeriodGlobalRecord linea 225
+#
+# 3 - I "nomi colonna" delle capability sono assegnati automaticamente concatenando: CapabilityName_localOperator(o globalOperator)
+#	  ES: Temperature_avg, Temperature_MM_5, PeopleIn_last, PeopleIn_sum, Power_avg, Power_stddev
+#
+# 4 - Per le formule è necessario specificare un nome colonna.
+# 	  ES: [Nome_colonna] = ( NomeColonnaX op NomeColonnaY  )  op = {+, -, *, /, sqrt, ln, log10}
+#
+# 5 - Main modificare variabile bool debug linea 13
+#     TRUE = legge da file di log (il nome del file va inserito alla linea 40)
+#	  FALSE = legge da USB
+
+
 # frequenza aggiornamento Fusion Tables (default 10 minuti)
 FreqDataProcessor: 5
 
@@ -7,7 +27,7 @@ USBPort: /dev/ttyUSB0
 # Speed USB port default = Baud Rate 57600
 USBSpeedPort: 57600
 
-# Reset time: (hh_mm_ss)(Se commentato le statistiche locali non verranno resettate quotidianamente)
+# Reset time: hh:mm:ss (Se commentato le statistiche locali non verranno resettate quotidianamente)
 ResetTime: 23:59:59
 #ResetTime: 21:51:00
 
@@ -21,10 +41,12 @@ ResetTime: 23:59:59
 	
 	<Temperature[0,10000]>
 		local:avg
-		local:formula [Temperature_Celsius] = ( Temperature / 100 ) #avg
-		local:MM[5]Temperature_Celsius
+		local:formula [Temperature_C] = ( Temperature_avg / 100 ) 
+		local:MM[5]Temperature_C
 		global:avg#avg
-		#global:MM[8]
+		global:stddev#avg
+		global:formula [Temperature_C] = ( Temperature_avg / 100 ) #
+		#global:formula [Temperature_C_StdDev] = ( Temperature_stddev / 100 ) #
 	</Temperature>
 	
 	<Power[0,10000]>
@@ -36,24 +58,30 @@ ResetTime: 23:59:59
 		local:avg
 		#local:MM[6]Pressure_avg
 		global:avg#avg
+		global:stddev#avg
 	</Pressure>
 	
 	<CO2[100,*]>
 		local:avg
 		#local:MM[7]CO2_avg
 		global:avg#avg
+		global:stddev#avg
 	</CO2>
 	
 	<Noise[0,*]>
 		local:avg
+		local:formula [Noise_db_spl] = ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 )
 		#local:MM[8]Noise_avg
 		global:avg#avg
+		global:formula [Noise_db_spl] = ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 ) #
+		global:stddev#avg
 	</Noise>
 	
 	<Light[15,*]>
 		local:avg
-		#local:MM[9]Noise_avg
+		#local:MM[9]Light_avg
 		global:avg#avg
+		global:stddev#avg
 	</Light>
 	
 	<PeopleIn[0,*]>
@@ -67,7 +95,7 @@ ResetTime: 23:59:59
 	</PeopleOut>
 	
 	<PeopleInside[0,*]>
-		global:formula [Inside_Collegio_Raffaello] = ( PeopleIn - PeopleOut ) #sum
+		global:formula [PeopleInside_C_Raffaello] = ( PeopleIn_sum - PeopleOut_sum ) #
 	</PeopleInside>
 	
 </capabilities>

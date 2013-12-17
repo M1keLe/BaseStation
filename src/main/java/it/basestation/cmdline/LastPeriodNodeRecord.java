@@ -143,10 +143,8 @@ public class LastPeriodNodeRecord {
 		while(e.hasMoreElements()){
 			String name = e.nextElement();
 			//controllo se è un valore derivato
-			if(!this.dataToStore.get(name).localOperator().equals("avg") &&
-					!this.dataToStore.get(name).localOperator().equals("last")&&
-					!this.dataToStore.get(name).localOperator().equals("sum")){
-				
+			//if(!this.dataToStore.get(name).localOperator().equals("avg") && !this.dataToStore.get(name).localOperator().equals("last")&& !this.dataToStore.get(name).localOperator().equals("sum")){
+			if(this.dataToStore.get(name).getIndex().equals("formula")){
 				// seleziono la misura derivata
 				this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
 			}
@@ -186,10 +184,8 @@ public class LastPeriodNodeRecord {
 	// metodo privato per calcolare misure derivate
 	private double getDerivedMeasure(CapabilityInstance cI) {
 		// Debug
-		
-		System.out.println("GetDerivedmeasure, capability da analizzare: ==============================");
-		System.out.println(cI);
-		
+		// System.out.println("GetDerivedmeasure, capability da analizzare: ==============================");
+		// System.out.println(cI);
 		// end debug
 		
 		double result = 0.00;
@@ -200,9 +196,11 @@ public class LastPeriodNodeRecord {
         // sostituisco il nome della capability con il valore        
         for (int i = 0; i < tokens.length; i++) {
         	// se null il token è una parentesi oppure uno dei simboli op (/,*,-,+)
-        	if(this.dataToStore.get(tokens[i]+"_"+cI.getIndex()) != null){
-        		System.out.println("Ricerca su: tokens[i]: " + tokens[i] + "cI.getIndex: " + cI.getIndex());
-        		Double value = this.dataToStore.get(tokens[i]+"_"+cI.getIndex()).getValue();
+        	//if(this.dataToStore.get(tokens[i]+"_"+cI.getIndex()) != null){
+        	if(this.dataToStore.get(tokens[i]) != null){
+        		//System.out.println("Ricerca su: tokens[i]: " + tokens[i] + "cI.getIndex: " + cI.getIndex());
+        		//Double value = this.dataToStore.get(tokens[i]+"_"+cI.getIndex()).getValue();
+        		Double value = this.dataToStore.get(tokens[i]).getValue();
         		tokens[i] = value.toString();
         	}
 		}
@@ -218,6 +216,8 @@ public class LastPeriodNodeRecord {
 		    else if (s.equals("*")) ops.push(s);
 		    else if (s.equals("/")) ops.push(s);
 		    else if (s.equals("sqrt")) ops.push(s);
+		    else if (s.equals("ln")) ops.push(s);
+		    else if (s.equals("log10")) ops.push(s);
 		    else if (s.equals(")")) {
 		        String op = ops.pop();
 		        double v = vals.pop();
@@ -226,6 +226,8 @@ public class LastPeriodNodeRecord {
 		        else if (op.equals("*")) v = vals.pop() * v;
 		        else if (op.equals("/")) v = vals.pop() / v;
 		        else if (op.equals("sqrt")) v = Math.sqrt(v);
+		        else if (op.equals("ln")) v = Math.log(v);
+		        else if (op.equals("log10")) v = Math.log10(v);
 		        vals.push(v);
 		    }
         	

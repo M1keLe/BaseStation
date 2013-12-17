@@ -10,7 +10,7 @@ import java.io.IOException;
 public class Main 
 {
 	
-	public static boolean debug = true; 
+	public static boolean debug = false; 
 			// true; 
 			// false;
 	

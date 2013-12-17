@@ -87,7 +87,7 @@ public class FileReader extends Thread {
 						if(this.lastTimeStamp != 0){
 							
 							// tempo di sleep tra un pacchetto ed un altro
-							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/10);
+							Thread.sleep((this.newTimeStamp - this.lastTimeStamp)/5);
 							// Thread.sleep(000);
 						}
 					}

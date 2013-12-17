@@ -144,7 +144,8 @@ public class Configurator {
 							}
 						}else if(localOperator.contains("formula")){
 							columnName = localOperator.substring(localOperator.indexOf('[')+1, localOperator.indexOf(']'));
-							index = localOperator.substring(localOperator.lastIndexOf("#")+1).trim();
+							//index = localOperator.substring(localOperator.lastIndexOf("#")+1).trim();
+							index = "formula";
 							localOperator = localOperator.substring(localOperator.indexOf('('), localOperator.lastIndexOf(')')+1).trim();
 							if(!localOperator.startsWith("(") || !localOperator.endsWith(")")){
 								toRet = false;
@@ -201,6 +202,7 @@ public class Configurator {
 						}else if(globalOperator.contains("formula")){
 							columnName = globalOperator.substring(globalOperator.indexOf('[')+1, globalOperator.indexOf(']'));
 							globalOperator = globalOperator.substring(globalOperator.indexOf('('), globalOperator.lastIndexOf(')')+1).trim();
+							index = "formula";
 							if(!globalOperator.startsWith("(") && !globalOperator.endsWith(")")){
 								toRet = false;
 								log += "[Line: "+lineCounter+"] Errore impostazione formula Capability chiamata: " +name+"\n";
@@ -440,7 +442,7 @@ public class Configurator {
 		return toRet;
 	}
 	
-	// non utilizzato
+	// utilizzato x debug e su textparser per "prendere" la capability counter il metodo funziona solo perchè counter è unica!!! 
 	public static CapabilityInstance getCapabilityInstance(String name){
 		CapabilityInstance toRet = null;
 		for (Capability c : capabilities) {
@@ -461,6 +463,16 @@ public class Configurator {
 			}
 			if(!c.globalOperator().equals("") && c.getAvgWindow() > 0 && mm){
 				toRet.add(c);
+			}
+		}
+		return toRet;
+	}
+	
+	public static LinkedList<String> getGlobalTablesSet(){
+		LinkedList<String> toRet = new LinkedList<String>();
+		for (Capability c : capabilities) {
+			if(!toRet.contains(c.getName()) && (!c.globalOperator().equals(""))){
+				toRet.add(c.getName());
 			}
 		}
 		return toRet;
