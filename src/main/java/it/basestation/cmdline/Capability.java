@@ -9,7 +9,7 @@ public class Capability {
 	private String localOperator = "";
 	private String globalOperator = "";
 	// indice su cui effettuare op local o global
-	private String index = "";
+	private String target = "";
 	// range
 	private Double minValue = Double.NEGATIVE_INFINITY;
 	private Double maxValue = Double.POSITIVE_INFINITY;
@@ -43,10 +43,10 @@ public class Capability {
 		this.avgWindow = avgWindow;
 	}
 */	
-	public Capability(String name, String columnName, String index, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow) {
+	public Capability(String name, String columnName, String target, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow) {
 		this.name = name;
 		this.columnName = columnName;
-		this.index = index;
+		this.target = target;
 		this.localOperator = localOperator;
 		this.globalOperator = globalOperator;
 		this.minValue = minValue;
@@ -77,19 +77,11 @@ public class Capability {
 	}
 	
 	public String getColumnName(){
-		String toRet = this.columnName;
-		// quando non specificato nel file di configurazione
-		if(toRet.isEmpty()){
-			toRet = this.name +"_";
-			toRet += this.localOperator + this.globalOperator;
-			if(this.avgWindow > 0)
-				toRet += "_"+this.avgWindow;
-		}
-		return toRet;
+		return this.columnName;
 	}
 	
-	public String getIndex(){
-		return this.index;
+	public String getTarget(){
+		return this.target;
 	}
 	
 	
@@ -118,7 +110,7 @@ public class Capability {
 		String toRet = "*********** Capability ***********\n";
 		toRet += "Name: " + this.name + "\n";
 		toRet += "Column Name: " + getColumnName() + "\n";
-		toRet += "Index: " + this.index + "\n";
+		toRet += "Target: " + this.target + "\n";
 		toRet += "Local: " + this.localOperator + "\n";
 		toRet += "Global: " + this.globalOperator + "\n";
 		toRet += "Min Value: " + this.minValue + "\n";

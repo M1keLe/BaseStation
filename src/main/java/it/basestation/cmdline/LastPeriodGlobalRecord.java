@@ -18,12 +18,12 @@ public class LastPeriodGlobalRecord {
 		LinkedList<Capability> globalCapabilitiesList = Configurator.getGlobalCapabilitiesList(false);
 		for (Capability c : globalCapabilitiesList) {
 			// lista debug
-			this.globalCapabilityInstancesList.put(c.getName()+"_"+c.globalOperator(), new LinkedList<CapabilityInstance>());
+			this.globalCapabilityInstancesList.put(c.getColumnName(), new LinkedList<CapabilityInstance>());
 			// capabilities globali
-			this.globalDataToStore.put(c.getName()+"_"+c.globalOperator(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+			this.globalDataToStore.put(c.getColumnName(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getTarget(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 			// contatore per calcolo media
 			if(c.globalOperator().equals("avg")){
-				this.counters.put(c.getName()+"_"+c.globalOperator(), 0);
+				this.counters.put(c.getColumnName(), 0);
 			}			
 		}		
 	}
@@ -34,38 +34,38 @@ public class LastPeriodGlobalRecord {
 		// controllo su min e max value
 		if(cI.getMinValue()<= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
 			
-			this.globalCapabilityInstancesList.get(cI.getName()+"_"+cI.globalOperator()).add(cI);
+			this.globalCapabilityInstancesList.get(cI.getColumnName()).add(cI);
 			
 			// controllo se il valore è da mediare
 			if(cI.globalOperator().equals("avg")){
-				int lastCounter = this.counters.get(cI.getName()+"_"+cI.globalOperator()).intValue();
+				int lastCounter = this.counters.get(cI.getColumnName()).intValue();
 				int newCounter = lastCounter +1 ;
-				double lastAvg = this.globalDataToStore.get(cI.getName()+"_"+cI.globalOperator()).getValue();
+				double lastAvg = this.globalDataToStore.get(cI.getColumnName()).getValue();
 				double temp = lastAvg * lastCounter;
 				temp += cI.getValue();
 				double neWAvg = temp / newCounter;
 				// aggiornamento valori
-				this.counters.put(cI.getName()+"_"+cI.globalOperator(), newCounter);
-				this.globalDataToStore.get(cI.getName()+"_"+cI.globalOperator()).setValue(neWAvg);
+				this.counters.put(cI.getColumnName(), newCounter);
+				this.globalDataToStore.get(cI.getColumnName()).setValue(neWAvg);
 				
 			// controllo se il valore è da sommare
 			}else if(cI.globalOperator().equals("sum")){
 				// faccio la somma dei valori
-				double lastValue = this.globalDataToStore.get(cI.getName()+"_"+cI.globalOperator()).getValue();
+				double lastValue = this.globalDataToStore.get(cI.getColumnName()).getValue();
 				double newValue = lastValue + cI.getValue();
-				this.globalDataToStore.get(cI.getName()+"_"+cI.globalOperator()).setValue(newValue);
+				this.globalDataToStore.get(cI.getColumnName()).setValue(newValue);
 				
 			// controllo se devo prendere l'ultimo valore
 			}else if(cI.globalOperator().equals("last")){
-				this.globalDataToStore.get(cI.getName()+"_"+cI.globalOperator()).setValue(cI.getValue());
+				this.globalDataToStore.get(cI.getColumnName()).setValue(cI.getValue());
 				
 			// controllo se devo calcolare la deviazione standard
 			}else if(cI.globalOperator().equals("stddev")){
 				// x ora tutti i valori sono già salvati nella lista di debug
-				//this.globalCapabilityInstancesList.get(cI.getName()+"_"+cI.globalOperator()).add(cI);
-				CapabilityInstance stdDev = this.globalDataToStore.get(cI.getName()+"_"+cI.globalOperator());
-				stdDev.setValue(this.getStdDev(cI.getName()+"_"+cI.globalOperator()));
-				this.globalDataToStore.put(cI.getName()+"_"+cI.globalOperator(), stdDev);
+				//this.globalCapabilityInstancesList.get(cI.getColumnName()).add(cI);
+				CapabilityInstance stdDev = this.globalDataToStore.get(cI.getColumnName());
+				stdDev.setValue(this.getStdDev(cI.getColumnName()));
+				this.globalDataToStore.put(cI.getColumnName(), stdDev);
 			}
 			
 			// aggiorno dati derivati e stddev
@@ -74,7 +74,7 @@ public class LastPeriodGlobalRecord {
 				String name = e.nextElement();
 				//controllo se è un valore derivato
 				//if(!this.globalDataToStore.get(name).globalOperator().equals("avg") && !this.globalDataToStore.get(name).globalOperator().equals("sum") && !this.globalDataToStore.get(name).globalOperator().equals("last")){
-				if(this.globalDataToStore.get(name).getIndex().equals("formula")){		
+				if(this.globalDataToStore.get(name).getTarget().equals("formula")){		
 					this.globalDataToStore.get(name).setValue(this.getDerivedMeasure(this.globalDataToStore.get(name)));
 				}
 				//if(!this.globalDataToStore.get(name).globalOperator().equals("stddev")){
@@ -222,7 +222,7 @@ public class LastPeriodGlobalRecord {
 	// try to fix peopleInside 
 	public double getPeopleInsideValue() {
 		double toRet = 0;
-		CapabilityInstance peopleInside = this.globalDataToStore.get("PeopleInside_C_Raffaello"); // da modificare a seconda del nome colonna
+		CapabilityInstance peopleInside = this.globalDataToStore.get("PeopleInside_C_Raffaello"); // Inserirci il nome colonna
 		if(peopleInside != null){
 			toRet = peopleInside.getValue();
 		}

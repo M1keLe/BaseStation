@@ -38,7 +38,7 @@ public class CapabilityInstance extends Capability {
 		String toRet = "*********** Capability Instance ***********\n";
 		toRet += "Name: " + getName() + "\n";
 		toRet += "Column Name: " + getColumnName() + "\n";
-		toRet += "Index: " + getIndex() + "\n";
+		toRet += "Index: " + getTarget() + "\n";
 		toRet += "Local: " + localOperator() + "\n";
 		toRet += "Global: " + globalOperator() + "\n";
 		toRet += "Min Value: " + getMinValue() + "\n";

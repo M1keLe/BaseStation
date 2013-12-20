@@ -104,10 +104,6 @@ public class DataProcessor extends Thread {
 						}
 						
 // end metodo add capability
-						
-						// metodo addPacket()
-						// inserisco il pacchetto da gestire nel node record
-						// newNodesRecord.get(nodeID).addPacket(p); 	
 					}
 					
 					// calcolo delle medie mobili e
@@ -140,14 +136,14 @@ public class DataProcessor extends Thread {
 					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
 					// per ogni capability "globale" prendo i dati da trattare dai vari node record
 					for (Capability c : globalCapabilitieslist) {
-						if(!c.getIndex().equals("formula")){
+						if(!c.getTarget().equals("formula")){
 							// prendo i dati dai vari node records
 							Enumeration<Short> nodeID = this.lastPeriodNodesRecord.keys();
 							while (nodeID.hasMoreElements()) {
-								CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getName(), c.getIndex());
+								CapabilityInstance cI = this.lastPeriodNodesRecord.get(nodeID.nextElement()).getCapabilityInstance(c.getTarget());
 								// se cI == null il nodo non ha la capability globale
 								if(cI != null){
-									CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.getColumnName(), c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
+									CapabilityInstance gCI = new CapabilityInstance(c.getName(), c.getColumnName(), c.getTarget(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow());
 									gCI.setValue(cI.getValue());
 									newGlobalRecord.addCapabilityInstance(gCI);
 								}
@@ -212,8 +208,8 @@ public class DataProcessor extends Thread {
 		// se people inside < 0
 		double peopleInside = newGlobalRecord.getPeopleInsideValue();
 		if(peopleInside < 0){
-			//System.out.println("DEBUG: ============= People Inside < 0!!!! " + peopleInside );
-			CapabilityInstance peopleIn = new CapabilityInstance("PeopleIn","PeopleIn_sum","last","","sum",0.00,Double.POSITIVE_INFINITY,0);
+			System.out.println("DEBUG: ============= People Inside < 0!!!! " + peopleInside );
+			CapabilityInstance peopleIn = new CapabilityInstance("PeopleIn","PeopleIn_sum","PeopleIn_last","","sum",0.00,Double.POSITIVE_INFINITY,0);
 			peopleIn.setValue(Math.abs(peopleInside));
 			newGlobalRecord.addCapabilityInstance(peopleIn);
 			this.debugGlobalRecord.addCapabilityInstance(peopleIn);

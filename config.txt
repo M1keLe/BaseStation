@@ -1,106 +1,131 @@
-	
-#	ALCUNE NOTE:  
-#
-# 1 - inserire il simbolo '#' alla fine di ogni formula global (devo sistemare meglio il configurator)
-#
-# 2 - il nome assengnato alla formula People Inside (Ultima Capability) deve coincidere con la 
-#	  stringa data alla funzione getPeopleInside("PeopleInside_C_Raffaello")
-# 	  V. LastPeriodGlobalRecord linea 225
-#
-# 3 - I "nomi colonna" delle capability sono assegnati automaticamente concatenando: CapabilityName_localOperator(o globalOperator)
-#	  ES: Temperature_avg, Temperature_MM_5, PeopleIn_last, PeopleIn_sum, Power_avg, Power_stddev
-#
-# 4 - Per le formule è necessario specificare un nome colonna.
-# 	  ES: [Nome_colonna] = ( NomeColonnaX op NomeColonnaY  )  op = {+, -, *, /, sqrt, ln, log10}
-#
-# 5 - Main modificare variabile bool debug linea 13
-#     TRUE = legge da file di log (il nome del file va inserito alla linea 40)
-#	  FALSE = legge da USB
+
+%	ALCUNE NOTE:  
+%
+% 1 - il nome assengnato alla formula People Inside (Ultima Capability) deve coincidere con la 
+%	  stringa data alla funzione getPeopleInside("PeopleInside_C_Raffaello")
+% 	  V. LastPeriodGlobalRecord linea 225
+%
+% 2 - DataProcessor.java linea 212 il costruttore deve coincidere con ciò che sta scritto nel
+%	  file di configurazione (fix people inside quando < 0)
+%
+% 3 - FusionTablemanager.java metodo initGlobalRecord() fa la query per ripristinare peoplein e people out
+% 	  dopo il riavvio, (controllare query e costruttori CapabilityInstance)
+%
+% 4 - Main modificare variabile bool debug linea 13
+%     TRUE = legge da file di log (il nome del file va inserito alla linea 40)
+%	  FALSE = legge da USB
+%
+% ESEMPI CAPABILITY:
+% 
+% <NomeCapability[minValue,maxValue]>
+% 	 local: NomeColonna; op; NomeColonnaTarget (obbligatorio solo su MM) 		    op = {avg, sum, last}
+% 	 global: NomeColonna; op; NomeColonnaTargetLocal (non necessario per formula) 	op = {avg, sum, last, stddev}
+% </NomeCapability>
+%
+% ES:
+% local: Temperature_avg; avg
+% global: Temperature_avg; avg; Temperature_avg
+% global: Temperature_StandardDeviation; stddev; Temperature_avg
+%
+% ES formula:
+% local: NomeColonna; formula <formula>  		op = {+, -, *, /, sqrt, ln, log10}
+% local: Temperature_C; formula ( Temperature_avg / 100 )
+% local: Noise_db_spl; formula  ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 )
+% global: NomeColonna; formula <formula>  		op = {+, -, *, /, sqrt, ln, log10}
+% global: PeopleInside_C_Raffaello; formula ( PeopleIn_sum - PeopleOut_sum )
+%
+% ES media mobile:
+% local: NomeColonna; MM[DimensioniAvgWindow(int)]: NomeColonnaTarget 
+% local: Power_MM_6; MM[6]; Power_avg
+% global: non implementata
+%
+%=========================================================================================================
 
 
-# frequenza aggiornamento Fusion Tables (default 10 minuti)
-FreqDataProcessor: 5
 
-# porta USB default = /dev/ttyUSB0
+% Prefisso nome tabella 
+Prefix: "Collegio Raffaello"
+
+% frequenza aggiornamento Fusion Tables (default 10 minuti)
+FreqDataProcessor: 1
+
+% porta USB default = /dev/ttyUSB0
 USBPort: /dev/ttyUSB0
 
-# Speed USB port default = Baud Rate 57600
+% Speed USB port default = Baud Rate 57600
 USBSpeedPort: 57600
 
-# Reset time: hh:mm:ss (Se commentato le statistiche locali non verranno resettate quotidianamente)
+% Reset time: hh:mm:ss (Se commentato le statistiche locali non verranno resettate quotidianamente)
 ResetTime: 23:59:59
-#ResetTime: 21:51:00
+%ResetTime: 21:51:00
 
-# Capabilities
+% Capabilities
 
 <capabilities>
+
  
 	<Counter[0,*]>
-		local:last
+		local: Counter_last; last
 	</Counter>
 	
-	<Temperature[0,10000]>
-		local:avg
-		local:formula [Temperature_C] = ( Temperature_avg / 100 ) 
-		local:MM[5]Temperature_C
-		global:avg#avg
-		global:stddev#avg
-		global:formula [Temperature_C] = ( Temperature_avg / 100 ) #
-		#global:formula [Temperature_C_StdDev] = ( Temperature_stddev / 100 ) #
+	<Temperature[0,10000]> 
+		local: Temperature_avg; avg
+		local: Temperature_C; formula ( Temperature_avg / 100 ) 
+		local: Temperature_MM_5; MM[5]; Temperature_C
+		global: Temperature_avg; avg; Temperature_avg
+		global: Temperature_stddev; stddev; Temperature_avg
+		global: Temperature_C; formula ( Temperature_avg / 100 )
+		% global: Temperature_C_StdDev; formula ( Temperature_stddev / 100 )
 	</Temperature>
 	
 	<Power[0,10000]>
-		local:avg
-		local:MM[6]Power_avg
+		local: Power_avg; avg
+		local: Power_MM_6; MM[6]; Power_avg
 	</Power>
 	
 	<Pressure[700,1400]>
-		local:avg
-		#local:MM[6]Pressure_avg
-		global:avg#avg
-		global:stddev#avg
+		local: Pressure_avg; avg
+		global: Pressure_avg; avg; Pressure_avg
+		global: Pressure_stddev; stddev; Pressure_avg
 	</Pressure>
 	
 	<CO2[100,*]>
-		local:avg
-		#local:MM[7]CO2_avg
-		global:avg#avg
-		global:stddev#avg
+		local: CO2_avg; avg
+		global: CO2_avg; avg; CO2_avg
+		global: CO2_stddev; stddev; CO2_avg
 	</CO2>
 	
 	<Noise[0,*]>
-		local:avg
-		local:formula [Noise_db_spl] = ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 )
-		#local:MM[8]Noise_avg
-		global:avg#avg
-		global:formula [Noise_db_spl] = ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 ) #
-		global:stddev#avg
+		local: Noise_avg; avg
+		local: Noise_db_spl; formula  ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 )
+		global: Noise_avg; avg; Noise_avg
+		global: Noise_db_spl; formula  ( ( 20 * ( ( ln ( Noise_avg / 10 ) ) / ( ln 10 ) ) ) + 24 )
+		global: Noise_stddev; stddev; Noise_avg
 	</Noise>
 	
 	<Light[15,*]>
-		local:avg
-		#local:MM[9]Light_avg
-		global:avg#avg
-		global:stddev#avg
+		local: Light_avg; avg
+		global: Light_avg; avg; Light_avg
+		global: Light_stddev; stddev; Light_avg
 	</Light>
 	
 	<PeopleIn[0,*]>
-		local:last
-		global:sum#last
+		local: PeopleIn_last; last
+		global: PeopleIn_sum; sum; PeopleIn_last
 	</PeopleIn>
 	
 	<PeopleOut[0,*]>
-		local:last
-		global:sum#last
+		local: PeopleOut_last; last
+		global: PeopleOut_sum; sum; PeopleOut_last
 	</PeopleOut>
 	
 	<PeopleInside[0,*]>
-		global:formula [PeopleInside_C_Raffaello] = ( PeopleIn_sum - PeopleOut_sum ) #
+		global: PeopleInside_C_Raffaello; formula ( PeopleIn_sum - PeopleOut_sum )
 	</PeopleInside>
 	
 </capabilities>
 
-# Nodi (id,xValue,yValue,capabilities)
+% Nodi (id,xValue,yValue,capabilities)
 
 Node:2;562;549;Counter#
 Node:3;565;580;Counter#Noise#CO2#Temperature

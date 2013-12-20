@@ -148,7 +148,7 @@ public class FusionTablesManager {
 	// metodo che crea la tabella di un nodo
 	private static String createTable(Node n)throws IOException{
 	    Table table = new Table();
-	    table.setName("Nodo_"+n.getMyID());
+	    table.setName(Configurator.getPrefix()+"Nodo_"+n.getMyID());
 	    table.setIsExportable(true);
 	    table.setDescription("Table of Node number " +n.getMyID());
 	    
@@ -174,7 +174,7 @@ public class FusionTablesManager {
 	// metodo che crea una tabella globale
 	private static String createGlobalTable(String name)throws IOException{
 	    Table table = new Table();
-	    table.setName(name);
+	    table.setName(Configurator.getPrefix()+name);
 	    table.setIsExportable(true);
 	    LinkedList <Column> columns = new LinkedList<Column>();
 	    // aggiungo le colonne
@@ -267,7 +267,7 @@ public class FusionTablesManager {
 		boolean toRet = false;
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
-	    		if(table.getName().equals("Nodo_"+ nodeID)){
+	    		if(table.getName().equals(Configurator.getPrefix()+"Nodo_"+ nodeID)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
 	    			tablesID.put(nodeID, table.getTableId());
 	    			toRet = true;
@@ -282,7 +282,7 @@ public class FusionTablesManager {
 		boolean toRet = false;
 	    if(tableList != null){
 	    	for (Table table : tableList.getItems()){
-	    		if(table.getName().equals(name)){
+	    		if(table.getName().equals(Configurator.getPrefix()+name)){
 	    			//System.out.println("IDtabellaTROVATA: "+ table.getTableId());
 	    			globalTablesID.put(name, table.getTableId());
 	    			toRet = true;
@@ -310,7 +310,7 @@ public class FusionTablesManager {
 	private static String getTableID(String name){
 	    String tableID = null;
 	    for (Table table : tableList.getItems()) {
-	    	if(table.getName().equals(name)){
+	    	if(table.getName().endsWith(name)){
 	    		tableID = table.getTableId();
 	    		globalTablesID.put(name, tableID);          
 	    		break;
@@ -481,7 +481,7 @@ public class FusionTablesManager {
 				System.out.println("List people in not null");
 				Iterator<Object> i = list.get(0).iterator();
 				double peopleIn = Double.parseDouble(i.next().toString());
-				CapabilityInstance pIn = new CapabilityInstance("PeopleIn","PeopleIn_sum","last","","sum",0.00,Double.POSITIVE_INFINITY,0);
+				CapabilityInstance pIn = new CapabilityInstance("PeopleIn","PeopleIn_sum","PeopleIn_last","","sum",0.00,Double.POSITIVE_INFINITY,0);
 				System.out.println("Last people in value found: " + peopleIn);
 				pIn.setValue(peopleIn);
 				toRet.addCapabilityInstance(pIn);
@@ -498,7 +498,7 @@ public class FusionTablesManager {
 				System.out.println("List people out not null");
 				Iterator<Object> i = list.get(0).iterator();
 				double peopleOut = Double.parseDouble(i.next().toString());
-				CapabilityInstance pOut = new CapabilityInstance("PeopleOut","PeopleOut_sum","last","","sum",0.00,Double.POSITIVE_INFINITY,0);
+				CapabilityInstance pOut = new CapabilityInstance("PeopleOut","PeopleOut_sum","PeopleOut_last","","sum",0.00,Double.POSITIVE_INFINITY,0);
 				System.out.println("Last people out value found: " + peopleOut);
 				pOut.setValue(peopleOut);
 				toRet.addCapabilityInstance(pOut);

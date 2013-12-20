@@ -20,13 +20,14 @@
     <dependency>
       <groupId>com.google.apis</groupId>
       <artifactId>google-api-services-fusiontables</artifactId>
-      <version>v1-rev34-1.17.0-rc</version>
+      <version>v1-rev39-1.17.0-rc</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.google.apis</groupId>
       <artifactId>google-api-services-drive</artifactId>
       <version>v2-rev102-1.17.0-rc</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <repositories>

@@ -28,5 +28,4 @@ public class PeopleCounter {
 			cI.setValue(newDelta);
 		}
 	}
-
 }

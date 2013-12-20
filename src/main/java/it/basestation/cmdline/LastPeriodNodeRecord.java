@@ -21,112 +21,46 @@ public class LastPeriodNodeRecord {
 		for (String name : capabilitiesSet) {
 			LinkedList<CapabilityInstance> cList = Configurator.getCapabilityInstanceList(name, "local", false);
 			for (CapabilityInstance cI : cList) {
-				this.dataToStore.put(cI.getName()+"_"+cI.localOperator(), cI);
+				this.dataToStore.put(cI.getColumnName(), cI);
 				// se li valore è da mediare inizializzo il contatore
 				if(cI.localOperator().equals("avg")){
-					this.counters.put(cI.getName()+"_"+cI.localOperator(), 0);
+					this.counters.put(cI.getColumnName(), 0);
 				}
 			}
 		}
 	}
 	
-	// al mom non utilizzato // è da modificare!!
-	public void addPacket(Packet p){
-		LinkedList<CapabilityInstance> dataList = p.getDataList();
-		for (CapabilityInstance cI : dataList) {
-			// store su lista debug
-			if(!this.capabilityInstancesList.containsKey(cI.getName())){
-				this.capabilityInstancesList.put(cI.getName(), new LinkedList<CapabilityInstance>());
-			}
-			
-			// controllo su min e max value
-			if(cI.getMinValue() <= cI.getValue() && cI.getValue() <= cI.getMaxValue() ){
-				
-/*				// test delta
-				if(cI.getName().contains("People")){
-				 	LocalStatsManager.elabDelta(nodeID, cI);
-				}			
-				// end test delta
-*/				
-				// test people
-				if(cI.localOperator().contains("People")){
-				 	LocalStatsManager.countPeople(nodeID, cI);
-				}			
-				// end test peole
-				
-				// store su lista debug
-				this.capabilityInstancesList.get(cI.getName()).add(cI);
-				
-				// controllo se il valore è da mediare
-				if(cI.localOperator().equals("avg")){
-					int lastCounter = this.counters.get(cI.getName()).intValue();
-					int newCounter = lastCounter + 1;
-					double lastAvg = this.dataToStore.get(cI.getName()).getValue();
-					double temp = lastAvg * lastCounter;
-					temp += cI.getValue();
-					double neWAvg = temp / newCounter;
-					// aggiornamento valori
-					this.counters.put(cI.getName(), newCounter);
-					this.dataToStore.get(cI.getName()).setValue(neWAvg);
-				
-				// controllo se il valore da prendere è l'ultimo	
-				}else if(cI.localOperator().equals("last")){
-					// salvo l'ultimo valore
-					this.dataToStore.put(cI.getName(), cI);
-					
-				// controllo se il valore ' da sommare	
-				}else if(cI.localOperator().equals("sum")){
-					// lo sommo ai valori precedenti
-					double lastValue = this.dataToStore.get(cI.getName()).getValue();
-					double sum = lastValue + cI.getValue();
-					this.dataToStore.get(cI.getName()).setValue(sum);
-				}
-				
-				// aggiorno dati derivati			
-				Enumeration<String> e = this.dataToStore.keys();
-				while(e.hasMoreElements()){
-					String name = e.nextElement();
-					//controllo se è un valore derivato
-					if(!this.dataToStore.get(name).localOperator().equals("avg") &&
-							!this.dataToStore.get(name).localOperator().equals("last")&&
-							!this.dataToStore.get(name).localOperator().equals("sum")){
-						this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
-					}
-				}
-			} // end if min max value				
-		} // end for su lista capability instances
-	} // end addPacket
 	
 	public void addCapabilityInstance(CapabilityInstance cI){
 		// store su lista debug
-		if (!this.capabilityInstancesList.containsKey(cI.getName()+"_"+cI.localOperator())){
-			this.capabilityInstancesList.put(cI.getName()+"_"+cI.localOperator(), new LinkedList<CapabilityInstance>());
+		if (!this.capabilityInstancesList.containsKey(cI.getColumnName())){
+			this.capabilityInstancesList.put(cI.getColumnName(), new LinkedList<CapabilityInstance>());
 		}
-		this.capabilityInstancesList.get(cI.getName()+"_"+cI.localOperator()).add(cI);
+		this.capabilityInstancesList.get(cI.getColumnName()).add(cI);
 		
 		// controllo se il valore è da mediare
 		if(cI.localOperator().equals("avg")){
-			int lastCounter = this.counters.get(cI.getName()+"_"+cI.localOperator()).intValue();
+			int lastCounter = this.counters.get(cI.getColumnName()).intValue();
 			int newCounter = lastCounter + 1;
-			double lastAvg = this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).getValue();
+			double lastAvg = this.dataToStore.get(cI.getColumnName()).getValue();
 			double temp = lastAvg * lastCounter;
 			temp += cI.getValue();
 			double neWAvg = temp / newCounter;
 			// aggiornamento valori
-			this.counters.put(cI.getName()+"_"+cI.localOperator(), newCounter);
-			this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).setValue(neWAvg);
+			this.counters.put(cI.getColumnName(), newCounter);
+			this.dataToStore.get(cI.getColumnName()).setValue(neWAvg);
 		
 		// controllo se il valore da prendere è l'ultimo	
 		}else if(cI.localOperator().equals("last")){
 			// salvo l'ultimo valore
-			this.dataToStore.put(cI.getName()+"_"+cI.localOperator(), cI);
+			this.dataToStore.put(cI.getColumnName(), cI);
 			
 		// controllo se il valore è da sommare	
 		}else if(cI.localOperator().equals("sum")){
 			// lo sommo ai valori precedenti
-			double lastValue = this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).getValue();
+			double lastValue = this.dataToStore.get(cI.getColumnName()).getValue();
 			double sum = lastValue + cI.getValue();
-			this.dataToStore.get(cI.getName()+"_"+cI.localOperator()).setValue(sum);
+			this.dataToStore.get(cI.getColumnName()).setValue(sum);
 		}
 		
 		// aggiorno dati derivati			
@@ -144,7 +78,7 @@ public class LastPeriodNodeRecord {
 			String name = e.nextElement();
 			//controllo se è un valore derivato
 			//if(!this.dataToStore.get(name).localOperator().equals("avg") && !this.dataToStore.get(name).localOperator().equals("last")&& !this.dataToStore.get(name).localOperator().equals("sum")){
-			if(this.dataToStore.get(name).getIndex().equals("formula")){
+			if(this.dataToStore.get(name).getTarget().equals("formula")){
 				// seleziono la misura derivata
 				this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
 			}
@@ -167,8 +101,8 @@ public class LastPeriodNodeRecord {
 	}
 	
 	// invocato per inserire valori globali sul global record
-	public CapabilityInstance getCapabilityInstance(String name, String index){
-		return this.dataToStore.get(name+"_"+index);
+	public CapabilityInstance getCapabilityInstance(String columnName){
+		return this.dataToStore.get(columnName);
 	}
 	
 	// set medie mobili

@@ -22,11 +22,11 @@ public class LocalMMCalculator {
 				}
 				
 				//this.avgWindows.put(c.getName()+"_"+c.getIndex(), avgWindow);
-				this.avgWindows.put(c.getIndex(), avgWindow);
+				this.avgWindows.put(c.getTarget(), avgWindow);
 				//this.avgIndexes.put(c.getName()+"_"+c.getIndex(), 0);
-				this.avgIndexes.put(c.getIndex(), 0);
+				this.avgIndexes.put(c.getTarget(), 0);
 				//this.mobileAvgs.put(c.getName()+"_"+c.getIndex(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
-				this.mobileAvgs.put(c.getIndex(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getIndex(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+				this.mobileAvgs.put(c.getTarget(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getTarget(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 			}
 		}
 	}
@@ -84,7 +84,5 @@ public class LocalMMCalculator {
 			toRet.add(this.mobileAvgs.get(e.nextElement()));
 		}
 		return toRet;
-	}
-	
-
+	}	
 }
