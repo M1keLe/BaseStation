@@ -16,28 +16,28 @@ public class GlobalMMCalculator {
 			for (int i = 0; i < avgWindow.length; i++) {
 				avgWindow[i] = 0.00;
 			}
-			this.avgWindows.put(c.getName(), avgWindow);
-			this.avgIndexes.put(c.getName(), 0);
-			this.mobileAvgs.put(c.getName(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getTarget(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
+			this.avgWindows.put(c.getTarget(), avgWindow);
+			this.avgIndexes.put(c.getTarget(), 0);
+			this.mobileAvgs.put(c.getTarget(), new CapabilityInstance(c.getName(), c.getColumnName(),c.getTarget(), c.localOperator(), c.globalOperator(), c.getMinValue(), c.getMaxValue(), c.getAvgWindow()));
 			
 		}
 	}
 	
 	public void setListToCalculate(LinkedList<CapabilityInstance> caplistToStore){
 		for (CapabilityInstance cI : caplistToStore) {
-			if(this.avgWindows.containsKey(cI.getName())){
-				Double[] avgWindow = new Double[this.avgWindows.get(cI.getName()).length];
-				avgWindow = this.avgWindows.get(cI.getName());
+			if(this.avgWindows.containsKey(cI.getColumnName())){
+				Double[] avgWindow = new Double[this.avgWindows.get(cI.getColumnName()).length];
+				avgWindow = this.avgWindows.get(cI.getColumnName());
 				// debug
-				for (Double value : avgWindow) {
-					System.out.println("Scorro la lista globalavgWindow: "+cI.getName()+" "+value);
-				}
+				//for (Double value : avgWindow) {
+					//System.out.println("Scorro la lista globalavgWindow: "+cI.getColumnName()+" "+value);
+				//}
 				// end debug
-				int avgIndex = this.avgIndexes.get(cI.getName());
+				int avgIndex = this.avgIndexes.get(cI.getColumnName());
 				avgWindow[avgIndex] = cI.getValue();
 				avgIndex = (avgIndex + 1) % avgWindow.length;
-				this.avgWindows.put(cI.getName(), avgWindow);
-				this.avgIndexes.put(cI.getName(), avgIndex);
+				this.avgWindows.put(cI.getColumnName(), avgWindow);
+				this.avgIndexes.put(cI.getColumnName(), avgIndex);
 				double sum = 0;
 				int counter = 0;
 				for (int i = 0; i < avgWindow.length; i++) {
@@ -46,7 +46,7 @@ public class GlobalMMCalculator {
 					if(avgWindow[i] != 0)
 						counter++;
 				}
-				this.mobileAvgs.get(cI.getName()).setValue(sum/counter);
+				this.mobileAvgs.get(cI.getColumnName()).setValue(sum/counter);
 			}			
 		}
 	}
