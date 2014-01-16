@@ -13,7 +13,6 @@ public class Main
 	public static boolean debug = true; 
 			// true; 
 			// false;
-	
     public static void main( String[] args )
     {
     	if(Configurator.loadConfigFile()){
@@ -24,16 +23,6 @@ public class Main
     		// controllare e creare tabelle
     		FusionTablesManager.connect();
     		FusionTablesManager.setupTables();
-    		
-    		/* // debug
-    		try {
-				FusionTablesManager.createT();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-    		
-    		*/ // enddebug
     		
     		if(debug){
     			// avvio file reader inserire file da analizzare nel costruttore

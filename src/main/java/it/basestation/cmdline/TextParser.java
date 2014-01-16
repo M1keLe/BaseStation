@@ -18,8 +18,8 @@ public class TextParser {
 			insidePacket = true;
 		}
 		else if(line.contains(">time:")&& insidePacket){
-			time = Long.parseLong(line.substring(line.indexOf(":")+1 ).trim());
-			// time = System.currentTimeMillis();
+			// time = Long.parseLong(line.substring(line.indexOf(":")+1 ).trim());
+			time = System.currentTimeMillis();
 		}
 		else if(line.contains(">router:")&& insidePacket){
 			lastRouter = Short.parseShort(line.substring(line.indexOf(":")+1 ).trim());

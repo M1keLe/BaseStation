@@ -15,10 +15,6 @@ public class LocalStatsManager {
 	// lista di nodi
 	private static Hashtable<Short, Node> nodeList = new Hashtable<Short, Node>();
 	
-	// al momento non utilizzati
-	private static Hashtable<Short, PeopleCounter> peopleCounters = new Hashtable<Short, PeopleCounter>();
-	private static Hashtable<Short, DeltaCounter> deltaCounters = new Hashtable<Short, DeltaCounter>();
-	
 	// lista pacchetti
 	private static LinkedList<Packet> packetsList = new LinkedList<Packet>();
 	
@@ -77,24 +73,7 @@ public class LocalStatsManager {
 			lock.unlock();
 		}
 	}
-	
-	
-	// al momento non utilizzato
-	public static void countPeople(Short nodeID, CapabilityInstance cI){
-		if(!peopleCounters.containsKey(nodeID)){
-			peopleCounters.put(nodeID, new PeopleCounter());
-		}
-		peopleCounters.get(nodeID).elabCapabilityInstance(cI);
-	}
-	
-	// al momento non utilizzato
-	public static void elabDelta(Short nodeID, CapabilityInstance cI){
-		if(!deltaCounters.containsKey(nodeID)){
-			deltaCounters.put(nodeID, new DeltaCounter());
-		}
-		deltaCounters.get(nodeID).elabDelta(cI);
-	}	
-	
+		
 	// metodo invocato dal thread Resetter (salva statistiche locali su file)
 	public static void printNodesLog(){
 		String fileName = "log/nodes.log";
@@ -128,7 +107,7 @@ public class LocalStatsManager {
 			out.flush();
 			out.close();
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		} finally{
 			lock.unlock();
 		}
@@ -143,9 +122,6 @@ public class LocalStatsManager {
 			
 			packetsList = new LinkedList<Packet>();
 			pushPacketsList = new LinkedList<Packet>();
-			// people counter istanziati in DataProcessor
-			// peopleCounters = new Hashtable<Short, PeopleCounter>();
-			// deltaCounters = new Hashtable<Short, DeltaCounter>();
 
 			// resetto le stats di ogni nodo
 			Enumeration<Short> e = nodeList.keys();
@@ -173,17 +149,11 @@ public class LocalStatsManager {
 	
 	// aggiornamento contatore routedPacket
 	private static void updateRouterCounter(Packet packet){
-		//lock.lock();
-		//try{
-			LinkedList<Short> routers = packet.getHopsIndexes();
-			if(routers != null){
-				for (Short nodeID : routers) {
-					nodeList.get(nodeID).increaseRoutedPackets();
-				}
+		LinkedList<Short> routers = packet.getHopsIndexes();
+		if(routers != null){
+			for (Short nodeID : routers) {
+				nodeList.get(nodeID).increaseRoutedPackets();
 			}
-		//}finally{
-		//	lock.unlock();
-		//}
+		}
 	}
-
 }

@@ -63,23 +63,14 @@ public class LastPeriodNodeRecord {
 			this.dataToStore.get(cI.getColumnName()).setValue(sum);
 		}
 		
-		// aggiorno dati derivati			
+		// aggiornamento  dati derivati			
 		Enumeration<String> e = this.dataToStore.keys();
-		
-		/*// debug 		
-		Enumeration<String> eDeb = this.dataToStore.keys();
-		while (eDeb.hasMoreElements()) {
-			String string = (String) eDeb.nextElement();
-			System.out.println("Stampa chiavi node record: " +string);
-		}
-		*/// end debug
 		
 		while(e.hasMoreElements()){
 			String name = e.nextElement();
 			//controllo se è un valore derivato
-			//if(!this.dataToStore.get(name).localOperator().equals("avg") && !this.dataToStore.get(name).localOperator().equals("last")&& !this.dataToStore.get(name).localOperator().equals("sum")){
 			if(this.dataToStore.get(name).getTarget().equals("formula")){
-				// seleziono la misura derivata
+				// aggiornamento misura derivata
 				this.dataToStore.get(name).setValue(this.getDerivedMeasure(this.dataToStore.get(name)));					
 			}
 		}
@@ -117,23 +108,14 @@ public class LastPeriodNodeRecord {
 	
 	// metodo privato per calcolare misure derivate
 	private double getDerivedMeasure(CapabilityInstance cI) {
-		// Debug
-		// System.out.println("GetDerivedmeasure, capability da analizzare: ==============================");
-		// System.out.println(cI);
-		// end debug
-		
 		double result = 0.00;
-		String syntax = cI.localOperator();
+		String expression = cI.localOperator();
 		// suddivido la stringa in vari tokens
-        String[] tokens = syntax.split(" ");
-        
+        String[] tokens = expression.split(" ");        
         // sostituisco il nome della capability con il valore        
         for (int i = 0; i < tokens.length; i++) {
-        	// se null il token è una parentesi oppure uno dei simboli op (/,*,-,+)
-        	//if(this.dataToStore.get(tokens[i]+"_"+cI.getIndex()) != null){
+        	// se null il token è una parentesi oppure uno dei simboli op (/, *, -, +, ...)
         	if(this.dataToStore.get(tokens[i]) != null){
-        		//System.out.println("Ricerca su: tokens[i]: " + tokens[i] + "cI.getIndex: " + cI.getIndex());
-        		//Double value = this.dataToStore.get(tokens[i]+"_"+cI.getIndex()).getValue();
         		Double value = this.dataToStore.get(tokens[i]).getValue();
         		tokens[i] = value.toString();
         	}

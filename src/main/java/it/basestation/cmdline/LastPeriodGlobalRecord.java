@@ -218,6 +218,11 @@ public class LastPeriodGlobalRecord {
 		this.globalMMList = mmListToStore; 
 		
 	}
+	
+	public LinkedList<CapabilityInstance> getMMListToStore(){
+		return this.globalMMList;
+	}
+
 
 	// try to fix peopleInside 
 	public double getPeopleInsideValue() {

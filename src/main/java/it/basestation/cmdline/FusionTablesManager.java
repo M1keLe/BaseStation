@@ -3,7 +3,6 @@ package it.basestation.cmdline;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -122,29 +121,6 @@ public class FusionTablesManager {
 	    return tableList;
 	  }
 	
-	// debug	
-	public static String createT() throws IOException {
-	    // Create a new table
-	    Table table = new Table();
-	    table.setName("TestTable2");
-	    table.setIsExportable(true);
-	    table.setDescription("Sample Table");
-
-	    // Set columns for new table
-	    table.setColumns(Arrays.asList(new Column().setName("Counter_last").setType("NUMBER"),
-	        new Column().setName("PeopleIn_last").setType("NUMBER"),
-	        new Column().setName("PeopleOut_last").setType("NUMBER"),
-	        new Column().setName("Date").setType("DATETIME")));
-
-	    // Adds a new column to the table.
-	    Insert t = fusiontables.table().insert(table);
-	    Table r = t.execute();
-
-	    return r.getTableId();
-	  }
-	// endDebug
-	
-	
 	// metodo che crea la tabella di un nodo
 	private static String createTable(Node n)throws IOException{
 	    Table table = new Table();
@@ -153,15 +129,15 @@ public class FusionTablesManager {
 	    table.setDescription("Table of Node number " +n.getMyID());
 	    
 	    LinkedList <Column> columns = new LinkedList<Column>();
-	    LinkedList <String> capability = n.getCapabilitiesSet();
-	    for (String name : capability) {
+	    LinkedList <String> capabilities = n.getCapabilitiesSet();
+	    for (String name : capabilities) {
 	    	for (Capability c : Configurator.getCapabilitiesList(name, "local", true)) {
 	    		columns.add(new Column().setName(c.getColumnName()).setType("NUMBER"));
 			}
 		}	   
 	    // aggiungo il campo data
-	    //columns.add(new Column().setName("Date").setType("DATETIME"));
-	    columns.add(new Column().setName("Date").set("type", "DATETIME").setKind("fusiontables#columnn"));
+	    columns.add(new Column().setName("Date").setType("DATETIME"));
+	    //columns.add(new Column().setName("Date").set("type", "DATETIME").setKind("fusiontables#columnn"));
 	    
 	    table.setColumns(columns);
 	    Insert t = fusiontables.table().insert(table);
@@ -402,7 +378,7 @@ public class FusionTablesManager {
 		}
 	}
 */	
-	// genera la query relativa ad un nodo
+	// genera la query di tipo INSERT
 	private static String buildInsertQuery(String tableID, LinkedList<CapabilityInstance> capListToStore, Date d){
 	    java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("0.00");
 	    

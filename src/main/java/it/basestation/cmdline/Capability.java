@@ -16,34 +16,15 @@ public class Capability {
 	// finestra media mobile
 	private int avgWindow = 0;
 
-/*	public Capability(String name){
-		this.name = name;
-	}
-	
-	public Capability(String name, String localOperator, String globalOperator){
-		this.name = name;
-		this.localOperator = localOperator;
-		this.globalOperator = globalOperator;
-	}
-	
-	public Capability(String name, String localOperator, String globalOperator, Double minValue, Double maxValue) {
-		this.name = name;
-		this.localOperator = localOperator;
-		this.globalOperator = globalOperator;
-		this.minValue = minValue;
-		this.maxValue = maxValue;
-	}
-	
-	public Capability(String name, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow) {
-		this.name = name;
-		this.localOperator = localOperator;
-		this.globalOperator = globalOperator;
-		this.minValue = minValue;
-		this.maxValue = maxValue;
-		this.avgWindow = avgWindow;
-	}
-*/	
-	public Capability(String name, String columnName, String target, String localOperator, String globalOperator, Double minValue, Double maxValue, int avgWindow) {
+	public Capability(String name,
+					  String columnName,
+					  String target,
+					  String localOperator,
+					  String globalOperator,
+					  Double minValue,
+					  Double maxValue,
+					  int avgWindow) {
+		
 		this.name = name;
 		this.columnName = columnName;
 		this.target = target;
@@ -54,22 +35,6 @@ public class Capability {
 		this.avgWindow = avgWindow;
 	}
 
-/*	public void setMinValue(Double minValue) {
-		this.minValue = minValue;
-	}
-
-	public void setMaxValue(Double maxValue) {
-		this.maxValue = maxValue;
-	}
-
-	public void setLocalOperator(String local) {
-		this.localOperator=local;
-	}
-
-	public void setGlobalOperator(String global) {
-		this.globalOperator=global;
-	}
-*/
 	// get
 
 	public String getName() {
@@ -120,5 +85,4 @@ public class Capability {
 		
 		return toRet;
 	}
-
 }

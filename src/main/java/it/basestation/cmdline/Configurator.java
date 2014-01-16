@@ -558,7 +558,7 @@ public class Configurator {
 	public static LinkedList<Capability> getGlobalCapabilitiesList(boolean mm){
 		LinkedList<Capability> toRet = new LinkedList<Capability>(); 
 		for (Capability c : capabilities) {
-			if(!c.globalOperator().equals("")&& c.getAvgWindow() == 0){
+			if(!c.globalOperator().equals("") && c.getAvgWindow() == 0){
 				toRet.add(c);
 			}
 			if(!c.globalOperator().equals("") && c.getAvgWindow() > 0 && mm){
@@ -590,11 +590,11 @@ public class Configurator {
 	}
 	
 	public static Date getResetTime(){
-		Date toRet = null;
-		if(resetTime != null)
-			toRet = resetTime.getTime();
-		
-		return toRet;
+		//Date toRet = null;
+		//if(resetTime != null)
+		//	toRet = resetTime.getTime();
+		return resetTime.getTime();
+		//return toRet;
 	}
 	
 	// reset variabili capabilities

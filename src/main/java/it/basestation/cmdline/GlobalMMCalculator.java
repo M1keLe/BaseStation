@@ -23,8 +23,8 @@ public class GlobalMMCalculator {
 		}
 	}
 	
-	public void setListToCalculate(LinkedList<CapabilityInstance> caplistToStore){
-		for (CapabilityInstance cI : caplistToStore) {
+	public void elabMobileAvgs(LinkedList<CapabilityInstance> capabilityList){
+		for (CapabilityInstance cI : capabilityList) {
 			if(this.avgWindows.containsKey(cI.getColumnName())){
 				Double[] avgWindow = new Double[this.avgWindows.get(cI.getColumnName()).length];
 				avgWindow = this.avgWindows.get(cI.getColumnName());

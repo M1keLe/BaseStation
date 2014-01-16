@@ -113,7 +113,7 @@ public class DataProcessor extends Thread {
 						short nodeID = e.nextElement();
 						if(!this.localMMCalculators.containsKey(nodeID))
 							this.localMMCalculators.put(nodeID, new LocalMMCalculator(nodeID));
-						this.localMMCalculators.get(nodeID).setListToCalculate(newNodesRecord.get(nodeID).getDataListToStore());
+						this.localMMCalculators.get(nodeID).elabMobileAvgs(newNodesRecord.get(nodeID).getDataListToStore());
 						newNodesRecord.get(nodeID).setMMListToStore(this.localMMCalculators.get(nodeID).getMMListToStore());
 						// DEBUG
 						System.out.println(newNodesRecord.get(nodeID));
@@ -130,7 +130,6 @@ public class DataProcessor extends Thread {
 					
 					// calcolo le medie globali
 					
-					// LinkedList<String> globalCapabilitiesSet = Configurator.getGlobalCapabilitiesSet();
 					LinkedList<Capability> globalCapabilitieslist = Configurator.getGlobalCapabilitiesList(false);
 					
 					LastPeriodGlobalRecord newGlobalRecord = new LastPeriodGlobalRecord();
@@ -154,8 +153,8 @@ public class DataProcessor extends Thread {
 					// aggiornamento people
 					newGlobalRecord = updateGlobalRecord(newGlobalRecord, this.debugGlobalRecord);
 					
-					// calcolo medie mobili (per ora non funziona)
-					this.GlobalMMCalculator.setListToCalculate(newGlobalRecord.getDataListToStore());
+					// calcolo medie mobili (da testare)
+					this.GlobalMMCalculator.elabMobileAvgs(newGlobalRecord.getDataListToStore());
 					newGlobalRecord.setMMListToStore(this.GlobalMMCalculator.getMMListToStore());
 					
 					// Store capabilities Globali
