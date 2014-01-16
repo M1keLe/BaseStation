@@ -31,12 +31,12 @@ public class Main
     		}else{
     			// serial reader
 		  		try {
-		  			SerialComunication.createComunication();	
+		  			SerialCommunication.createCommunication();	
 		  		} catch (NoSuchPortException | PortInUseException
 							| UnsupportedCommOperationException | IOException e) {
 					e.printStackTrace();
 		  		}  		
-	    		SerialReader sR = new SerialReader(SerialComunication.getInputStream());
+	    		SerialReader sR = new SerialReader(SerialCommunication.getInputStream());
 	    		sR.start();
     		} 		
     		// avvio data processor

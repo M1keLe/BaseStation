@@ -6,13 +6,13 @@ import java.io.OutputStream;
 
 import gnu.io.*;
 
-public class SerialComunication {
+public class SerialCommunication {
 	
 	private static InputStream in;
 	private static OutputStream out;
 	private static CommPort commPort;
 
-	public static void createComunication() throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException, IOException {
+	public static void createCommunication() throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException, IOException {
 		String port = Configurator.getUSBPort();
 		int baudRate = Configurator.getSpeedUsbPort();
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(port);
